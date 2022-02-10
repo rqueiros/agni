@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const path = require("path");
-const routes = require("./routes");
+const routes = require("./routes/index");
 
 const lti = require("ltijs").Provider;
 
@@ -19,7 +19,7 @@ lti.setup(
     },
   },
   {
-    staticPath: path.join(__dirname, "./public"), // Path to static files
+    staticPath: path.join(__dirname, "./app/views"), // Path to static files
     cookies: {
       secure: false, // Set secure to true if the testing platform is in a different domain and https is being used
       sameSite: "", // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
@@ -30,7 +30,7 @@ lti.setup(
 
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
-  return res.sendFile(path.join(__dirname, "./public/index.html"));
+  return res.sendFile(path.join(__dirname, "./app/views/index.html"));
 });
 
 // When receiving deep linking request redirects to deep screen
