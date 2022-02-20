@@ -39,14 +39,14 @@ lti.onDeepLinking(async (token, req, res) => {
 // Setting up routes
 lti.app.use(routes)
 
-lti.app.post('/', async (req, res, next) => {
-  return res.sendFile(path.join(__dirname, './app/views/index.html'))
-})
-
 // Setup function
 const setup = async () => {
   //console.log(process.env);
-  await lti.deploy({ port: 3000 });
+  await lti.deploy({ serverless: true });
+
+  const app = express();
+  app.use("/lti-tool", lti.app);
+  app.listen(process.env.LTI_TOOL_PORT);
 
   /* const app = express();
   app.use("/", lti.app);
