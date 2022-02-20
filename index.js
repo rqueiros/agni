@@ -27,7 +27,8 @@ lti.setup("EXAMPLEKEY", {
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
   //console.log('YESS');
-  return res.sendFile(path.join(__dirname, './app/views/index.html'))
+  return res.send('It\'s alive!')
+  //return res.sendFile(path.join(__dirname, './app/views/index.html'))
 })
 
 // When receiving deep linking request redirects to deep screen
