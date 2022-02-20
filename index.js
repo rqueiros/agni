@@ -27,8 +27,8 @@ lti.setup("EXAMPLEKEY", {
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
   //console.log('YESS');
-  return res.send('It\'s alive!')
-  //return res.sendFile(path.join(__dirname, './app/views/index.html'))
+  //return res.send('It\'s alive!')
+  return res.sendFile(path.join(__dirname, './app/views/index.html'))
 })
 
 // When receiving deep linking request redirects to deep screen
@@ -45,7 +45,7 @@ const setup = async () => {
   await lti.deploy({ serverless: true });
 
   const app = express();
-  app.use("/lti-tool", lti.app);
+  app.use("/", lti.app);
   app.listen(process.env.LTI_TOOL_PORT);
 
   /* const app = express();
