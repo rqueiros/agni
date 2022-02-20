@@ -42,12 +42,12 @@ lti.app.use(routes)
 // Setup function
 const setup = async () => {
   //console.log(process.env);
-  await lti.deploy();
+  await lti.deploy({ port: 3000 });
 
-  /*   const app = express();
-    app.use("/lti-tool", lti.app);
-    app.listen(process.env.LTI_TOOL_PORT);
-   */
+  const app = express();
+  app.use("/lti-tool", lti.app);
+  app.listen(3000);
+
   /**
    * Register platform
    */
