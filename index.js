@@ -33,7 +33,7 @@ lti.onConnect(async (token, req, res) => {
 
 // When receiving deep linking request redirects to deep screen
 lti.onDeepLinking(async (token, req, res) => {
-  return lti.redirect(res, '/lti-tool/deeplink', { newResource: true })
+  return lti.redirect(res, '/deeplink', { newResource: true })
 })
 
 // Setting up routes
@@ -42,11 +42,8 @@ lti.app.use(routes)
 // Setup function
 const setup = async () => {
   //console.log(process.env);
-  await lti.deploy({ serverless: true });
+  await lti.deploy({ port: 3000 });
 
-  const app = express();
-  app.use("/", lti.app);
-  app.listen(process.env.LTI_TOOL_PORT);
 
   /* const app = express();
   app.use("/", lti.app);
