@@ -53,21 +53,24 @@ const setup = async () => {
   /**
    * Register platform
    */
-  /*   const platform = await lti.registerPlatform({
-      url: process.env.MOODLE_URL,
-      name: process.env.LTI_TOOL_NAME,
-      clientId: process.env.LTI_TOOL_CLIENT_ID,
-      authenticationEndpoint: `${process.env.MOODLE_URL}/mod/lti/auth.php`,
-      accesstokenEndpoint: `${process.env.MOODLE_URL}/mod/lti/token.php`,
-      authConfig: {
-        method: 'JWK_SET',
-        key: `${process.env.MOODLE_URL}/mod/lti/certs.php`
-      }
-    })
-   
-    const authConfig = await platform.platformAuthConfig();
-    console.log(authConfig);
-    console.log(await platform.platformPublicKey()) */
+  /* 
+  const platform = await lti.registerPlatform({
+    url: process.env.MOODLE_URL,
+    name: process.env.LTI_TOOL_NAME,
+    clientId: process.env.LTI_TOOL_CLIENT_ID,
+    authenticationEndpoint: `${process.env.MOODLE_URL}/mod/lti/auth.php`,
+    accesstokenEndpoint: `${process.env.MOODLE_URL}/mod/lti/token.php`,
+    authConfig: {
+      method: 'JWK_SET',
+      key: `${process.env.MOODLE_URL}/mod/lti/certs.php`
+    }
+  })
+
+  const authConfig = await platform.platformAuthConfig();
+  console.log(authConfig);
+  console.log(await platform.platformPublicKey())
+
+  */
 }
 
 setup()
