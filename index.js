@@ -39,15 +39,19 @@ lti.onDeepLinking(async (token, req, res) => {
 // Setting up routes
 lti.app.use(routes)
 
+lti.app.get('/', async (req, res, next) => {
+  return res.send('It works!')
+})
+
 // Setup function
 const setup = async () => {
   //console.log(process.env);
   await lti.deploy({ port: 3000 });
 
-  const app = express();
+  /* const app = express();
   app.use("/", lti.app);
-  //app.listen(3000);
-
+  app.listen(3000);
+ */
   /**
    * Register platform
    */
