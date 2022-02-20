@@ -28,6 +28,7 @@ lti.setup("EXAMPLEKEY", {
 lti.onConnect(async (token, req, res) => {
   //console.log('YESS');
   //return res.send('It\'s alive!')
+  console.log('the token is working:', token);
   return res.sendFile(path.join(__dirname, './app/views/index.html'))
 })
 
