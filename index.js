@@ -39,7 +39,7 @@ lti.onDeepLinking(async (token, req, res) => {
 // Setting up routes
 lti.app.use(routes)
 
-lti.app.get('/', async (req, res, next) => {
+lti.app.post('/', async (req, res, next) => {
   return res.sendFile(path.join(__dirname, './app/views/index.html'))
 })
 
