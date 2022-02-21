@@ -1,58 +1,59 @@
-require("dotenv").config();
+require('dotenv').config()
 
-const express = require("express");
-const path = require("path");
-const routes = require("./routes/index");
+const express = require('express');
+const path = require('path')
+const routes = require('./app/routes/index')
 
-const lti = require("ltijs").Provider;
+const lti = require('ltijs').Provider
+
 
 // Setup
-lti.setup(
-  process.env.LTI_TOOL_KEY,
+lti.setup("EXAMPLEKEY", {
+  url: 'mongodb+srv://agni.phbzj.mongodb.net/ltidb?authSource=admin&retryWrites=true&w=majority',
+  connection: {
+    user: 'agniAdmin',
+    pass: 'agniAdminPass'
+  }
+},
   {
-    //url: `mongodb://${process.env.LTI_TOOL_DB_HOST}:${process.env.LTI_TOOL_DB_PORT}/${process.env.LTI_TOOL_DB_NAME}`,
-    url: "mongodb+srv://agniAdmin:agniAdminPass@agni.phbzj.mongodb.net/ltiDb?retryWrites=true&w=majority",
-    connection: {
-      authSource: process.env.LTI_TOOL_DB_AUTH,
-      user: process.env.LTI_TOOL_DB_USERNAME,
-      pass: process.env.LTI_TOOL_DB_PASSWORD,
-    },
-  },
-  {
-    staticPath: path.join(__dirname, "./app/views"), // Path to static files
+    staticPath: path.join(__dirname, './app/views'), // Path to static files
     cookies: {
       secure: false, // Set secure to true if the testing platform is in a different domain and https is being used
-      sameSite: "", // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
+      sameSite: '' // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
     },
-    devMode: true, // Set DevMode to true if the testing platform is in a different domain and https is not being used
-  }
-);
+    devMode: true // Set DevMode to true if the testing platform is in a different domain and https is not being used
+  });
 
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
-  return res.sendFile(path.join(__dirname, "./app/views/index.html"));
-});
+  //console.log('YESS');
+  //return res.send('It\'s alive!')
+  console.log('the token is working:', token);
+  return res.sendFile(path.join(__dirname, './app/views/index.html'))
+})
 
 // When receiving deep linking request redirects to deep screen
 lti.onDeepLinking(async (token, req, res) => {
-  return lti.redirect(res, "/lti-tool/deeplink", { newResource: true });
-});
+  return lti.redirect(res, '/deeplink', { newResource: true })
+})
 
 // Setting up routes
-lti.app.use(routes);
+lti.app.use(routes)
 
 // Setup function
 const setup = async () => {
-  console.log(process.env);
-  await lti.deploy({ serverless: true });
+  //console.log(process.env);
+  await lti.deploy({ port: process.env.PORT });
 
-  const app = express();
-  app.use("/lti-tool", lti.app);
-  app.listen(process.env.LTI_TOOL_PORT);
 
+  /* const app = express();
+  app.use("/", lti.app);
+  app.listen(3000);
+  */
   /**
    * Register platform
    */
+  /* 
   const platform = await lti.registerPlatform({
     url: process.env.MOODLE_URL,
     name: process.env.LTI_TOOL_NAME,
@@ -60,14 +61,16 @@ const setup = async () => {
     authenticationEndpoint: `${process.env.MOODLE_URL}/mod/lti/auth.php`,
     accesstokenEndpoint: `${process.env.MOODLE_URL}/mod/lti/token.php`,
     authConfig: {
-      method: "JWK_SET",
-      key: `${process.env.MOODLE_URL}/mod/lti/certs.php`,
-    },
-  });
+      method: 'JWK_SET',
+      key: `${process.env.MOODLE_URL}/mod/lti/certs.php`
+    }
+  })
 
   const authConfig = await platform.platformAuthConfig();
   console.log(authConfig);
-  console.log(await platform.platformPublicKey());
-};
+  console.log(await platform.platformPublicKey())
 
-setup();
+  */
+}
+
+setup()
