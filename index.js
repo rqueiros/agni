@@ -1,50 +1,51 @@
-require('dotenv').config()
+require("dotenv").config();
 
-const express = require('express');
-const path = require('path')
-const routes = require('./app/routes/index')
+const express = require("express");
+const path = require("path");
+const routes = require("./app/routes/index");
 
-const lti = require('ltijs').Provider
-
+const lti = require("ltijs").Provider;
 
 // Setup
-lti.setup("EXAMPLEKEY", {
-  url: 'mongodb+srv://agni.phbzj.mongodb.net/ltidb?authSource=admin&retryWrites=true&w=majority',
-  connection: {
-    user: 'agniAdmin',
-    pass: 'agniAdminPass'
-  }
-},
+lti.setup(
+  "EXAMPLEKEY",
   {
-    staticPath: path.join(__dirname, './app/views'), // Path to static files
-    cookies: {
-      secure: false, // Set secure to true if the testing platform is in a different domain and https is being used
-      sameSite: '' // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
+    url: "mongodb+srv://agni.phbzj.mongodb.net/ltidb?authSource=admin&retryWrites=true&w=majority",
+    connection: {
+      user: "agniAdmin",
+      pass: "agniAdminPass",
     },
-    devMode: true // Set DevMode to true if the testing platform is in a different domain and https is not being used
-  });
+  },
+  {
+    staticPath: path.join(__dirname, "./app/views"), // Path to static files
+    cookies: {
+      secure: true, // Set secure to true if the testing platform is in a different domain and https is being used
+      sameSite: "None", // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
+    },
+    devMode: true, // Set DevMode to true if the testing platform is in a different domain and https is not being used
+  }
+);
 
 // When receiving successful LTI launch redirects to app
 lti.onConnect(async (token, req, res) => {
   //console.log('YESS');
   //return res.send('It\'s alive!')
-  console.log('the token is working:', token);
-  return res.sendFile(path.join(__dirname, './app/views/index.html'))
-})
+  console.log("the token is working:", token);
+  return res.sendFile(path.join(__dirname, "./app/views/index.html"));
+});
 
 // When receiving deep linking request redirects to deep screen
 lti.onDeepLinking(async (token, req, res) => {
-  return lti.redirect(res, '/deeplink', { newResource: true })
-})
+  return lti.redirect(res, "/deeplink", { newResource: true });
+});
 
 // Setting up routes
-lti.app.use(routes)
+lti.app.use(routes);
 
 // Setup function
 const setup = async () => {
   //console.log(process.env);
   await lti.deploy({ port: process.env.PORT });
-
 
   /* const app = express();
   app.use("/", lti.app);
@@ -71,6 +72,6 @@ const setup = async () => {
   console.log(await platform.platformPublicKey())
 
   */
-}
+};
 
-setup()
+setup();
