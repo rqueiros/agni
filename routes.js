@@ -149,6 +149,8 @@ router.get("/info", async (req, res) => {
   }
   if (token.user) info.id = token.user;
 
+  console.log("info" + info);
+
   if (context.roles) info.roles = context.roles;
   if (context.context) info.context = context.context;
 
