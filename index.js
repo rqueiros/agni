@@ -26,7 +26,7 @@ lti.setup(
   }
 );
 
-// When receiving successful LTI launch redirects to app
+// When receiving successful LTI launch redirects to apps
 lti.onConnect(async (token, req, res) => {
   //console.log('YESS');
   //return res.send('It\'s alive!')
