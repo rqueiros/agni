@@ -16,7 +16,6 @@ router.post("/getGrade", async (req, res) => {
 
 // Grading route
 router.post("/grade", async (req, res) => {
-  console.log("ENTREI");
   try {
     const idtoken = res.locals.token; // IdToken
     const score = req.body.grade; // User numeric score sent in the body
@@ -30,8 +29,6 @@ router.post("/grade", async (req, res) => {
       gradingProgress: "FullyGraded",
     };
 
-    console.log(gradeObj);
-
     // Selecting linetItem ID
     let lineItemId = idtoken.platformContext.endpoint.lineitem; // Attempting to retrieve it from idtoken
     if (!lineItemId) {
@@ -41,7 +38,6 @@ router.post("/grade", async (req, res) => {
       const lineItems = response.lineItems;
       if (lineItems.length === 0) {
         // Creating line item if there is none
-        console.log("Creating new line item");
         const newLineItem = {
           scoreMaximum: 100,
           label: "Grade",
@@ -53,8 +49,6 @@ router.post("/grade", async (req, res) => {
       } else lineItemId = lineItems[0].id;
     }
 
-    console.log("SENDING GRADES");
-    console.log(idtoken, lineItemId, gradeObj);
     // Sending Grade
     const responseGrade = await lti.Grade.submitScore(
       idtoken,
@@ -68,7 +62,6 @@ router.post("/grade", async (req, res) => {
     };
     return res.send(x);
   } catch (err) {
-    console.log(err.message);
     return res.status(500).send({ err: err.message });
   }
 });
