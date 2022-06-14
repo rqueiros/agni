@@ -62,7 +62,8 @@ router.post("/grade", async (req, res) => {
     };
     return res.send(x);
   } catch (err) {
-    return res.status(500).send({ err: err.message });
+    //return res.status(500).send({ err: err.message });
+    return res.send("xxx");
   }
 });
 
