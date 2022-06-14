@@ -15,7 +15,7 @@ router.post("/getGrade", async (req, res) => {
 });
 
 // Grading route
-router.post("/grade", async (req, res) => {
+router.post("/grades", async (req, res) => {
   console.log("ENTREI");
   try {
     const idtoken = res.locals.token; // IdToken
