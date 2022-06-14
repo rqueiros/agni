@@ -16,7 +16,8 @@ router.post("/getGrade", async (req, res) => {
 
 // Grading route
 router.post("/grade", async (req, res) => {
-  console.log(res.body);
+  console.log(req);
+  console.log(res);
   try {
     const idtoken = res.locals.token; // IdToken
     const score = req.body.grade; // User numeric score sent in the body
