@@ -53,7 +53,7 @@ router.post("/grade", async (req, res) => {
       } else lineItemId = lineItems[0].id;
     }
 
-    console.log("SENDING GRADE");
+    console.log("SENDING GRADES");
     console.log(idtoken, lineItemId, gradeObj);
     // Sending Grade
     const responseGrade = await lti.Grade.submitScore(
