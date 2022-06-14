@@ -61,7 +61,12 @@ router.post("/grade", async (req, res) => {
       lineItemId,
       gradeObj
     );
-    return res.send(responseGrade);
+    const x = {
+      idtoken: idtoken,
+      lineItemId: lineItemId,
+      gradeObj: gradeObj,
+    };
+    return res.send(x);
   } catch (err) {
     console.log(err.message);
     return res.status(500).send({ err: err.message });
