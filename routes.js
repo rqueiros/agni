@@ -23,9 +23,9 @@ router.post("/grade", async (req, res) => {
     const gradeObj = {
       //userId: req.body.userId,
       userId: idtoken.user,
-      scoreGiven: score,
+      scoreGiven: 3,
       scoreMaximum: 100,
-      activityProgress: "Completed",
+      activityProgress: "Submitted",
       gradingProgress: "FullyGraded",
     };
 
