@@ -1,1 +1,1 @@
-# Agni server
+# Agni playground server
