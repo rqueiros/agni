@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "evaluatives",
+  "info": {
+    "singularName": "evaluative",
+    "pluralName": "evaluatives",
+    "displayName": "Evaluative",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "dynamiczone",
+      "components": [
+        "base.programming-exercise",
+        "base.quiz"
+      ],
+      "max": 1,
+      "required": true
+    }
+  }
+}

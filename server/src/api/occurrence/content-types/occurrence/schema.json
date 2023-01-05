@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "occurrences",
+  "info": {
+    "singularName": "occurrence",
+    "pluralName": "occurrences",
+    "displayName": "Occurrence",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "year": {
+      "type": "integer",
+      "required": true
+    },
+    "courses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::course.course"
+    },
+    "classes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::class.class",
+      "mappedBy": "occurrence"
+    }
+  }
+}

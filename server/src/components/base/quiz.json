@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_base_quizzes",
+  "info": {
+    "displayName": "Quiz",
+    "icon": "ad",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question"
+    }
+  }
+}

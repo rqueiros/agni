@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_resource_grande_answers",
+  "info": {
+    "displayName": "Answer",
+    "icon": "ad",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "answer": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

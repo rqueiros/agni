@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_resource_components_milestones",
+  "info": {
+    "displayName": "Milestone",
+    "icon": "calendar-check",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "frame": {
+      "type": "integer",
+      "required": true
+    }
+  }
+}

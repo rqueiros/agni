@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "expositives",
+  "info": {
+    "singularName": "expositive",
+    "pluralName": "expositives",
+    "displayName": "Expositive",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "pdf",
+        "video"
+      ],
+      "required": true
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "videos",
+        "audios",
+        "files"
+      ]
+    },
+    "milestones": {
+      "type": "component",
+      "repeatable": true,
+      "component": "base.milestone"
+    }
+  }
+}

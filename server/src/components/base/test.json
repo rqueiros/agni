@@ -1,0 +1,45 @@
+{
+  "collectionName": "components_base_tests",
+  "info": {
+    "displayName": "Test",
+    "icon": "ad",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "input": {
+      "type": "string"
+    },
+    "output": {
+      "type": "string"
+    },
+    "expected": {
+      "type": "string"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "log",
+        "metric",
+        "expression",
+        "function"
+      ]
+    },
+    "subtype": {
+      "type": "enumeration",
+      "enum": [
+        "lines",
+        "occurrences",
+        "error"
+      ]
+    },
+    "alias": {
+      "type": "string"
+    },
+    "show": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    }
+  }
+}

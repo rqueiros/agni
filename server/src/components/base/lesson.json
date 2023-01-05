@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_base_lessons",
+  "info": {
+    "displayName": "Lesson",
+    "icon": "ad",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "expositives": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::expositive.expositive"
+    },
+    "evaluatives": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::evaluative.evaluative"
+    }
+  }
+}
