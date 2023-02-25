@@ -32,6 +32,7 @@
             </v-expansion-panels>
           </v-card>
         </v-col>
+        <!-- This makes an Error
         <v-col cols="5">
           <v-row>
             <v-col cols="12">
@@ -41,7 +42,7 @@
           <v-row>
             <v-col cols="12"> </v-col>
           </v-row>
-        </v-col>
+        </v-col> -->
       </v-row>
     </v-container>
   </div>
