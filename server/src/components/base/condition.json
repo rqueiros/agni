@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_base_conditions",
+  "info": {
+    "displayName": "Condition",
+    "icon": "ad",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "AND",
+        "OR"
+      ]
+    },
+    "afterWeek": {
+      "type": "float"
+    },
+    "afterPercDone": {
+      "type": "float"
+    }
+  }
+}

@@ -27,6 +27,15 @@
       "relation": "manyToOne",
       "target": "api::occurrence.occurrence",
       "inversedBy": "classes"
+    },
+    "delay": {
+      "type": "float"
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "classes"
     }
   }
 }

@@ -17,6 +17,11 @@
       "repeatable": true,
       "component": "base.lesson",
       "required": true
+    },
+    "condition": {
+      "type": "component",
+      "repeatable": false,
+      "component": "base.condition"
     }
   }
 }

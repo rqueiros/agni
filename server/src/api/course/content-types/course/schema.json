@@ -4,7 +4,7 @@
   "info": {
     "singularName": "course",
     "pluralName": "courses",
-    "displayName": "Course/Program",
+    "displayName": "Course",
     "description": ""
   },
   "options": {
@@ -36,6 +36,12 @@
       "type": "component",
       "repeatable": true,
       "component": "base.goal"
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "course"
     }
   }
 }

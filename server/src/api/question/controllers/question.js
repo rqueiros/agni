@@ -5,77 +5,98 @@
  */
 
 const { createCoreController } = require('@strapi/strapi').factories;
-
-//module.exports = createCoreController('api::question.question');
-
-const questionStructure = {
-    question:true,
-    image:true,
-    correctAnswer:true,
-    answers:true                  
-};
+const fs = require('fs');
 
 
-const uid='api::question.question'
+const questionJson = JSON.parse(fs.readFileSync("./src/api/data/content/question.json"))
+const questionStructure = questionJson.questionStructure
+
+const error = JSON.parse(fs.readFileSync("./src/api/data/error/error.json"))
+
+const uid = 'api::question.question'
+
 
 module.exports = createCoreController(uid, () => {
-  return {
-    async find(ctx) {        
-      const entity = await strapi.entityService.findMany(uid, {
-      ...ctx.query,
-      populate: questionStructure,
-      })
-      const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
+   return {
+      async find(ctx) {
+         const entity = await strapi.entityService.findMany(uid, {
+            ...ctx.query,
+            populate: questionStructure,
+         })
+         const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
+         return this.transformResponse(sanitizedEntity)
+      },
 
-      return this.transformResponse(sanitizedEntity)
-      
-    },
-    async findOne(ctx) {
+      async findOne(ctx) {
+         const { id } = ctx.request.params
+         const entity = await strapi.entityService.findOne(uid, id, {
+            ...ctx.query,
+            populate: questionStructure,
+         });
+         const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
+         return this.transformResponse(sanitizedEntity)
+      },
 
-      const { id } = ctx.request.params
-
-      const entity = await strapi.entityService.findOne(uid, id, {
-      ...ctx.query,
-      populate: questionStructure,
-      })
-      const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
-
-      return this.transformResponse(sanitizedEntity)
-    },
-    async create(ctx){
-      const result = []
-      const files = ctx.request.files['files.image'] 
-      const data = ctx.request.body["data"]
-      //console.log(files[0].name)
-      if (Array.isArray(data)==true){
-        for await (const index of Array(data.length).keys()){
-          const ctx2=ctx
-          const d = JSON.parse(data[index])
-          const image = d.image
-          ctx2.request.files['files.image']=[]
-          for await (const i of Array(files.length).keys())
-            if (files[i].name==image){
-                ctx2.request.files['files.image']=[files[i]]
-                break
-            }
-          delete d.image
-          ctx2.request.body.data=[JSON.stringify(d)]
-          try{
+      async create(ctx) {
+         const result = []
+         const images = ctx.request.files['files.image']
+         let data = JSON.parse(ctx.request.body.data)
+         if (!checkImages(images, data)) {
+            return ctx.badRequest(error.imageError.message, error.imageError.details)
+         }
+         data = (Array.isArray(data) == false) ? [data] : data
+         for (const index of Array(data.length).keys()) {
+            const ctx2 = prepareCtx(ctx, images, data[index])
             const r = await super.create(ctx2)
             result.push(r)
-          }
-          catch(error){
-            console.log(error)
-          }
-        }    
-        return result
-      } else {
-        const d = JSON.parse(data)
-        delete d.image
-        ctx.request.body.data=[JSON.stringify(d)]
-        const result = await super.create(ctx)
-        return result
-      }
-    }
-  }
+         }
+         return (result.length == 1) ? result[0] : result
+      },
+
+      async update(ctx) {
+         /*if (!verifyAuthor(ctx)){
+           return ctx.unauthorized(`You can't update this entry`);
+         }*/
+         const result = await super.update(ctx)
+         return result
+      },
+
+      async delete(ctx) {
+         /*if (!verifyAuthor(ctx)){
+           return ctx.unauthorized(`You can't delete this entry`);
+         }*/
+         const result = await super.delete(ctx)
+         return result
+      },
+   }
 })
+
+function prepareCtx(ctx, images, data) {
+   if ("image" in data) {
+      images = (!(images instanceof Array)) ? [images] : images
+      images = images.filter(i => i.name == data.image)
+      ctx.request.files['files.image'] = images
+   } else {
+      ctx.request.files['files.image'] = []
+   }
+   delete data.image
+   data.author = ctx.state.user.id
+   ctx.request.body.data = JSON.stringify(data)
+   return ctx
+}
+
+function checkImages(images, data) {
+   if (typeof (images) == "undefined") {
+      images = []
+   } else if (!(images instanceof Array)) {
+      images = [images]
+   }
+   data = (!(data instanceof Array)) ? [data] : data
+   images = images.map(i => i.name)
+   data = data.filter(d => "image" in d).map(d => d.image)
+   const verifyList = [...images.map(i => data.includes(i)), ...data.map(d => images.includes(d))]
+   return (verifyList.includes(false)) ? false : true
+}
+
+
+

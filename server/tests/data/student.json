@@ -1,0 +1,39 @@
+{
+   "goodStudents": {
+      "request1": {
+         "name": "student1",
+         "user":17
+      },
+      "request2": {
+         "name": "student2"
+      },
+      "request3": {
+         "name": "student3"
+      }
+   },
+   "multiStudents": {
+      "request6": [
+         {
+            "name": "student6"
+         },
+         {
+            "name": "student7"
+         }
+      ]
+   },
+   "errorStudents": {
+      "request7": {
+         "class": 1
+      }
+   },
+   "updateStudents": {
+      "request8": {
+         "id": 1,
+         "delay": 1.5
+      },
+      "request9": {
+         "id": 2,
+         "delay": 2
+      }
+   }
+}

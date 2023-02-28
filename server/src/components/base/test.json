@@ -23,7 +23,8 @@
         "metric",
         "expression",
         "function"
-      ]
+      ],
+      "required": true
     },
     "subtype": {
       "type": "enumeration",

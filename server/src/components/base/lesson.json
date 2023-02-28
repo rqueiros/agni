@@ -23,6 +23,11 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::evaluative.evaluative"
+    },
+    "condition": {
+      "type": "component",
+      "repeatable": false,
+      "component": "base.condition"
     }
   }
 }

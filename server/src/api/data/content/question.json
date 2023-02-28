@@ -1,0 +1,9 @@
+{
+    "questionStructure": {
+        "question": true,
+        "image": true,
+        "correctAnswer": true,
+        "answers": true,
+        "author": true
+    }
+}
