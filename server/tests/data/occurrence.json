@@ -1,0 +1,122 @@
+{
+   "goodOccurrences": {
+      "request1": {
+         "year": 2023,
+         "courses": 1,
+         "startDate": "2022-09-01",
+         "endDate": "2023-07-01",
+         "classes": [
+            {
+               "name": "class1",
+               "students": [
+                  1,
+                  2,
+                  {
+                     "name": "student17"
+                  },
+                  {
+                     "name": "student18"
+                  },
+                  {
+                     "name": "student19"
+                  }
+               ]
+            },
+            {
+               "name": "class2",
+               "students": [
+                  {
+                     "name": "student1"
+                  }
+               ]
+            }
+         ]
+      },
+      "request2": {
+         "year": 2022,
+         "courses": 1,
+         "startDate": "2022-09-01",
+         "endDate": "2023-07-01",
+         "classes": [
+            1,
+            2
+         ]
+      }
+   },
+   "multiOccurrences": {
+      "request3": [
+         {
+            "year": 2023,
+            "courses": 1,
+            "startDate": "2022-09-01",
+            "endDate": "2023-07-01",
+            "classes": [
+               {
+                  "name": "class1",
+                  "students": [
+                     2,
+                     {
+                        "name": "student1"
+                     }
+                  ]
+               },
+               {
+                  "name": "class2",
+                  "students": [
+                     {
+                        "name": "student1"
+                     }
+                  ]
+               }
+            ]
+         },
+         {
+            "year": 2022,
+            "courses": 1,
+            "startDate": "2022-09-01",
+            "endDate": "2023-07-01",
+            "classes": [
+               1,
+               {
+                  "name": "class1",
+                  "students": [
+                     2,
+                     {
+                        "name": "student1"
+                     }
+                  ]
+               }
+            ]
+         }
+      ]
+   },
+   "errorOccurrences": {
+      "request4": {
+         "year": 2023,
+         "courses": 1,
+         "classes": [
+            {
+               "name": "class1",
+               "students": [
+                  2,
+                  {
+                     "name": "student1444"
+                  },
+                  {
+                     "name": "student2"
+                  },
+                  {
+                     "name": "student2"
+                  }
+               ]
+            }
+         ]
+      }
+   },
+   "updateOccurrences": {
+      "request5": {
+         "id": 1,
+         "course": 2
+      }
+   }
+}

@@ -1,0 +1,34 @@
+{
+   "evaluativeStructure": {
+      "name": true,
+      "author": true,
+      "content": {
+         "populate": {
+            "questions": {
+               "populate": {
+                  "question": true,
+                  "image": true,
+                  "correctAnswer": true,
+                  "answers": true
+               }
+            },
+            "type": true,
+            "language": true,
+            "statement": true,
+            "contexts": true,
+            "skeleton": true,
+            "solution": true,
+            "tests": true
+         }
+      },
+      "statuses": {
+         "populate": {
+            "grade": true,
+            "code": true,
+            "start": true,
+            "end": true,
+            "student": true
+         }
+      }
+   }
+}

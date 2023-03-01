@@ -1,0 +1,58 @@
+{
+   "imageError": {
+      "message": "image names and submitted image names must be equal",
+      "details": {
+         "errors": [
+            {
+               "path": [
+                  "image"
+               ],
+               "message": "image names and submitted image names must be equal",
+               "name": "ValidationError"
+            }
+         ]
+      }
+   },
+   "fileError": {
+      "message": "file names and submitted file names must be equal",
+      "details": {
+         "errors": [
+            {
+               "path": [
+                  "file"
+               ],
+               "message": "file names and submitted file names must be equal",
+               "name": "ValidationError"
+            }
+         ]
+      }
+   },
+   "testError": {
+      "message": "test type and subtype are not combinable",
+      "details": {
+         "errors": [
+            {
+               "path": [
+                  "tests"
+               ],
+               "message": "test type and subtype are not combinable",
+               "name": "ValidationError"
+            }
+         ]
+      }
+   },
+   "questionError": {
+      "message": "questions must be associated",
+      "details": {
+         "errors": [
+            {
+               "path": [
+                  "questions"
+               ],
+               "message": "questions must be associated",
+               "name": "ValidationError"
+            }
+         ]
+      }
+   }
+}

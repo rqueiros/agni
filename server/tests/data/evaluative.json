@@ -1,0 +1,453 @@
+{
+   "goodEvaluatives": {
+      "request1": {
+         "name": "evaluative1",
+         "content": [
+            {
+               "__component": "base.quiz",
+               "questions": [
+                  7,
+                  8,
+                  9
+               ]
+            }
+         ]
+      },
+      "request2": {
+         "name": "evaluative2",
+         "content": [
+            {
+               "__component": "base.quiz",
+               "questions": [
+                  {
+                     "question": "question9",
+                     "correctAnswer": 1,
+                     "image": "image1.png",
+                     "answers": [
+                        {
+                           "answer": "answer1"
+                        },
+                        {
+                           "answer": "answer2"
+                        }
+                     ]
+                  },
+                  {
+                     "question": "question10",
+                     "correctAnswer": 2,
+                     "answers": [
+                        {
+                           "answer": "answer1"
+                        },
+                        {
+                           "answer": "answer2"
+                        }
+                     ]
+                  }
+               ]
+            }
+         ]
+      },
+      "request3": {
+         "name": "evaluative3",
+         "content": [
+            {
+               "__component": "base.quiz",
+               "questions": [
+                  7,
+                  {
+                     "question": "question10",
+                     "correctAnswer": 2,
+                     "answers": [
+                        {
+                           "answer": "answer1"
+                        },
+                        {
+                           "answer": "answer2"
+                        }
+                     ]
+                  }
+               ]
+            }
+         ]
+      },
+      "request4": {
+         "name": "evaluative4",
+         "content": [
+            {
+               "__component": "base.programming-exercise",
+               "type": "skeleton",
+               "language": "JavaScript",
+               "statement": "statement1",
+               "skeleton": "skeleton1",
+               "solution": "solution1",
+               "contexts": [
+                  {
+                     "format": "html",
+                     "name": "html.html",
+                     "text": "text1",
+                     "show": true
+                  }
+               ],
+               "tests": [
+                  {
+                     "input": "input",
+                     "output": "output",
+                     "expected": "expected",
+                     "type": "metric",
+                     "subtype": "lines",
+                     "alias": "alias",
+                     "show": true
+                  }
+               ]
+            }
+         ]
+      },
+      "request5": {
+         "name": "evaluative5",
+         "content": [
+            {
+               "__component": "base.programming-exercise",
+               "type": "blank",
+               "language": "JavaScript",
+               "statement": "statement1",
+               "solution": "solution1",
+               "contexts": [
+                  {
+                     "format": "html",
+                     "name": "html.html",
+                     "text": "text1",
+                     "show": true
+                  }
+               ],
+               "tests": [
+                  {
+                     "input": "input",
+                     "output": "output",
+                     "expected": "expected",
+                     "type": "metric",
+                     "subtype": "lines",
+                     "alias": "alias",
+                     "show": true
+                  }
+               ]
+            }
+         ]
+      }
+   },
+   "multiEvaluatives": {
+      "request6": [
+         {
+            "name": "evaluative6",
+            "content": [
+               {
+                  "__component": "base.quiz",
+                  "questions": [
+                     7,
+                     8,
+                     9
+                  ]
+               }
+            ]
+         },
+         {
+            "name": "evaluative7",
+            "content": [
+               {
+                  "__component": "base.quiz",
+                  "questions": [
+                     {
+                        "question": "question9",
+                        "correctAnswer": 1,
+                        "image": "image1.png",
+                        "answers": [
+                           {
+                              "answer": "answer1"
+                           },
+                           {
+                              "answer": "answer2"
+                           }
+                        ]
+                     },
+                     {
+                        "question": "question10",
+                        "correctAnswer": 2,
+                        "answers": [
+                           {
+                              "answer": "answer1"
+                           },
+                           {
+                              "answer": "answer2"
+                           }
+                        ]
+                     }
+                  ]
+               }
+            ]
+         },
+         {
+            "name": "evaluative8",
+            "content": [
+               {
+                  "__component": "base.quiz",
+                  "questions": [
+                     7,
+                     {
+                        "question": "question10",
+                        "correctAnswer": 2,
+                        "answers": [
+                           {
+                              "answer": "answer1"
+                           },
+                           {
+                              "answer": "answer2"
+                           }
+                        ]
+                     }
+                  ]
+               }
+            ]
+         },
+         {
+            "name": "evaluative9",
+            "content": [
+               {
+                  "__component": "base.programming-exercise",
+                  "type": "skeleton",
+                  "language": "JavaScript",
+                  "statement": "statement1",
+                  "skeleton": "skeleton1",
+                  "solution": "solution1",
+                  "contexts": [
+                     {
+                        "format": "html",
+                        "name": "html.html",
+                        "text": "text1",
+                        "show": true
+                     }
+                  ],
+                  "tests": [
+                     {
+                        "input": "input",
+                        "output": "output",
+                        "expected": "expected",
+                        "type": "metric",
+                        "subtype": "lines",
+                        "alias": "alias",
+                        "show": true
+                     }
+                  ]
+               }
+            ]
+         },
+         {
+            "name": "evaluative10",
+            "content": [
+               {
+                  "__component": "base.programming-exercise",
+                  "type": "blank",
+                  "language": "JavaScript",
+                  "statement": "statement1",
+                  "solution": "solution1",
+                  "contexts": [
+                     {
+                        "format": "html",
+                        "name": "html.html",
+                        "text": "text1",
+                        "show": true
+                     }
+                  ],
+                  "tests": [
+                     {
+                        "input": "input",
+                        "output": "output",
+                        "expected": "expected",
+                        "type": "metric",
+                        "subtype": "lines",
+                        "alias": "alias",
+                        "show": true
+                     }
+                  ]
+               }
+            ]
+         }
+      ]
+   },
+   "errorEvaluatives": {
+      "request7": {
+         "name": "evaluative11",
+         "content": [
+            {
+               "__component": "base.quiz",
+               "questions": [
+                  {
+                     "question": "question9",
+                     "correctAnswer": 1,
+                     "image": "image1.png",
+                     "answers": [
+                        {
+                           "answer": "answer1"
+                        },
+                        {
+                           "answer": "answer2"
+                        }
+                     ]
+                  }
+               ]
+            }
+         ]
+      },
+      "request10": {
+         "name": "evaluative12",
+         "content": [
+            {
+               "__component": "base.programming-exercise",
+               "type": "blank",
+               "language": "JavaScript",
+               "statement": "statement1",
+               "solution": "solution1",
+               "contexts": [
+                  {
+                     "format": "html",
+                     "name": "html.html",
+                     "text": "text1",
+                     "show": true
+                  }
+               ],
+               "tests": [
+                  {
+                     "input": "input",
+                     "output": "output",
+                     "expected": "expected",
+                     "type": "metric",
+                     "subtype": "error",
+                     "alias": "alias",
+                     "show": true
+                  }
+               ]
+            }
+         ]
+      },
+      "request11": {
+         "name": "evaluative13",
+         "content": [
+            {
+               "__component": "base.programming-exercise",
+               "type": "blank",
+               "language": "JavaScript",
+               "statement": "statement1",
+               "solution": "solution1",
+               "contexts": [
+                  {
+                     "format": "html",
+                     "name": "html.html",
+                     "text": "text1",
+                     "show": true
+                  }
+               ],
+               "tests": [
+                  {
+                     "input": "input",
+                     "output": "output",
+                     "expected": "expected",
+                     "type": "log",
+                     "subtype": "occurrences",
+                     "alias": "alias",
+                     "show": true
+                  }
+               ]
+            }
+         ]
+      },
+      "request12": {
+         "name": "evaluative14",
+         "content": [
+            {
+               "__component": "base.programming-exercise",
+               "type": "blank",
+               "language": "JavaScript",
+               "statement": "statement1",
+               "solution": "solution1",
+               "contexts": [
+                  {
+                     "format": "html",
+                     "name": "html.html",
+                     "text": "text1",
+                     "show": true
+                  }
+               ],
+               "tests": [
+                  {
+                     "input": "input",
+                     "output": "output",
+                     "expected": "expected",
+                     "type": "expression",
+                     "subtype": "lines",
+                     "alias": "alias",
+                     "show": true
+                  }
+               ]
+            }
+         ]
+      }
+   },
+   "updateEvaluatives": {
+      "request8": {
+         "content": [
+            {
+               "__component": "base.quiz",
+               "questions": [
+                  7,
+                  9
+               ]
+            }
+         ]
+      },
+      "request9": {
+         "content": [
+            {
+               "__component": "base.quiz",
+               "questions": [
+                  {
+                     "question": "question45",
+                     "correctAnswer": 1,
+                     "image": "image1.png",
+                     "answers": [
+                        {
+                           "answer": "answer1"
+                        },
+                        {
+                           "answer": "answer2"
+                        }
+                     ]
+                  },
+                  {
+                     "question": "question10",
+                     "correctAnswer": 2,
+                     "answers": [
+                        {
+                           "answer": "answer1"
+                        },
+                        {
+                           "answer": "answer2"
+                        }
+                     ]
+                  },
+                  {
+                     "question": "question15",
+                     "correctAnswer": 2,
+                     "answers": [
+                        {
+                           "answer": "answer1"
+                        },
+                        {
+                           "answer": "answer2"
+                        }
+                     ]
+                  }
+               ]
+            }
+         ]
+      }
+   }
+}
