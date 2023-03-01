@@ -1,9 +1,0 @@
-{
-   "expositiveStructure": {
-      "name": true,
-      "type": true,
-      "file": true,
-      "milestones": true,
-      "author": true
-   }
-}
