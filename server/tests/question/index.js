@@ -13,7 +13,7 @@ const questionTests = {
    questionTests() {
       describe("Question Tests", function () {
          questionTests.createQuestions()
-         questionTests.updateQuestion(7)
+         questionTests.updateQuestion(1)
          questionTests.createManyQuestions()
       })
    },

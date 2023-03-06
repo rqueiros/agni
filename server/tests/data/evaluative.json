@@ -6,9 +6,9 @@
             {
                "__component": "base.quiz",
                "questions": [
-                  7,
-                  8,
-                  9
+                  1,
+                  2,
+                  3
                ]
             }
          ]
@@ -54,7 +54,7 @@
             {
                "__component": "base.quiz",
                "questions": [
-                  7,
+                  1,
                   {
                      "question": "question10",
                      "correctAnswer": 2,
@@ -143,9 +143,9 @@
                {
                   "__component": "base.quiz",
                   "questions": [
-                     7,
-                     8,
-                     9
+                     1,
+                     2,
+                     3
                   ]
                }
             ]
@@ -191,7 +191,7 @@
                {
                   "__component": "base.quiz",
                   "questions": [
-                     7,
+                     1,
                      {
                         "question": "question10",
                         "correctAnswer": 2,
@@ -397,8 +397,8 @@
             {
                "__component": "base.quiz",
                "questions": [
-                  7,
-                  9
+                  1,
+                  3
                ]
             }
          ]

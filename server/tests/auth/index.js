@@ -89,7 +89,7 @@ async function changeRole(jwt, id, role) {
 }
 
 async function getJWT(u) {
-   dic = { "authenticated": 15, "public": 16, "student": 17, "teacher": 18, "teacher2":19}
+   dic = { "authenticated": 1, "public": 2, "student": 3, "teacher": 4, "teacher2":5}
    const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
       id: dic[u],
    });
