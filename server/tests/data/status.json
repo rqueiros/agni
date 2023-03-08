@@ -1,0 +1,85 @@
+{
+   "goodStatuses": {
+      "request1": {
+         "grade": 0.0,
+         "student": 1,
+         "evaluative": 11,
+         "answer": [
+            {
+               "__component": "solution.code",
+               "code": "somecode"
+            }
+         ]
+      },
+      "request2": {
+         "grade": 0.0,
+         "student": 1,
+         "evaluative": 12,
+         "answer": [
+            {
+               "__component": "solution.quiz",
+               "questions": [
+                  {
+                     "answer": 1,
+                     "question": 1
+                  }
+               ]
+            }
+         ]
+      }
+   },
+   "multiStatuses": {
+      "request3": [
+         {
+            "grade": 0.0,
+            "student": 1,
+            "evaluative": 5,
+            "answer": [
+               {
+                  "__component": "solution.code",
+                  "code": "somecode"
+               }
+            ]
+         },
+         {
+            "grade": 0.0,
+            "student": 1,
+            "evaluative": 2,
+            "answer": [
+               {
+                  "__component": "solution.quiz",
+                  "questions": [
+                     {
+                        "answer": 1,
+                        "question": 1
+                     }
+                  ]
+               }
+            ]
+         }
+      ]
+   },
+   "errorStatuses": {
+      "request4": {
+         "student": 1,
+         "evaluative": 4,
+         "answer": [
+            {
+               "__component": "solution.code",
+               "code": "somecode"
+            }
+         ]
+      }
+   },
+   "updateStatuses": {
+      "request5": {
+         "id":1,
+         "answer": [
+            {
+               "__component": "solution.code",
+               "code": "some new code"
+            }
+         ]
+      }
+   }
+}

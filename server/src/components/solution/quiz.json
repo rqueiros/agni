@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_solution_quizzes",
+  "info": {
+    "displayName": "quiz",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "questions": {
+      "displayName": "question",
+      "type": "component",
+      "repeatable": true,
+      "component": "solution.question"
+    }
+  }
+}

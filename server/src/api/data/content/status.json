@@ -1,0 +1,14 @@
+{
+    "statusStructure": {
+        "grade": true,
+        "start": true,
+        "end": true,
+        "answer": {
+            "populate": {
+                "code":true,
+                "questions":true
+            }
+        },
+        "evaluative":true
+    }
+}

@@ -144,12 +144,15 @@ const studentTests = {
       it("student get courses", async () => {
          const [jwt,id] = await getJWT("student")
          await request(strapi.server.httpServer)
-            //.get('/api/courses?populate=student{"id":'+id+'}')
-            .get('/api/courses?filter[id][$eq]=1')
+            .get('/api/courses')
             .set('accept', 'application/json')
             .set('Content-Type', 'application/json')
             .set('Authorization', 'Bearer ' + jwt)
             .expect(200)
+            .then(data => {
+               //console.log(data.body.data[0].attributes.modules[0].lessons[0].evaluatives.data[0].attributes)
+               //console.log(data.body.data[0].attributes.modules[0].lessons[2].evaluatives.data[0].attributes)
+            })
       })
    },
 }

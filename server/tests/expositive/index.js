@@ -36,9 +36,8 @@ const expositiveTests = {
                .set('Authorization', 'Bearer ' + jwt)
                .field("data", JSON.stringify(expositive))
                .attach("files.file", "./tests/data/files/" + file)
-               //expect(200)
+               .expect(200)
                .then(data => {
-                  console.log(data.body.error.details)
                   return data.body.data.id
                });
          } else {

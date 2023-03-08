@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_solution_codes",
+  "info": {
+    "displayName": "code",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "code": {
+      "type": "text"
+    }
+  }
+}

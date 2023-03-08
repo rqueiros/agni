@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_solution_questions",
+  "info": {
+    "displayName": "question"
+  },
+  "options": {},
+  "attributes": {
+    "answer": {
+      "type": "integer"
+    },
+    "question": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question.question"
+    }
+  }
+}

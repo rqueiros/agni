@@ -151,7 +151,7 @@
                      ],
                      "evaluatives": [
                         {
-                           "name": "porgEx1",
+                           "name": "porgEx2asdf",
                            "content": [
                               {
                                  "__component": "base.programming-exercise",
@@ -183,7 +183,7 @@
                            ]
                         },
                         {
-                           "name": "quiz1",
+                           "name": "quiz1sdfsf",
                            "content": [
                               {
                                  "__component": "base.quiz",

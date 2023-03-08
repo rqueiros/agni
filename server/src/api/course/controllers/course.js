@@ -10,6 +10,9 @@ const fs = require('fs');
 const courseJson = JSON.parse(fs.readFileSync("./src/api/data/content/course.json"))
 const courseStructure = courseJson.courseStructure
 
+const statusJson = JSON.parse(fs.readFileSync("./src/api/data/content/status.json"))
+const statusStructure = statusJson.statusStructure
+
 const error = JSON.parse(fs.readFileSync("./src/api/data/error/error.json"))
 
 const uid = 'api::course.course'
@@ -20,7 +23,7 @@ module.exports = createCoreController(uid, () => {
       async find(ctx) {
          const author = ctx.state.user
          if (author.role.id == 3){
-            const res = await getStudentCourses(author)
+            const res = await getStudentCourses(author,ctx)
             return this.transformResponse(res)
          } else {
             const entity = await strapi.entityService.findMany(uid, {
@@ -313,7 +316,7 @@ function createCloneBody(courseData) {
    return courseData
 }
 
-async function getStudentCourses(author){
+async function getStudentCourses(author,ctx){
    const id = author.id
    const entity = await strapi.db.query('plugin::users-permissions.user').findOne({
       populate: {student:true},
@@ -321,7 +324,7 @@ async function getStudentCourses(author){
    })
    const studentId = entity.student.id
    const entity2 = await strapi.entityService.findOne("api::student.student", studentId, {
-      populate: {class:true},
+      populate: {class:true, statuses:{populate:statusStructure}},
    })
    const classId = entity2.class.id
    const entity3 = await strapi.entityService.findOne("api::class.class", classId, {
@@ -340,5 +343,52 @@ async function getStudentCourses(author){
       delete r.author
       res.push(r)
    }
+   let statuses = entity2.statuses
+   const evIds = statuses.map(s => s.evaluative.id)
+
+   for (let i = 0; i < res.length; i++){
+      let c = res[i]
+      for (let j = 0;j < c.modules.length;j++){
+         let m = c.modules[j]
+         for (let k = 0; k<m.lessons.length;k++){
+            let l = m.lessons[k]
+            for (let n = 0; n< l.evaluatives.length;n++){
+               let evaluative = l.evaluatives[n]
+               if (evIds.includes(evaluative.id)){
+                  const s = statuses.find(s => s.evaluative.id==evaluative.id)
+                  delete s.evaluative
+                  statuses = statuses.filter(stat => stat != s)
+                  evaluative.status = s
+               } else {
+                  const ctx2 = prepareStatusCtx(ctx,evaluative,studentId)
+                  let resp = await strapi.entityService.create("api::status.status",{data:JSON.parse(ctx2.request.body.data)})
+                  let resp2 = await strapi.entityService.findOne("api::status.status", resp.id, {
+                     populate: statusStructure,
+                  })
+                  delete resp2.evaluative
+                  evaluative.status = resp2
+               }
+            }
+         }
+      }
+   }
    return res
+}
+
+function prepareStatusCtx(ctx,evaluative,studentId) {
+   ctx.request.files = null
+   const data = {
+      grade:0.0,
+      student:studentId,
+      evaluative:evaluative.id
+   }
+   if (evaluative.content[0]["__component"]=="base.quiz"){
+      let que = evaluative.content[0].questions.map(q => q.id)
+      que = que.map(q => {return {"question":q}})
+      data.answer = [{__component:"solution.quiz", questions: que}]
+   } else {
+      data.answer = [{__component:"solution.code", code:""}]
+   }
+   ctx.request.body.data = JSON.stringify(data)
+   return ctx
 }

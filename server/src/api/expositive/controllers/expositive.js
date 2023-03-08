@@ -80,8 +80,8 @@ function prepareCtx(ctx, files, data) {
    } else {
       ctx.request.files['files.file'] = []
    }
-   //delete data.file
-   //data.author = ctx.state.user.id
+   delete data.file
+   data.author = ctx.state.user.id
    ctx.request.body.data = JSON.stringify(data)
    return ctx
 }

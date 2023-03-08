@@ -45,6 +45,12 @@ const {occurrenceTests, occurrenceErrorTests} = require('./occurrence');
 occurrenceTests.occurrenceTests()
 occurrenceErrorTests.occurrenceErrorTests()
 
+const {statusTests, statusErrorTests} = require('./status');
+statusTests.statusTests()
+statusErrorTests.statusErrorTests()
+
 studentTests.getCourses()
+
+
 
 

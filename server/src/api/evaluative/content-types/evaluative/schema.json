@@ -30,6 +30,12 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "evaluatives"
+    },
+    "statuses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::status.status",
+      "mappedBy": "evaluative"
     }
   }
 }

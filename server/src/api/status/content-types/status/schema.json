@@ -13,10 +13,8 @@
   "pluginOptions": {},
   "attributes": {
     "grade": {
-      "type": "float"
-    },
-    "code": {
-      "type": "text"
+      "type": "float",
+      "required": true
     },
     "student": {
       "type": "relation",
@@ -26,16 +24,26 @@
     },
     "start": {
       "type": "datetime",
-      "required": true
+      "required": false
     },
     "end": {
-      "required": true,
+      "required": false,
       "type": "datetime"
     },
     "evaluative": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::evaluative.evaluative"
+      "relation": "manyToOne",
+      "target": "api::evaluative.evaluative",
+      "inversedBy": "statuses"
+    },
+    "answer": {
+      "type": "dynamiczone",
+      "components": [
+        "solution.code",
+        "solution.quiz"
+      ],
+      "required": true,
+      "max": 1
     }
   }
 }
