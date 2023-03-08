@@ -407,7 +407,7 @@ async function getStudentCourses(author,ctx){
                }
             }
 
-            if (module.condition=="AND"){
+            if (module.condition.type=="AND"){
                if (afterPercDone && afterWeek){
                   locked = false
                } 
@@ -464,7 +464,7 @@ async function getStudentCourses(author,ctx){
                   }
                }
    
-               if (lesson.condition=="AND"){
+               if (lesson.condition.type=="AND"){
                   if (afterPercDone && afterWeek){
                      locked = false
                   } 
