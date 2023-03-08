@@ -1,12 +1,11 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Store from '../store/index'
+import Store from "../store/index";
 
-import Index from "../views/Index.vue";
-import Login from "../views/Login.vue";
-import Home from "../views/Home.vue";
-
-
+import Index from "../pages/index/Index.vue";
+import Login from "../pages/login/Login.vue";
+import Student from "../pages/student/Student.vue";
+import Teacher from "../pages/teacher/Teacher.vue";
 
 Vue.use(VueRouter);
 
@@ -22,15 +21,22 @@ const routes = [
     component: Login
   },
   {
-    path: "/home",
-    name: "Home",
-    component: Home,
+    path: "/student",
+    name: "Student",
+    component: Student,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/teacher",
+    name: "Teacher",
+    component: Teacher,
     meta: {
       requiresAuth: true
     }
   }
 ];
-
 
 const router = new VueRouter({
   mode: "history",
@@ -39,8 +45,8 @@ const router = new VueRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !Store.getters.isLogged) next({ name: 'Login' })
-  else next()
-})
+  if (to.meta.requiresAuth && !Store.getters.isLogged) next({ name: "Login" });
+  else next();
+});
 
 export default router;
