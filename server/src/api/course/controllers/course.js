@@ -372,6 +372,117 @@ async function getStudentCourses(author,ctx){
          }
       }
    }
+
+   const currentDate = new Date();
+   const startDate = new Date(entity4.startDate)
+
+   for (let i = 0; i < res.length; i++){
+      let course = res[i]
+      for (let j = 0;j < course.modules.length;j++){
+         let module= course.modules[j]
+         if (module.condition){
+            let locked = true
+            let afterPercDone = false
+            let afterWeek = false
+
+            if (module.condition.afterWeek){
+               const limit = new Date(startDate.setDate(startDate.getDate()+(module.condition.afterWeek*7)))
+               if (currentDate >= limit){
+                  afterWeek = true
+               }
+            }
+
+            if (module.condition.afterPercDone){
+               const limit = module.condition.afterPercDone
+               if (j != 0){
+                  let pastModule = course.modules[j-1]
+                  const locked = pastModule.lessons.map(l => l.locked)
+                  if (!(locked.includes(true))){
+                     let grades = pastModule.lessons.flatMap(l => l.evaluatives.map(e => e.status.grade))
+                     let mean = grades.reduce((acc, curr) => acc + curr, 0)/grades.length
+                     if (mean >= limit) {
+                        afterPercDone=true
+                     }
+                  }
+               }
+            }
+
+            if (module.condition=="AND"){
+               if (afterPercDone && afterWeek){
+                  locked = false
+               } 
+            } else {
+               if (afterPercDone | afterWeek){
+                  locked = false
+               }
+            }
+         
+            if (locked){
+               module.locked=true
+               module.lessons=[]
+            }
+         }
+
+         for (let k = 0; k<module.lessons.length;k++){
+            let lesson = module.lessons[k]
+
+            if (lesson.condition){
+               let locked = true
+               let afterPercDone = false
+               let afterWeek = false
+   
+               if (lesson.condition.afterWeek){
+                  let limit = new Date(startDate.getTime())
+                  limit = new Date(limit.setDate(limit.getDate()+(lesson.condition.afterWeek*7)))
+                  if (currentDate > limit){
+                     afterWeek = true
+                  }
+               }
+   
+               if (lesson.condition.afterPercDone){
+                  const limit = lesson.condition.afterPercDone
+                  if (k != 0){
+                     let pastLesson = module.lessons[k-1]
+                     if (pastLesson.evaluatives.length>0){
+                        const evaluatives = pastLesson.evaluatives.map(e => e.status.grade)
+                        const mean = evaluatives.reduce((acc, curr) => acc + curr, 0)/evaluatives.length
+                        if (mean >= limit) {
+                           afterPercDone=true
+                        }
+                     }
+                  } else {
+                     if (j!=0){
+                        let pastLesson = course.modules[j-1].lessons[course.modules[j-1].lessons.length-1]
+                        if (pastLesson.evaluatives.length>0){
+                           const evaluatives = pastLesson.evaluatives.map(e => e.status.grade)
+                           const mean = evaluatives.reduce((acc, curr) => acc + curr, 0)/evaluatives.length
+                           if (mean >= limit) {
+                              afterPercDone=true
+                           }
+                        }
+                     }
+                  }
+               }
+   
+               if (lesson.condition=="AND"){
+                  if (afterPercDone && afterWeek){
+                     locked = false
+                  } 
+               } else {
+                  if (afterPercDone | afterWeek){
+                     locked = false
+                  }
+               }
+            
+               if (locked){
+                  lesson.locked=true
+                  lesson.evaluatives=[]
+                  lesson.evaluatives=[]
+               }
+            }
+         }
+      }
+   }
    return res
 }
 
