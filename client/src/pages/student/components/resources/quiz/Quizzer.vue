@@ -107,10 +107,11 @@ export default {
         i++;
       });
       const status = (cont / this.quiz.questions.length) * 100;
-      await this.setProgress({
-        id: this.resource.strapiId,
-        grade: status
-      })
+      const ques = this.quiz.questions.map(q => {return {question:q.id}})
+      for (let i = 0; i < ques.length;i++){
+        ques[i].answer=this.myAnswers[i]+1
+      }
+      
       let htmlMsg = `${cont} from ${this.quiz.questions.length} (${status}%) answers correct!`;
       if (wrongQuestions.length > 0) {
         htmlMsg += `<br>Questions wrong: ${wrongQuestions}`;
@@ -123,12 +124,21 @@ export default {
         focusConfirm: false,
         confirmButtonText: "OK"
       });
-      const lesson = this.getSheetByResourceId(this.resource.strapiId);
+
+      await this.setProgress({
+        id: this.resource.strapiId,
+        data: {
+          grade: status,
+          answer: [{__component:"solution.quiz",questions:ques}]
+        }
+      })
+      
+      const lesson = this.getLessonByResourceId(this.resource.strapiId);
       bus.$emit("changeIt", [lesson.strapiId, lesson.contentType]);
     }
   },
   computed: {
-    ...mapGetters(["getSheetByResourceId", "getQuizByResourceId"])
+    ...mapGetters(["getLessonByResourceId", "getQuizByResourceId"])
   }
 };
 </script>

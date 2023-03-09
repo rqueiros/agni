@@ -5,7 +5,6 @@
 </template>
 
 <script>
-console.log("ressoruce")
 export default {
   name: "Resource",
   props: {

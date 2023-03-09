@@ -6,7 +6,7 @@
         <v-list-item-title class="display-1">
           {{
             getModuleByResourceId(resource.strapiId, resource.contentType)
-              .internalID
+              .internalId
           }}.
           {{
             getModuleByResourceId(resource.strapiId, resource.contentType).name

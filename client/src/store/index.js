@@ -10,107 +10,49 @@ const data = {
       login: false,
       user: {},
       jwt: "",
-      resourceId: 0,
       courses: [],
+      modules: [],
       lessons: [],
       expositives: [],
       evaluatives: [],
-
-      progress: localStorage.progress ? JSON.parse(localStorage.progress) : [],
    },
    getters: {
-      // -----------------------Authentication------------------------------
+      //------------------------Authentication----------------------------------
       isLogged: state => state.login,
+      getJWT: state => state.jwt,
 
 
-      //--------------------------Student-----------------------------------
-      // Course
-      getCourse: state => {
-         const newCourse = [];
-         state.courses.forEach(course => {
-            const c = course;
-            c.contentType = "course";
-            let mCount = 1;
-            let lCount = 1;
-            c.children = [];
-            course.modules.forEach(module => {
-               const m = module;
-               m.children = [];
-               m.contentType = "module";
-               m.internalID = "M" + mCount;
-               mCount = mCount + 1;
-               module.lessons.forEach(lesson => {
-                  const l = lesson;
-                  l.contentType = "lesson";
-                  l.internalID = "L" + lCount;
-                  lCount = lCount + 1;
-                  m.children.push(l);
-               });
-               delete m.lessons;
-               c.children.push(m);
-            });
-            delete c.modules;
-            newCourse.push(c);
-         });
-         return newCourse;
+      //--------------------------Student---------------------------------------
+      
+      //-------Course
+      getCourse: state => state.courses,
+
+
+      //-------Module
+      getModuleByLesson: state => id => {
+         return state.modules.find(m => m.children.map(l => l.strapiId).includes(id))
       },
-
-      // Modules
-      //getModules: state => state.modules,
-      getModuleByResourceId: state => {
+      getModuleByEvaluative: state => id => {
+         return state.modules.find(m => m.children.flatMap(l => l.evaluatives.map(e => e.strapiId)).includes(id))
+      },
+      getModuleByExpositive: state => id => {
+         return state.modules.find(m => m.children.flatMap(l => l.expositives.map(e => e.strapiId)).includes(id))
+      },
+      getModuleByResourceId: (state, getters) => {
          return function (id, type) {
             if (type == "lesson") {
-               let module = {};
-               state.courses.forEach(c => {
-                  c.children.forEach(m => {
-                     m.children.forEach(l => {
-                        if (l.strapiId == id) {
-                           module = m;
-                        }
-                     });
-                  });
-               });
-               return module;
+               return getters.getModuleByLesson(id)
             } else if (type == "code" || type == "quiz") {
-               let module = {};
-               state.courses.forEach(c => {
-                  c.children.forEach(m => {
-                     m.children.forEach(l => {
-                        l["evaluatives"].forEach(e => {
-                           if (e.strapiId == id) {
-                              module = m;
-                           }
-                        });
-                     });
-                  });
-               });
-               return module;
+               return getters.getModuleByEvaluative(id)
             } else {
-               let module = {};
-               state.courses.forEach(c => {
-                  c.children.forEach(m => {
-                     m.children.forEach(l => {
-                        l["expositives"].forEach(e => {
-                           if (e.strapiId == id) {
-                              module = m;
-                           }
-                        });
-                     });
-                  });
-               });
-               return module;
+               return getters.getModuleByExpositive(id)
             }
          };
       },
-      getModuleNameByResourceId: state => id => {
-         return state.courses.find(module => module.resources.includes(id)).name;
-      },
 
-      // Sheets
-      getSheets: state =>
-         state.resources.filter(resource => resource.type == "sheet"),
 
-      getSheetByResourceId: state => id => {
+      //-------Lesson
+      getLessonByResourceId: state => id => {
          return state.lessons.find(l => {
             if (
                l.expositives.map(e => e.strapiId).includes(id) ||
@@ -120,36 +62,16 @@ const data = {
             }
          });
       },
-      getLessonByResourceId: state => id => {
-         return state.lessons.find(l => {
-            if (
-               l.expositive.map(e => e.strapiId).includes(id) ||
-               l.evaluatives.map(e => e.strapiId).includes(id)
-            ) {
-               return l;
-            }
-         });
+      getLessonsByCourse: state => id => {
+         const c = state.courses.find(c => c.strapiId == id)
+         return c.children.flatMap(m => m.children)
       },
-      getCompletationStatusBySheetId: (state, getters) => id => { // ainda vou ter que fazer é para o main overview
-         let sum = 0;
-         const exercises = getters.getResourceById(id).exercises;
-         if (typeof exercises !== "undefined") {
-            exercises.forEach(exerciseId => {
-               const score = state.progress.find(
-                  resource => resource.id == exerciseId
-               )?.status;
-               if (typeof score !== "undefined") {
-                  sum += +score;
-               }
-            });
-            return isNaN(sum) ? 0 : sum / exercises.length;
-         }
+      getLessonsByModule: state => id => {
+         return state.modules.find(m => m.strapiId==id).children
       },
 
-      // Resources
-      getResourceId: state => state.resourceId,
-      getResourcesByModuleId: state => id =>
-         state.resources.filter(resource => resource.moduleId == id),
+
+      //-------Resource
       getResourceById: state => {
          return function (id, type) {
             if (type != "course" && type != "module") {
@@ -158,391 +80,202 @@ const data = {
             return undefined;
          };
       },
-      getCode: state => state.code,
-      getQuizByResourceId: state => id =>
-         state.quizzes.find(quiz => quiz.id == id),
 
-      // Progress
-      getProgressFromResourceId: state => id => {
+
+      //-------Status
+      getStatusByResourceId: state => id => {
          return state.evaluatives.find(evaluative => evaluative.status.id == id).status
       },
-      getStupid: state => payload => {
+      getCompletationStatusByLesson: state => id => { 
+         const lesson = state.lessons.find(l => l.strapiId == id)
+         const status = lesson.evaluatives.map(e => e.status.grade)
+         return (status.length>0) ? status.reduce((a, b) => a + b, 0)/status.length : null
+      },
+
+
+      //-------Evaluative
+      getEvaluativeByStatus: state => payload => {
          return state.evaluatives.find(e => e.strapiId == payload.id)
       },
-      getJWT: state => {
-         return state.jwt
-      }
+
    },
    mutations: {
-      // ----------------authentication functions---------------------------
-      async login(state, loginData) {
-         const requestData = { identifier: loginData[0], password: loginData[1] }
-         let url = serverData.domain + serverData.authentication
-         await axios.post(url, requestData)
-            .then(resp => {
-               state.jwt = resp.data.jwt
-               state.user = resp.data.user
-            })
-         let role;
-         const auth = 'Bearer ' + state.jwt
-         url = serverData.domain + serverData.me
-         await axios.get(url, {
-            headers: {
-               'Authorization': auth
-            }
-         })
-            .then(resp => {
-               role = resp.data.role
-            })
-         let roletype = role.type
-         roletype = roletype.charAt(0).toUpperCase() + roletype.slice(1)
-         state.login = true;
-         if (roletype == "Student") {
-            this.commit("fetchCourse")
-            //this.commit("loadStudentFunctions")
-         } else if (roletype == "Teacher") {
-            //.commit("loadTeacherFunctions")
-            console.log("teacher")
-         }
-         router.push({ name: roletype })
-      },/*
-      loadStudentFunctions(state,playload){
+      //-----------------------Authentication-----------------------------------
+      setLogin(state, login) {
+         state.login = login
+      },
+      setJWT(state, jwt){
+         state.jwt = jwt
+      },
+      setUser(state, user){
+         state.user = user
+      },
+      /*loadStudentFunctions(state,playload){
          console.log(state,playload)
       },
       loadTeacherFunctions(state, playload){
          console.log(state,playload)
       },*/
-
-
-      // -----------------------student functions---------------------------
-      async fetchCourse(state) {
-         const auth = 'Bearer ' + state.jwt
-         let c;
-         const url = serverData.domain + serverData.courses
+ 
+   },
+   actions: {
+      //--------------------------Authentication--------------------------------
+      async login(state, loginData) {
+         const requestData = { identifier: loginData[0], password: loginData[1] }
+         let url = serverData.domain + serverData.authentication
+         await axios.post(url, requestData)
+            .then(resp => {
+               state.commit("setJWT",resp.data.jwt)
+               state.commit("setUser",resp.data.user)
+            })
+         let role;
+         const auth = 'Bearer ' + state.getters.getJWT
+         url = serverData.domain + serverData.me
          await axios.get(url, {
             headers: {
                'Authorization': auth
             }
-         })
-            .then(resp => {
-               c = resp.data.data
             })
-         const allCourses = [];
-         const allLessons = [];
-         const allExpositives = [];
-         const allEvaluatives = [];
-         c.forEach(course => {
-            const c = {};
-            c.id = course.id;
-            Object.keys(course.attributes).forEach(key => {
-               if (key != "modules") {
-                  c[key] = course.attributes[key];
-               }
-            });
-            c.modules = [];
-            course.attributes.modules.forEach(module => {
-               const m = module;
-               const les = [];
-               module.lessons.forEach(lesson => {
-                  const l = lesson;
-                  const exp = [];
-                  const eva = [];
-                  if (lesson.expositives != null && lesson.expositives.data) {
-                     lesson.expositives.data.map(expositive => {
-                        const e = expositive.attributes;
-                        e.id = expositive.id;
-                        e.strapiId = expositive.id;
-                        e.contentType = expositive.attributes.type;
-                        allExpositives.push(e);
-                        exp.push(e);
-                        return e;
-                     });
-                     l.expositives = l.expositives.data;
-                  }
-                  if (lesson.evaluatives != null && lesson.evaluatives.data) {
-                     l.evaluatives.data.map(evaluative => {
-                        const e = evaluative.attributes;
-                        e.id = evaluative.id;
-                        e.strapiId = evaluative.id;
-                        for (let i in evaluative.attributes.content[0]) {
-                           if (i == "__component") {
-                              if (evaluative.attributes.content[0][i] == "base.quiz") {
-                                 e.type = "quiz";
-                                 e.contentType = "quiz";
-                              } else {
-                                 e.contentType = "code";
-                              }
-                           } else if (i == "questions") {
-                              let que = [];
-                              evaluative.attributes.content[0]["questions"].data.forEach(
-                                 q => {
-                                    let question = q.attributes;
-                                    question.id = q.id;
-                                    que.push(question);
-                                 }
-                              );
-                              e[i] = que;
-                           } else {
-                              e[i] = evaluative.attributes.content[0][i];
-                           }
-                        }
-                        delete e.content;
-                        allEvaluatives.push(e);
-                        eva.push(e);
-                        return e;
-                     });
-                     l.evaluatives = l.evaluatives.data;
-                  }
-                  l.expositives = exp;
-                  l.evaluatives = eva;
-                  allLessons.push(l);
-                  les.push(l);
-               });
-               m.lessons = les;
-               c.modules.push(m);
-            });
-            allCourses.push(c);
-         });
-         data.state.courses = [...allCourses];
-         data.state.lessons = [...allLessons];
-         data.state.expositives = [...allExpositives];
-         data.state.evaluatives = [...allEvaluatives];
-      },
-      setResourceId(state, payload) {
-         state.resourceId = payload;
-      },
-      async setProgress(state, payload) {
-         const auth = 'Bearer ' + state.jwt
-         const evaluative = state.evaluatives.find(e => e.strapiId == payload.id)
-         const url = serverData.domain + serverData.statuses + "/" + evaluative.status.id
-         let d;
-         if (payload.code){
-            d = {
-               answer:[{__component:"solution.code",code:payload.code}]
-            }
-         } else if ("grade" in payload){
-            d = {
-               grade:payload.grade
-            }
-         } else {
-            d={
-               grade:0
-            }
+            .then(resp => {
+               role = resp.data.role.type
+            })
+         role = role.charAt(0).toUpperCase() + role.slice(1)
+         this.commit("setLogin",true)
+         if (role == "Student") {
+            this.dispatch("fetchCourse")
+            //this.commit("loadStudentFunctions")
+         } else if (role == "Teacher") {
+            //.commit("loadTeacherFunctions")
+            console.log("teacher")
          }
-         await axios.put(url, {data:d},{
-            headers: {
-               'Authorization': auth
-            },
-         })
-         await this.commit("fetchCourse")
+         router.push({ name: role })
       },
-   },
-   actions: {
+
+
+      //--------------------------Student---------------------------------------
       async setProgress(state, payload) {
          const auth = 'Bearer ' + state.getters.getJWT
-         const evaluative = state.getters.getStupid(payload)
+         const evaluative = state.getters.getEvaluativeByStatus(payload)
          const url = serverData.domain + serverData.statuses + "/" + evaluative.status.id
-         let d;
-         if (payload.code){
-            d = {
-               answer:[{__component:"solution.code",code:payload.code}]
-            }
-         } else if ("grade" in payload){
-            d = {
-               grade:payload.grade
-            }
-         } else {
-            console.log(payload)
-         }
-         await axios.put(url, {data:d},{
+         axios.put(url, {data:payload.data},{
             headers: {
                'Authorization': auth
             },
          })
          await state.dispatch("fetchCourse")
+         console.log(3)
       },
       async fetchCourse(state) {
+         console.log(1)
          const auth = 'Bearer ' + state.getters.getJWT
-         let c;
+         let resp;
          const url = serverData.domain + serverData.courses
          await axios.get(url, {
             headers: {
                'Authorization': auth
             }
-         })
-            .then(resp => {
-               c = resp.data.data
             })
+            .then(response => {
+               resp = response.data.data
+            })
+         console.log(2)
          const allCourses = [];
+         const allModules = [];
          const allLessons = [];
          const allExpositives = [];
          const allEvaluatives = [];
-         c.forEach(course => {
-            const c = {};
-            c.id = course.id;
+
+         let moduleCount = 1
+         let lessonCount = 1
+         let count = 1
+
+         resp.forEach(course => {
+            course.attributes.modules.forEach(module => {
+               module.lessons.forEach(lesson => {
+                  lesson.expositives = lesson.expositives.data
+                  lesson.expositives.forEach(expositive => {
+                     Object.keys(expositive.attributes).forEach(key => {
+                        expositive[key] = expositive.attributes[key];
+                     });
+                     expositive.strapiId = expositive.id
+                     expositive.contentType=expositive.type
+                     delete expositive.id
+                     delete expositive.attributes
+                     allExpositives.push(expositive)
+                  })
+                  lesson.evaluatives = lesson.evaluatives.data
+                  lesson.evaluatives.forEach(evaluative => {
+                     Object.keys(evaluative.attributes).forEach(key => {
+                        evaluative[key] = evaluative.attributes[key];
+                     });
+                     Object.keys(evaluative.content[0]).forEach(key => {
+                        if (key == "__component"){
+                           if (evaluative.content[0]["__component"] == "base.quiz") {
+                              evaluative.type = "quiz";
+                              evaluative.contentType = "quiz";
+                           } else {
+                              evaluative.contentType = "code";
+                           }
+                        } else if (key == "questions") {
+                           evaluative.questions = evaluative.content[0]["questions"].data
+                           evaluative.questions.forEach(question => {
+                              Object.keys(question.attributes).forEach(key2 => {
+                                 question[key2] = question.attributes[key2];
+                              });
+                              delete question.attributes
+                           })
+                        } else if (key != "id") {
+                           evaluative[key] = evaluative.content[0][key];
+                        }
+                     });
+                     evaluative.strapiId = evaluative.id
+                     delete evaluative.content
+                     delete evaluative.id
+                     delete evaluative.attributes
+                     allEvaluatives.push(evaluative)
+                  })
+                  lesson.contentType = "lesson"
+                  lesson.internalId = "L" + lessonCount
+                  lessonCount++
+                  lesson.strapiId=lesson.id
+                  lesson.id = count
+                  count++
+                  allLessons.push(lesson);
+               });
+               module["children"] = module.lessons
+               module.contentType = "module"
+               module.internalId = "M" + moduleCount
+               moduleCount++
+               module.strapiId = module.id
+               module.id = count
+               count++
+               delete module.lessons
+               allModules.push(module)
+            });
             Object.keys(course.attributes).forEach(key => {
-               if (key != "modules") {
-                  c[key] = course.attributes[key];
+               if (key == "modules") {
+                  course["children"] = course.attributes[key];
+               } else {
+                  course[key] = course.attributes[key];
                }
             });
-            c.modules = [];
-            course.attributes.modules.forEach(module => {
-               const m = module;
-               const les = [];
-               module.lessons.forEach(lesson => {
-                  const l = lesson;
-                  const exp = [];
-                  const eva = [];
-                  if (lesson.expositives != null && lesson.expositives.data) {
-                     lesson.expositives.data.map(expositive => {
-                        const e = expositive.attributes;
-                        e.id = expositive.id;
-                        e.strapiId = expositive.id;
-                        e.contentType = expositive.attributes.type;
-                        allExpositives.push(e);
-                        exp.push(e);
-                        return e;
-                     });
-                     l.expositives = l.expositives.data;
-                  }
-                  if (lesson.evaluatives != null && lesson.evaluatives.data) {
-                     l.evaluatives.data.map(evaluative => {
-                        const e = evaluative.attributes;
-                        e.id = evaluative.id;
-                        e.strapiId = evaluative.id;
-                        for (let i in evaluative.attributes.content[0]) {
-                           if (i == "__component") {
-                              if (evaluative.attributes.content[0][i] == "base.quiz") {
-                                 e.type = "quiz";
-                                 e.contentType = "quiz";
-                              } else {
-                                 e.contentType = "code";
-                              }
-                           } else if (i == "questions") {
-                              let que = [];
-                              evaluative.attributes.content[0]["questions"].data.forEach(
-                                 q => {
-                                    let question = q.attributes;
-                                    question.id = q.id;
-                                    que.push(question);
-                                 }
-                              );
-                              e[i] = que;
-                           } else {
-                              e[i] = evaluative.attributes.content[0][i];
-                           }
-                        }
-                        delete e.content;
-                        allEvaluatives.push(e);
-                        eva.push(e);
-                        return e;
-                     });
-                     l.evaluatives = l.evaluatives.data;
-                  }
-                  l.expositives = exp;
-                  l.evaluatives = eva;
-                  allLessons.push(l);
-                  les.push(l);
-               });
-               m.lessons = les;
-               c.modules.push(m);
-            });
-            allCourses.push(c);
+            course.contentType = "course"
+            course.strapiId = course.id
+            course.id = count
+            count++
+            delete course.attributes
+            allCourses.push(course);
          });
          data.state.courses = [...allCourses];
          data.state.lessons = [...allLessons];
          data.state.expositives = [...allExpositives];
          data.state.evaluatives = [...allEvaluatives];
+         data.state.modules = [...allModules];
       },
+
    },
    modules: {}
 };
-
-/*
-fetch("c.json")
-   .then(r => r.json())
-   .then(c => {
-      const allCourses = [];
-      const allLessons = [];
-      const allExpositives = [];
-      const allEvaluatives = [];
-      c.forEach(course => {
-         const c = {};
-         c.id = course.id;
-         Object.keys(course.attributes).forEach(key => {
-            if (key != "modules") {
-               c[key] = course.attributes[key];
-            }
-         });
-         c.modules = [];
-         course.attributes.modules.forEach(module => {
-            const m = module;
-            const les = [];
-            module.lessons.forEach(lesson => {
-               const l = lesson;
-               const exp = [];
-               const eva = [];
-               if (lesson.expositives != null && lesson.expositives.data) {
-                  lesson.expositives.data.map(expositive => {
-                     const e = expositive.attributes;
-                     e.id = expositive.id;
-                     e.strapiId = expositive.id;
-                     e.contentType = expositive.attributes.type;
-                     allExpositives.push(e);
-                     exp.push(e);
-                     return e;
-                  });
-                  l.expositives = l.expositives.data;
-               }
-               if (lesson.evaluatives != null && lesson.evaluatives.data) {
-                  l.evaluatives.data.map(evaluative => {
-                     const e = evaluative.attributes;
-                     e.id = evaluative.id;
-                     e.strapiId = evaluative.id;
-                     for (let i in evaluative.attributes.content[0]) {
-                        if (i == "__component") {
-                           if (evaluative.attributes.content[0][i] == "base.quiz") {
-                              e.type = "quiz";
-                              e.contentType = "quiz";
-                           } else {
-                              e.contentType = "code";
-                           }
-                        } else if (i == "questions") {
-                           let que = [];
-                           evaluative.attributes.content[0]["questions"].data.forEach(
-                              q => {
-                                 let question = q.attributes;
-                                 question.id = q.id;
-                                 que.push(question);
-                              }
-                           );
-                           e[i] = que;
-                        } else {
-                           e[i] = evaluative.attributes.content[0][i];
-                        }
-                     }
-                     delete e.content;
-                     allEvaluatives.push(e);
-                     eva.push(e);
-                     return e;
-                  });
-                  l.evaluatives = l.evaluatives.data;
-               }
-               l.expositives = exp;
-               l.evaluatives = eva;
-               allLessons.push(l);
-               les.push(l);
-            });
-            m.lessons = les;
-            c.modules.push(m);
-         });
-         allCourses.push(c);
-      });
-      data.state.courses = [...allCourses];
-      data.state.lessons = [...allLessons];
-      data.state.expositives = [...allExpositives];
-      data.state.evaluatives = [...allEvaluatives];
-   });*/
 
 
 const serverData = {

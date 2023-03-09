@@ -92,21 +92,36 @@ import { mapGetters } from "vuex";
 
 export default {
   name: "Profile",
+  props: {
+    resource: {
+      type: Number,
+      default: () => null
+    },
+    type: {
+      type: String,
+      default: () => null
+    }
+  },
   components: {
     Gamification
   },
   created() {
-    /*
-    let i = 1;
-    
-    this.getSheets.forEach(sheet => {
-      const id = sheet.name.substr(0, sheet.name.indexOf("."));
-      const rid = sheet.id;
-      const name = sheet.name.substr(sheet.name.indexOf(".") + 1);
-      const status = this.getCompletationStatusBySheetId(sheet.id).toFixed(0);
-      this.sheets.push({ id, rid, name, status });
-      i++;
-    });*/
+    let lessons
+    if (this.type =="course"){
+      lessons = this.getLessonsByCourse(this.resource)
+    } else {
+      lessons = this.getLessonsByModule(this.resource)
+    }
+    this.sheets = []
+    lessons.forEach(lesson => {
+      const id = this.getModuleByLesson(lesson.strapiId).internalId+":"+lesson.internalId;
+      const rid = lesson.strapiId;
+      const name = lesson.name;
+      const status = this.getCompletationStatusByLesson(lesson.strapiId);
+      if (status){
+        this.sheets.push({ id, rid, name, status });
+      }
+    });
   },
   data() {
     return {
@@ -132,14 +147,14 @@ export default {
       else return "green";
     },
     play(id) {
-      bus.$emit("changeIt", id);
+      bus.$emit("changeIt", [id, "lesson"]);
     },
     play2(value) {
-      bus.$emit("changeIt", value.rid);
+      bus.$emit("changeIt", [value.rid, "lesson"]);
     }
   },
   computed: {
-    ...mapGetters(["getSheets", "getCompletationStatusBySheetId"])
+    ...mapGetters(["getLessonsByCourse", "getCompletationStatusByLesson", "getModuleByLesson", "getLessonsByModule"])
   }
 };
 </script>

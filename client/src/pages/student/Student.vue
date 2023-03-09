@@ -10,7 +10,7 @@
       <Menu @onResourceClicked="setResource" />
       <Resource v-if="resource" :resource="resource" />
       <div v-else>
-        <Profile v-if="isResource != 0" />
+        <Profile v-if="isResource != 0" :resource="isResource" :type="type"/>
       </div>
     </v-main>
   </v-app>
@@ -31,12 +31,14 @@ export default {
   },
   data: () => ({
     resource: null,
-    isResource: 0
+    isResource: 0,
+    type:"",
   }),
   methods: {
     setResource(resourceId, type) {
       this.resource = null;
       this.isResource = resourceId;
+      this.type = type
       if (resourceId > 0) {
         this.resource = this.getResourceById(resourceId, type);
       }

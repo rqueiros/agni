@@ -162,7 +162,7 @@
 import Swal from "sweetalert2";
 import { html2dom } from "@/assets/utils/html2dom.js";
 import "sweetalert2/src/sweetalert2.scss";
-import { mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 /* import * as LJS from "@/assets/utils/test.js";
  */ export default {
   name: "Tests",
@@ -223,7 +223,7 @@ import { mapGetters, mapMutations } from "vuex";
     /* tests2() {
       return this.resource.tests.filter((test) => test.type == "metric");
     }, */
-    ...mapGetters(["getProgressFromResourceId"])
+    ...mapGetters(["getStatusByResourceId"])
   },
 
   watch: {
@@ -236,7 +236,7 @@ import { mapGetters, mapMutations } from "vuex";
   },
 
   methods: {
-    ...mapMutations(["setProgress"]),
+    ...mapActions(["setProgress"]),
 
     newTest() {
       Swal.fire(
@@ -264,9 +264,9 @@ import { mapGetters, mapMutations } from "vuex";
       // Save the code
       this.$emit("onSaveCode");
 
-      setTimeout(() => {
+      setTimeout(async () => {
         this.nTestsSuccess = 0;
-        this.code = this.getProgressFromResourceId(this.resource.id).answer[0].code;
+        this.code = this.getStatusByResourceId(this.resource.strapiId).answer[0].code;
 
         const originalCode = this.code;
 
@@ -342,9 +342,11 @@ import { mapGetters, mapMutations } from "vuex";
 
         //Update progress
         const status = (this.nTestsSuccess / this.tests.length) * 100;
-        this.setProgress({
+        await this.setProgress({
           id: this.resource.strapiId,
-          grade: status
+          data: {
+            grade: status
+          }
         });
         this.code = originalCode;
       }, 1000);

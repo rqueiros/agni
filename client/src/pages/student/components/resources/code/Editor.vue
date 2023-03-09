@@ -60,7 +60,7 @@ import { html2dom } from "@/assets/utils/html2dom.js";
 import Swal from "sweetalert2";
 import "sweetalert2/src/sweetalert2.scss";
 import AceEditor from "vuejs-ace-editor";
-import { mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 export default {
   name: "Editor",
   props: {
@@ -81,31 +81,36 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getSheetByResourceId", "getProgressFromResourceId"])
+    ...mapGetters(["getLessonByResourceId", "getStatusByResourceId"])
   },
   methods: {
-    ...mapMutations(["setProgress"]),
+    ...mapActions(["setProgress"]),
     backToSheet() {
       clearInterval(this.saveHandler);
-      const lesson = this.getSheetByResourceId(this.resource.strapiId);
+      const lesson = this.getLessonByResourceId(this.resource.strapiId);
       bus.$emit("changeIt", [lesson.strapiId, lesson.contentType]);
     },
     loadCode() {
-      if (this.getProgressFromResourceId(this.resource.strapiId).answer[0].code=="" && this.resource.skeleton){
+      if (this.getStatusByResourceId(this.resource.strapiId).answer[0].code=="" && this.resource.skeleton){
         this.code = this.resource.skeleton
-      } else if (this.getProgressFromResourceId(this.resource.strapiId).answer[0].code!=""){
-        this.code = this.getProgressFromResourceId(this.resource.strapiId).answer[0].code
+      } else if (this.getStatusByResourceId(this.resource.strapiId).answer[0].code!=""){
+        this.code = this.getStatusByResourceId(this.resource.strapiId).answer[0].code
       } else {
         this.code = ""
       }
     },
-    dataSumit() {
+    async dataSumit() {
       let originalCode = this.code;
       const errors = [];
       const logs = [];
       this.statusSaveButton = true;
       //this.setProgress({ id: this.resource.id, code: this.code });
-      this.setProgress({ id: this.resource.strapiId, code: this.code });
+      this.setProgress({ 
+        id: this.resource.strapiId, 
+        data : {
+          answer:[{__component:"solution.code",code:this.code}]
+        } 
+      });
 
       if (this.resource.html) {
         this.code = `

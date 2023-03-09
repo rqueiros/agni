@@ -39,12 +39,12 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["getResourceById", "getProgressFromResourceId"])
+    ...mapGetters(["getResourceById", "getStatusByResourceId"])
   },
   created() {
     let i = 1;
     this.resource.evaluatives.forEach(evaluative => {
-      let grade = this.getProgressFromResourceId(evaluative.strapiId).grade;
+      let grade = this.getStatusByResourceId(evaluative.strapiId).grade;
       this.evaluatives.push({
         id: i,
         rid: evaluative.strapiId,

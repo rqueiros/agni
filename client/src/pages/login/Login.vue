@@ -182,7 +182,7 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
   computed: {
@@ -191,7 +191,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(["login"]),
+    ...mapActions(["login"]),
     async studentLogin(){
       this.login(["student","123456"])
     },
@@ -243,4 +243,6 @@ export default {
     }
   })
 };
+
 </script>
+

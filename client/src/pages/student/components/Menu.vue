@@ -24,7 +24,7 @@
         <v-icon v-else color="gray">
           {{ files[item.type] }}
         </v-icon>
-        {{ item.contentType != "course" ? `${item.internalID}. ` : `` }}
+        {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
       </template>
 
       <template v-slot:append="{ item }">
@@ -56,45 +56,10 @@ export default {
     this.$store.watch(
       state => state.courses,
       (newVal, oldVal) => {
-        console.log(`Value changed from ${oldVal} to ${newVal}`);
-        const c = this.getCourse;
-        let count = 1;
-        c.forEach(course => {
-          course.strapiId = course.id;
-          course.id = count;
-          count = count + 1;
-          course.children.forEach(m => {
-            m.strapiId = m.id;
-            m.id = count;
-            count = count + 1;
-            m.children.forEach(lesson => {
-              lesson.strapiId = lesson.id;
-              lesson.id = count;
-              count = count + 1;
-            });
-          });
-        });
-        this.items = c;
+        console.log(`Value of course changed from ${oldVal} to ${newVal}`);
+        this.items = this.getCourse;
       }
     );
-    const c = this.getCourse;
-    let count = 1;
-    c.forEach(course => {
-      course.strapiId = course.id;
-      course.id = count;
-      count = count + 1;
-      course.children.forEach(m => {
-        m.strapiId = m.id;
-        m.id = count;
-        count = count + 1;
-        m.children.forEach(lesson => {
-          lesson.strapiId = lesson.id;
-          lesson.id = count;
-          count = count + 1;
-        });
-      });
-    });
-    this.items = c;
   },
   methods: {
     getCompletationStatus(item) {
