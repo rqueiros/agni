@@ -22,8 +22,8 @@ const questionTests = {
          questionTests.createQuestion(key)
       }
    },
-   createQuestion(q) {
-      const question = goodQuestions[q]
+   createQuestion(key) {
+      const question = goodQuestions[key]
       it("teacher create " + question.question, async () => {
          const [jwt, idTeacher] = await getJWT("teacher")
          const image = question.image

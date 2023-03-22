@@ -15,6 +15,7 @@
     "pdfjs-dist": "2.5.207",
     "sweetalert2": "^10.14.0",
     "vue": "^2.6.11",
+    "vue-multi-select": "^4.6.0",
     "vue-pdf": "4.2.0",
     "vue-router": "^3.2.0",
     "vue-youtube-iframe-api": "^0.1.2",

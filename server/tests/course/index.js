@@ -67,22 +67,7 @@ const courseTests = {
             .expect(200)
             .then(data => {
                expect(data.body.data.attributes.author.data.id).toBe(idTeacher)
-               expect(data.body.data.attributes.name).toBe(course.name);
-               expect(data.body.data.attributes.type).toBe(course.type);
-               if ("modules" in data.body.data.attributes) {
-                  for (const key of Array(data.body.data.attributes.modules.length).keys()) {
-                     expect(data.body.data.attributes.modules[key].name).toBe(course.modules[key].name);
-                     //expect(data.body.data.attributes.modules[key].condition).toBe(course.modules[key].condition);
-                     if ("lessons" in data.body.data.attributes.modules[key]) {
-                        for (const key2 of Array(data.body.data.attributes.modules[key].lessons.length).keys()) {
-                           expect(data.body.data.attributes.modules[key].lessons[key2].name).toBe(course.modules[key].lessons[key2].name);
-                           expect(data.body.data.attributes.modules[key].lessons[key2].description).toBe(course.modules[key].lessons[key2].description);
-                           //if (c=="request1") {console.log(data.body.data.attributes.modules[key].lessons[key2])}
-                           //expect(data.body.data.attributes.modules[key].lessons[key].condition).toBe(course.modules[key].lesson[key].condition);
-                        }
-                     }
-                  }
-               }
+               checkKeys(course, data.body.data.attributes)
             });
       });
    },
@@ -176,21 +161,7 @@ const courseTests = {
                .expect(200)
                .then(data => {
                   expect(data.body.data.attributes.author.data.id).toBe(idTeacher)
-                  expect(data.body.data.attributes.name).toBe(course[key].name);
-                  expect(data.body.data.attributes.type).toBe(course[key].type);
-                  if ("modules" in data.body.data.attributes) {
-                     for (const key1 of Array(data.body.data.attributes.modules.length).keys()) {
-                        expect(data.body.data.attributes.modules[key1].name).toBe(course[key].modules[key1].name);
-                        //expect(data.body.data.attributes.modules[key].condition).toBe(course.modules[key].condition);
-                        if ("lessons" in data.body.data.attributes.modules[key1]) {
-                           for (const key2 of Array(data.body.data.attributes.modules[key1].lessons.length).keys()) {
-                              expect(data.body.data.attributes.modules[key1].lessons[key2].name).toBe(course[key].modules[key1].lessons[key2].name);
-                              expect(data.body.data.attributes.modules[key1].lessons[key2].description).toBe(course[key].modules[key1].lessons[key2].description);
-                              //expect(data.body.data.attributes.modules[key].lessons[key].condition).toBe(course.modules[key].lesson[key].condition);
-                           }
-                        }
-                     }
-                  }
+                  checkKeys(course[key], data.body.data.attributes)
                })
          }
       })
@@ -305,6 +276,23 @@ const courseErrorTests = {
                expect(data.body.error.message).toBe("image names and submitted image names must be equal")
             });
       })
+   }
+}
+
+function checkKeys(data,respData){
+   for (key in data){
+      if (Array.isArray(data[key])==true && key != "evaluatives" && key != "expositives"){
+         const d = data[key]
+         const rD = respData[key]
+         const l = d.length
+         for (let i = 0; i < l; i++){
+            checkKeys(d[i],rD[i])
+         }
+      } else if (typeof(data[key])=="object" && key != "evaluatives" && key != "expositives") {
+         checkKeys(data[key],respData[key])
+      } else if (key != "evaluatives" && key != "expositives"){
+         expect(respData[key]).toBe(data[key])
+      }
    }
 }
 

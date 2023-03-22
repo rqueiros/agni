@@ -6,6 +6,7 @@
       :items="evaluatives"
       class="elevation-1 exercise"
       @click:row="play2"
+      mobile-breakpoint="0"
     >
       <template v-slot:item.type="{ item }">
         <v-icon :title="item.type">

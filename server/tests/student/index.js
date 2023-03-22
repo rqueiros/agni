@@ -150,8 +150,12 @@ const studentTests = {
             .set('Authorization', 'Bearer ' + jwt)
             .expect(200)
             .then(data => {
-               //console.log(data.body.data[0].attributes.modules[0].lessons[0].evaluatives.data[0].attributes)
-               //console.log(data.body.data[0].attributes.modules[0].lessons[2].evaluatives.data[0].attributes)
+               expect(data.body.data[0].attributes).toBeDefined()
+               expect(data.body.data[0].attributes.modules).toBeDefined()
+               expect(data.body.data[0].attributes.modules[0].lessons).toBeDefined()
+               expect(data.body.data[0].attributes.modules[0].lessons[0].locked).toBe(true)
+               expect(data.body.data[0].attributes.modules[0].lessons[0].evaluatives.data.length).toBe(0)
+               expect(data.body.data[0].attributes.modules[0].lessons[0].expositives.data.length).toBe(0)
             })
       })
    },

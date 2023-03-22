@@ -1,9 +1,9 @@
 <template>
-  <div id="header">
+  <div class="header">
     <!--STATEMENT-->
     <v-list-item>
       <v-list-item-content>
-        <v-list-item-title class="display-1">
+        <v-list-item-title class="resource_title">
           {{
             getModuleByResourceId(resource.strapiId, resource.contentType)
               .internalId
@@ -12,17 +12,17 @@
             getModuleByResourceId(resource.strapiId, resource.contentType).name
           }}
         </v-list-item-title>
-        <v-list-item-subtitle class="title">{{
+        <v-list-item-subtitle class="resource_subtitle">{{
           resource.name
         }}</v-list-item-subtitle>
       </v-list-item-content>
-      <v-list-item-avatar tile size="80" color="red">
-        <v-icon large color="white">
+      <v-list-item-avatar tile class="box" color="red">
+        <v-icon large color="white" class="box_icon">
           {{ getIcon(resource) }}
         </v-icon>
       </v-list-item-avatar>
     </v-list-item>
-    <v-card-text
+    <v-card-text class="resource_text"
       v-if="resource.description"
       v-html="resource.description"
     ></v-card-text>
@@ -92,7 +92,7 @@ export default {
           icon = "mdi-head-question-outline";
           break;
         case "lesson":
-          icon = "mdi-file-pdf";
+          icon = "mdi-nodejs";
           break;
         default:
           break;

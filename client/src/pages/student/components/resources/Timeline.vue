@@ -2,27 +2,27 @@
   <v-card class="mx-auto" outlined>
     <v-list-item>
       <v-list-item-content>
-        <v-list-item-title class="display-1">
+        <v-list-item-title class="resource_title">
           TIMELINE
         </v-list-item-title>
-        <v-list-item-subtitle
+        <v-list-item-subtitle class="resource_text"
           >Jump in the {{ resource.type.toUpperCase() }} for specific
           topics!</v-list-item-subtitle
         >
       </v-list-item-content>
 
-      <v-list-item-avatar tile size="80" color="green">
-        <v-icon large color="white">
+      <v-list-item-avatar tile class="box" color="green">
+        <v-icon color="white" class="box_icon">
           mdi-timeline-clock
         </v-icon>
       </v-list-item-avatar>
     </v-list-item>
     <v-card-text>
       
-      <v-subheader v-if="resource.type == 'video'">
+      <v-subheader v-if="resource.type == 'video'" class="resource_text">
         Video length: {{ convert(duration) }}
       </v-subheader>
-      <v-subheader v-else
+      <v-subheader v-else class="resource_text"
         >PDF length:
         {{
           resource.milestones.find(milestone => milestone.label === "End").frame
@@ -30,7 +30,7 @@
         pages
       </v-subheader>
 
-      <v-timeline align-top dense v-if="resource.milestones.length != 0">
+      <v-timeline align-top dense v-if="resource.milestones.length != 0" class="resource_text">
         <v-timeline-item
           class="milestone"
           @click.native="goto(milestone.frame)"
@@ -42,7 +42,7 @@
           <v-row>
             <v-col class="mt-1">
               <strong
-                class="subtitle-1"
+                class="resource_text"
                 v-html="convert(milestone.frame) + ' - ' + milestone.label"
               ></strong>
             </v-col>

@@ -9,8 +9,8 @@
           >
         </v-list-item-content>
 
-        <v-list-item-avatar tile size="80" color="blue">
-          <v-icon large color="white"> mdi-robot-confused </v-icon>
+        <v-list-item-avatar tile class="box" color="blue">
+          <v-icon color="white" class="box_icon"> mdi-robot-confused </v-icon>
         </v-list-item-avatar>
       </v-list-item>
       <v-data-table

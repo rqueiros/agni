@@ -2,21 +2,21 @@
   <v-card class="mx-auto" outlined>
     <v-list-item>
       <v-list-item-content>
-        <v-list-item-title class="display-1">
+        <v-list-item-title class="resource_title">
           GAMIFICATION
         </v-list-item-title>
-        <v-list-item-subtitle
+        <v-list-item-subtitle class="resource_text"
           >Leaderboards, badges and much more!</v-list-item-subtitle
         >
       </v-list-item-content>
 
-      <v-list-item-avatar tile size="80" color="green">
-        <v-icon large color="white">
+      <v-list-item-avatar tile size="5.5vw" color="green">
+        <v-icon color="white" style="font-size: 2.5vw;">
           mdi-gamepad-variant
         </v-icon>
       </v-list-item-avatar>
     </v-list-item>
-    <v-card-text>
+    <v-card-text class="resource_text">
       <code>Gamification data will appear here in future versions</code>
     </v-card-text>
   </v-card>

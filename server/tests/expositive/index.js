@@ -22,8 +22,8 @@ const expositiveTests = {
          expositiveTests.createExpositive(key)
       }
    },
-   createExpositive(e) {
-      const expositive = goodExpositives[e]
+   createExpositive(key) {
+      const expositive = goodExpositives[key]
       it("teacher create " + expositive.name, async () => {
          const [jwt, idTeacher] = await getJWT("teacher")
          const file = expositive.file
@@ -60,17 +60,7 @@ const expositiveTests = {
             .expect(200)
             .then(data => {
                expect(data.body.data.attributes.author.data.id).toBe(idTeacher)
-               expect(data.body.data.attributes.name).toBe(expositive.name);
-               expect(data.body.data.attributes.type).toBe(expositive.type);
-               if (typeof file === "string") {
-                  expect(data.body.data.attributes.file.data.attributes.name).toBe(file)
-               }
-               if ("milestones" in data.body.data.attributes) {
-                  for (const i in data.body.data.attributes.milestones.length) {
-                     expect(data.body.data.attributes.milestones[i].label).toBe(expositive.milestones[i].label);
-                     expect(data.body.data.attributes.milestones[i].frame).toBe(expositive.milestones[i].frame);
-                  }
-               }
+               checkKeys(expositive, data.body.data.attributes)
             });
       })
    },
@@ -125,17 +115,7 @@ const expositiveTests = {
                .expect(200)
                .then(data => {
                   expect(data.body.data.attributes.author.data.id).toBe(idTeacher)
-                  expect(data.body.data.attributes.name).toBe(expositive[key].name);
-                  expect(data.body.data.attributes.type).toBe(expositive[key].type);
-                  if (typeof file === "string") {
-                     expect(data.body.data.attributes.file.data.attributes.name).toBe(file[key])
-                  }
-                  if ("milestones" in data.body.data.attributes) {
-                     for (const i in data.body.data.attributes.milestones.length) {
-                        expect(data.body.data.attributes.milestones[i].label).toBe(expositive[key].milestones[i].label);
-                        expect(data.body.data.attributes.milestones[i].frame).toBe(expositive[key].milestones[i].frame);
-                     }
-                  }
+                  checkKeys(expositive[key], data.body.data.attributes)
                })
          }
       })
@@ -208,4 +188,22 @@ module.exports = {
    expositiveTests,
    expositiveErrorTests
 };
+
+
+function checkKeys(data,respData){
+   for (key in data){
+      if (Array.isArray(data[key])==true){
+         const d = data[key]
+         const rD = respData[key]
+         const l = d.length
+         for (let i = 0; i < l; i++){
+            checkKeys(d[i],rD[i])
+         }
+      } else if (key == "file") {
+         expect(respData[key].data.attributes.name).toBe(data[key])
+      } else {
+         expect(respData[key]).toBe(data[key])
+      }
+   }
+}
 

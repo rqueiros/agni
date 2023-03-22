@@ -1,8 +1,10 @@
 <template>
-  <div id="resource">
+  <div id="resource" class="resource">
     <component :is="getComponent" :resource="resource"></component>
   </div>
 </template>
+
+
 
 <script>
 export default {
@@ -19,14 +21,12 @@ export default {
         this.resource.contentType.charAt(0).toUpperCase() +
         this.resource.contentType.slice(1);
       return () => import(`./${this.resource.contentType}/${componentName}`);
-      /*
-      if (componentName!="Code"){
-        return () => import(`./${this.resource.type}/${componentName}`)
-      }
-      return null*/
     }
-  }
+  },
 };
 </script>
 
-<style></style>
+
+
+<style>
+</style>

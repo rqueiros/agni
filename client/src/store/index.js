@@ -9,6 +9,7 @@ const data = {
    state: {
       login: false,
       user: {},
+      role:"",
       jwt: "",
       courses: [],
       modules: [],
@@ -20,6 +21,7 @@ const data = {
       //------------------------Authentication----------------------------------
       isLogged: state => state.login,
       getJWT: state => state.jwt,
+      getRole: state => state.role,
 
 
       //--------------------------Student---------------------------------------
@@ -110,6 +112,9 @@ const data = {
       setUser(state, user){
          state.user = user
       },
+      setRole(state, role){
+         state.role = role
+      }
       /*loadStudentFunctions(state,playload){
          console.log(state,playload)
       },
@@ -139,6 +144,7 @@ const data = {
             .then(resp => {
                role = resp.data.role.type
             })
+         this.commit("setRole",role)
          role = role.charAt(0).toUpperCase() + role.slice(1)
          this.commit("setLogin",true)
          if (role == "Student") {
@@ -163,10 +169,8 @@ const data = {
             },
          })
          await state.dispatch("fetchCourse")
-         console.log(3)
       },
       async fetchCourse(state) {
-         console.log(1)
          const auth = 'Bearer ' + state.getters.getJWT
          let resp;
          const url = serverData.domain + serverData.courses
@@ -178,7 +182,6 @@ const data = {
             .then(response => {
                resp = response.data.data
             })
-         console.log(2)
          const allCourses = [];
          const allModules = [];
          const allLessons = [];

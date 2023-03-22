@@ -2,8 +2,9 @@
   <div id="lesson">
     <v-container fluid>
       <v-row>
-        <v-col cols="7">
+        <v-col :cols="this.screenSmall ? 12 : 7">
           <v-card class="mx-auto" max-width="100%" outlined>
+
             <Header :resource="resource" />
 
             <Expositives :resource="resource" />
@@ -21,10 +22,9 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <code
-                    >It will be possible to pose questions in future
-                    versions</code
-                  >
+                  <code>
+                    It will be possible to pose questions in future versions
+                  </code>
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </v-expansion-panels>
@@ -54,7 +54,26 @@ export default {
     }
   },
   data() {
-    return {};
+    return {
+      screenWidth:0
+    };
+  },
+  computed: {
+    screenSmall() {
+      return this.screenWidth <= 768;
+    }
+  },
+  mounted() {
+    this.screenWidth = window.innerWidth;
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  },
+  methods: {
+    handleResize() {
+      this.screenWidth = window.innerWidth;
+    }
   }
 };
 </script>

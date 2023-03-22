@@ -15,9 +15,7 @@
             {
                "name": "module1",
                "condition": {
-                  "type": "AND",
-                  "afterWeek": 1,
-                  "afterPercDone": 0.5
+                  "afterWeek": 1
                },
                "lessons": [
                   {

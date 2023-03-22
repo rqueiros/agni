@@ -477,7 +477,7 @@ async function getStudentCourses(author,ctx){
                if (locked){
                   lesson.locked=true
                   lesson.evaluatives=[]
-                  lesson.evaluatives=[]
+                  lesson.expositives=[]
                }
             }
          }

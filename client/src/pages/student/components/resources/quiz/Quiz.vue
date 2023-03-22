@@ -2,7 +2,7 @@
   <div id="quiz">
     <v-container fluid>
       <v-row>
-        <v-col cols="7">
+        <v-col :cols="this.screenSmall ? 12 : 7">
           <v-card class="mx-auto" max-width="100%" outlined>
             <!--STATEMENT-->
             <Header :resource="resource" />
@@ -64,7 +64,29 @@ export default {
       type: Object,
       default: () => {}
     }
-  }
+  },
+  data() {
+    return {
+      screenWidth:0
+    };
+  },
+  computed: {
+    screenSmall() {
+      return this.screenWidth <= 768;
+    }
+  },
+  methods: {
+    handleResize() {
+      this.screenWidth = window.innerWidth;
+    }
+  },
+  mounted() {
+    this.screenWidth = window.innerWidth;
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  },
 };
 </script>
 

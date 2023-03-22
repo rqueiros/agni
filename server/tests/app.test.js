@@ -14,8 +14,8 @@ it("strapi is defined", () => {
   expect(strapi).toBeDefined();
 });
 
-const {userTests} = require("./auth");
-userTests()
+const {authTests} = require("./auth");
+authTests.authTests()
 
 const {questionTests, questionErrorTests} = require('./question');
 questionTests.questionTests()

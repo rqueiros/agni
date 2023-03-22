@@ -2,22 +2,13 @@
   <div id="code">
     <v-container fluid>
       <v-row>
-        <v-col cols="7">
+        <v-col :cols="this.screenSmall ? 12 : 7">
           <v-card class="mx-auto" max-width="100%" outlined>
             <!--STATEMENT-->
             <Header :resource="resource" />
             <!--PLAYER-->
-            <Editor
-              :resource="resource"
-              @onErrors="setErrors"
-              @onLogs="setLogs"
-              ref="editor"
-            />
-            <v-rating
-              v-model="rating"
-              background-color="orange lighten-3"
-              color="orange"
-            >
+            <Editor :resource="resource" @onErrors="setErrors" @onLogs="setLogs" ref="editor" />
+            <v-rating v-model="rating" background-color="orange lighten-3" color="orange">
             </v-rating>
             <!--FEEDBACK-->
             <v-expansion-panels>
@@ -32,14 +23,8 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <v-data-table
-                    :headers="headers"
-                    :items="errors"
-                    :items-per-page="5"
-                    @click:row="handleClick"
-                    sort-by="row"
-                    class="elevation-1"
-                  >
+                  <v-data-table :headers="headers" :items="errors" :items-per-page="5" @click:row="handleClick"
+                    sort-by="row" class="elevation-1">
                     <template v-slot:item.row="{ item }">
                       {{ item.row + 1 }}
                     </template>
@@ -47,8 +32,8 @@
                       <v-icon small class="mr-2" color="red">
                         {{
                           item.type == "info"
-                            ? "mdi-information"
-                            : "mdi-close-circle"
+                          ? "mdi-information"
+                          : "mdi-close-circle"
                         }}
                       </v-icon>
                     </template>
@@ -66,14 +51,8 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <v-data-table
-                    :headers="headers"
-                    :items="logs"
-                    :items-per-page="5"
-                    @click:row="handleClick"
-                    sort-by="row"
-                    class="elevation-1"
-                  >
+                  <v-data-table :headers="headers" :items="logs" :items-per-page="5" @click:row="handleClick"
+                    sort-by="row" class="elevation-1">
                     <template v-slot:item.row="{ item }">
                       {{ item.row + 1 }}
                     </template>
@@ -81,8 +60,8 @@
                       <v-icon small class="mr-2" color="blue">
                         {{
                           item.type == "log"
-                            ? "mdi-clipboard-edit"
-                            : "mdi-close-circle"
+                          ? "mdi-clipboard-edit"
+                          : "mdi-close-circle"
                         }}
                       </v-icon>
                     </template>
@@ -99,32 +78,26 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <code
-                    >It will be possible to pose questions in future
-                    versions</code
-                  >
+                  <code>It will be possible to pose questions in future
+                          versions</code>
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card>
         </v-col>
+
         <v-col cols="5">
-          <v-row>
-            <v-col cols="12">
-              <Tests
-                :resource="resource"
-                :errors="errors"
-                :logs="logs"
-                @onSaveCode="saveCode"
-                ref="tests"
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12"> </v-col>
-          </v-row>
+          <Tests :resource="resource" :errors="errors" :logs="logs" @onSaveCode="saveCode" ref="tests" class="r-tests" />
         </v-col>
       </v-row>
+
+      <v-row>
+        <v-col cols="12">
+          <Tests :resource="resource" :errors="errors" :logs="logs" @onSaveCode="saveCode" ref="tests"
+            class="r-tests_XS" />
+        </v-col>
+      </v-row>
+
     </v-container>
   </div>
 </template>
@@ -163,7 +136,8 @@ export default {
       errors: [],
       logs: [],
       rating: 0,
-      line: 0
+      line: 0,
+      screenWidth:0
     };
   },
   methods: {
@@ -178,9 +152,43 @@ export default {
     },
     handleClick(value) {
       this.$refs.editor.gotoLine(value.row);
+    },
+    handleResize() {
+      this.screenWidth = window.innerWidth;
     }
-  }
+  },
+  computed: {
+    screenSmall() {
+      return this.screenWidth <= 768;
+    }
+  },
+  mounted() {
+    this.screenWidth = window.innerWidth;
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  },
 };
 </script>
 
-<style></style>
+
+
+<style>
+.r-tests{
+  display:block
+}
+.r-tests_XS{
+  display: none;
+}
+
+@media only screen and (max-width: 768px) {
+  .r-tests{
+    display: none;
+  }
+  .r-tests_XS{
+    display: block
+  }
+}
+
+</style>
