@@ -1,5 +1,5 @@
 <template>
-   <v-navigation-drawer app width="200" permanent>
+   <v-navigation-drawer app width="15%" permanent style=" height: 100%;">
       <v-sheet class="pa-4 menu_links" @click="setPage('account,Account','account')">
          <v-avatar color="red" class="profile">
             <v-icon dark>

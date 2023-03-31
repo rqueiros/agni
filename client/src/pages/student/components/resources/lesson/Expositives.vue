@@ -1,34 +1,20 @@
 <template>
   <div id="expositives">
-    expositives
-    <v-data-table
-      :headers="headers"
-      :items="expositives"
-      class="elevation-1 exercise"
-      @click:row="play2"
-      mobile-breakpoint="0"
-    >
-      <!--<template v-slot:item.type="{ item }">
-            <v-icon :title="item.type">
-               {{ getIcon(item.type) }}
-            </v-icon>
-         </template>
-         <template v-slot:item.status="{ item }">
-            <v-chip :color="getColor(item.status)" dark>
-               {{ item.status }}%
-            </v-chip>
-         </template>-->
-      <template v-slot:item.action="{ item }">
-        <v-btn icon @click="play(item)">
-          <v-icon>mdi-clipboard-play</v-icon>
-        </v-btn>
-      </template>
-    </v-data-table>
+    <v-card outlined style="border-radius: 0;">
+      <v-bottom-navigation grow :elevation="0" dense style="box-shadow: none; height: 24px;" v-model="index">
+      <v-btn v-for="(item, index) in expositives" :key="index" style="padding:0">
+        <div>
+          <v-icon>{{ getIcon(item.type) }}</v-icon> {{item.name}}
+        </div>
+      </v-btn>
+    </v-bottom-navigation>
+    </v-card>
+
+    <component :is="getComponent" :resource="expo"></component>
   </div>
 </template>
 
 <script>
-import { bus } from "@/main.js";
 import { mapGetters } from "vuex";
 export default {
   name: "Expositives",
@@ -36,11 +22,25 @@ export default {
   props: {
     resource: {
       type: Object,
-      default: () => {}
+      default: () => { }
     }
   },
+  data() {
+    return {
+      expositives: [],
+      index:0,
+      expo:{}
+    };
+  },
   computed: {
-    ...mapGetters(["getResourceById", "getProgressFromResourceId"])
+    ...mapGetters(["getResourceById", "getProgressFromResourceId"]),
+    getComponent() {
+      this.expo=this.resource.expositives[this.index]
+      const componentName =
+        this.expositives[this.index].type.charAt(0).toUpperCase() +
+        this.expositives[this.index].type.slice(1);
+      return () => import(`../${this.expositives[this.index].type}/${componentName}`);
+    }
   },
   created() {
     let i = 1;
@@ -55,30 +55,8 @@ export default {
       i++;
     });
   },
-  data() {
-    return {
-      headers: [
-        {
-          text: "#",
-          align: "start",
-          sortable: true,
-          value: "id"
-        },
-        { text: "Name", value: "name" },
-        { text: "Type", value: "type" },
-        { text: "Actions", value: "action" }
-      ],
-      expositives: []
-    };
-  },
 
   methods: {
-    play(value) {
-      bus.$emit("changeIt", [value.rid, "expositive"]);
-    },
-    play2(value) {
-      bus.$emit("changeIt", [value.rid, "expositive"]);
-    },
     getIcon(subtype) {
       let icon = "";
       switch (subtype) {
@@ -94,24 +72,24 @@ export default {
         case "quiz":
           icon = "mdi-head-question-outline";
           break;
+        case "video":
+          icon = "mdi-video";
+          break;
+        case "pdf":
+          icon = "mdi-file-pdf-box";
+          break;
         default:
           icon = "mdi-code-json";
           break;
       }
       return icon;
     },
-    getColor(status) {
-      status = +status;
-      if (status == 0) return "red";
-      else if (status < 100) return "orange";
-      else return "green";
-    }
   }
 };
 </script>
 
-<style>
-.exercise:hover {
-  cursor: pointer;
+<style scoped>
+.v-item-group.v-bottom-navigation .v-btn.v-btn--active:not(:hover):before{
+  opacity: 0.18 !important;
 }
 </style>

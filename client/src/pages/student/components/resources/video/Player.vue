@@ -2,7 +2,7 @@
   <div id="player">
     <vytia-player
       width="100%"
-      :yturl="resource.url"
+      :yturl="resource.file.data.attributes.url"
       ref="yt"
       :playerVars="playerVars"
       @ready="onPlayerReady"

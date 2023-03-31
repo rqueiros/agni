@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" outlined>
+  <v-card class="mx-auto" outlined v-if="resExist">
     <v-list-item>
       <v-list-item-content>
         <v-list-item-title class="resource_title">
@@ -63,6 +63,11 @@ export default {
     selected: 0,
     duration: 0
   }),
+  computed: {
+    resExist(){
+      return "name" in this.resource
+    }
+  },
   methods: {
     setDuration(duration) {
       this.duration = duration;

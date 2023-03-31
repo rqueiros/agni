@@ -7,19 +7,18 @@
       :src="'https://agni.dcc.fc.up.pt/strapi/'+resource.file.data.attributes.url"
       :page="page"
     ></pdf>
+    <!--
     <v-rating
       v-model="rating"
       background-color="orange lighten-3"
       color="orange"
-    ></v-rating>
+    ></v-rating>-->
 
     <div class="text-center">
       <v-container>
         <v-row justify="center">
-          <v-col cols="8">
-            <v-container class="max-width">
-              <v-pagination v-model="page" :length="pageCount"></v-pagination>
-            </v-container>
+          <v-col cols="8" style="padding:4px">
+              <v-pagination v-model="page" :length="pageCount" :total-visible="5" size="small"></v-pagination>
           </v-col>
         </v-row>
       </v-container>
@@ -124,4 +123,12 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.v-pagination__item, .v-pagination__navigation, .v-pagination__more{
+  min-width: 0;
+  font-size:1vw;
+  height: 2.5vw;
+  width: 2.5vw;
+}
+
+</style>

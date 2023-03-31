@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import axios from 'axios'
 import router from "../router"
+import emptyCourse from "../assets/data/emptyCourse.json"
 
 Vue.use(Vuex);
 
@@ -9,13 +10,14 @@ const data = {
    state: {
       login: false,
       user: {},
-      role:"",
+      role: "",
       jwt: "",
       courses: [],
       modules: [],
       lessons: [],
       expositives: [],
       evaluatives: [],
+      maxId: 0,
    },
    getters: {
       //------------------------Authentication----------------------------------
@@ -25,7 +27,7 @@ const data = {
 
 
       //--------------------------Student---------------------------------------
-      
+
       //-------Course
       getCourse: state => state.courses,
 
@@ -69,7 +71,7 @@ const data = {
          return c.children.flatMap(m => m.children)
       },
       getLessonsByModule: state => id => {
-         return state.modules.find(m => m.strapiId==id).children
+         return state.modules.find(m => m.strapiId == id).children
       },
 
 
@@ -88,10 +90,13 @@ const data = {
       getStatusByResourceId: state => id => {
          return state.evaluatives.find(evaluative => evaluative.status.id == id).status
       },
-      getCompletationStatusByLesson: state => id => { 
+      getCompletationStatusByLesson: state => id => {
+         if (id=="0"){
+            return null
+         }
          const lesson = state.lessons.find(l => l.strapiId == id)
-         const status = lesson.evaluatives.map(e => e.status.grade)
-         return (status.length>0) ? status.reduce((a, b) => a + b, 0)/status.length : null
+         let status = ("evaluatives" in lesson) ? lesson.evaluatives.map(e => e.status.grade) : []
+         return (status.length > 0) ? status.reduce((a, b) => a + b, 0) / status.length : null
       },
 
 
@@ -106,22 +111,208 @@ const data = {
       setLogin(state, login) {
          state.login = login
       },
-      setJWT(state, jwt){
+      setJWT(state, jwt) {
          state.jwt = jwt
       },
-      setUser(state, user){
+      setUser(state, user) {
          state.user = user
       },
-      setRole(state, role){
+      setRole(state, role) {
          state.role = role
-      }
+      },
       /*loadStudentFunctions(state,playload){
          console.log(state,playload)
       },
       loadTeacherFunctions(state, playload){
          console.log(state,playload)
       },*/
- 
+
+
+      //-----------------------Teacher------------------------------------------
+      createEditableCourse(state){
+         const c = state.courses;
+         c.forEach(course => {
+            course.children.forEach(module => {
+               module.children.push({
+                  type: "add",
+                  name: "add Lesson",
+                  locked: true,
+                  contentType: "lesson",
+                  parentId: module.strapiId,
+                  strapiId: 0,
+                  children: []
+               })
+            });
+            course.children.push({
+               type: "add",
+               name: "add Module",
+               locked: true,
+               contentType: "module",
+               parentId: course.strapiId,
+               strapiId: 0,
+               children: []
+            })
+         })
+      },
+      addLessonByModuleId(state, id) {
+         const module = state.courses.flatMap(c => c.children).find(m => m.strapiId == id)
+         const n = Math.max(...state.lessons.map(l => l.strapiId))
+         module["children"].splice(module["children"].length - 1, 0, {
+            strapiId: n + 1,
+            name: "New Lesson Name",
+            description: "New Lesson Description",
+            contentType: "lesson",
+            evaluatives: [],
+            expositives: [],
+            new: true,
+            id:state.maxId
+         })
+         state.maxId = state.maxId+1
+         this.commit("updateStructure")
+      },
+      addModuleByCourseId(state, id) {
+         const course = state.courses.find(c => c.strapiId == id)
+         const n = Math.max(...state.modules.map(m => m.strapiId))
+         course["children"].splice(course["children"].length - 1, 0, {
+            strapiId: n + 1,
+            name: "New Module Name",
+            contentType: "module",
+            id: state.maxId,
+            children: [{
+               type: "add",
+               name: "add Lesson",
+               locked: true,
+               contentType: "lesson",
+               parentId: n + 1,
+               strapiId: 0,
+               children: [],
+               id: state.maxId+1
+            }],
+            new: true,
+         })
+         state.maxId = state.maxId+2
+         this.commit("updateStructure")
+      },
+      deleteLesson(state, id) {
+         const module = state.courses.flatMap(c => c.children).find(m => m.children.map(l => l.strapiId).includes(id))
+         let index = module["children"].findIndex(obj => obj.strapiId == id);
+         module.children.splice(index, 1)
+         this.commit("updateStructure")
+      },
+      deleteModule(state, id) {
+         const course = state.courses.find(c => c.children.map(m => m.strapiId).includes(id))
+         let index = course["children"].findIndex(obj => obj.strapiId == id);
+         course.children.splice(index, 1)
+         this.commit("updateStructure")
+      },
+      upLesson(state, id){
+         const course = state.courses[0]
+         const module = state.courses.flatMap(c => c.children).find(m => m.children.map(l => l.strapiId).includes(id))
+         const indexLesson = module["children"].findIndex(obj => obj.strapiId == id);
+         const lesson = module.children[indexLesson]
+         const indexModule = course["children"].findIndex(obj => obj.strapiId == module.strapiId);
+         if (indexLesson > 0){
+            module.children.splice(indexLesson,1)
+            module.children.splice(indexLesson-1,0,lesson)
+         } else if (indexModule > 0) {
+            module.children.splice(indexLesson,1)
+            const newModule = course.children[indexModule-1]
+            newModule.children.splice(newModule.children.length-1,0,lesson)
+         }
+         this.commit("updateStructure")
+      },
+      downLesson(state, id){
+         const course = state.courses[0]
+         const module = state.courses.flatMap(c => c.children).find(m => m.children.map(l => l.strapiId).includes(id))
+         const indexLesson = module["children"].findIndex(obj => obj.strapiId == id);
+         const lesson = module.children[indexLesson]
+         const indexModule = course["children"].findIndex(obj => obj.strapiId == module.strapiId);
+         if (indexLesson < module.children.length-2){
+            module.children.splice(indexLesson,1)
+            module.children.splice(indexLesson+1,0,lesson)
+         } else if (indexModule < course.children.length-2) {
+            module.children.splice(indexLesson,1)
+            const newModule = course.children[indexModule+1]
+            newModule.children.splice(0,0,lesson)
+         }
+         this.commit("updateStructure")
+      },
+      upModule(state, id){
+         const course = state.courses[0]
+         const index = course["children"].findIndex(obj => obj.strapiId == id);
+         const module = course.children[index]
+         if (index > 0){
+            course.children.splice(index,1)
+            course.children.splice(index-1,0,module)
+         }
+         this.commit("updateStructure")
+      },
+      downModule(state, id){
+         const course = state.courses[0]
+         const index = course["children"].findIndex(obj => obj.strapiId == id);
+         const length = course.children.length
+         const module = course.children[index]
+         if (index < length-2){
+            course.children.splice(index,1)
+            course.children.splice(index+1,0,module)
+         }
+         this.commit("updateStructure")
+      },
+      editableInput(state, obj){
+         const value = obj.value
+         const type = obj.type
+         const field = obj.field
+         const id = obj.id
+         if (type == "course"){
+            if (field == "name"){
+               this.commit("changeCourseName", value)
+            }
+         } else if (type == "module"){
+            if (field == "name"){
+               this.commit("changeModuleName", [id, value])
+            }
+         } else if (type == "lesson"){
+            if (field == "name"){
+               this.commit("changeLessonName", [id, value])
+            }
+         }
+      },
+      changeCourseName(state, name){
+         const course = state.courses[0]
+         course.name = name
+         this.commit("updateStructure")
+      },
+      changeModuleName(state, [id,name]){
+         const course = state.courses[0]
+         const module = course.children.find(m => m.strapiId == id)
+         module.name = name
+         this.commit("updateStructure")
+      },
+      changeLessonName(state, [id, name]){
+         const course = state.courses[0]
+         const lesson = course.children.flatMap(m => m.children).find(l => l.strapiId == id)
+         lesson.name = name
+         this.commit("updateStructure")
+      },
+      updateStructure(state) {
+         state.modules = state.courses.flatMap(c => c.children)
+         state.lessons = state.modules.flatMap(c => c.children)
+         /*let count = 1
+         state.courses.forEach(course => {
+            course.id = count
+            count = count + 1
+            course.children.forEach(module => {
+               module.id = count
+               count = count + 1
+               module.children.forEach(lesson => {
+                  lesson.id = count
+                  count = count + 1
+               })
+            })
+         })*/
+
+      }
+
    },
    actions: {
       //--------------------------Authentication--------------------------------
@@ -130,8 +321,8 @@ const data = {
          let url = serverData.domain + serverData.authentication
          await axios.post(url, requestData)
             .then(resp => {
-               state.commit("setJWT",resp.data.jwt)
-               state.commit("setUser",resp.data.user)
+               state.commit("setJWT", resp.data.jwt)
+               state.commit("setUser", resp.data.user)
             })
          let role;
          const auth = 'Bearer ' + state.getters.getJWT
@@ -140,13 +331,13 @@ const data = {
             headers: {
                'Authorization': auth
             }
-            })
+         })
             .then(resp => {
                role = resp.data.role.type
             })
-         this.commit("setRole",role)
+         this.commit("setRole", role)
          role = role.charAt(0).toUpperCase() + role.slice(1)
-         this.commit("setLogin",true)
+         this.commit("setLogin", true)
          if (role == "Student") {
             this.dispatch("fetchCourse")
             //this.commit("loadStudentFunctions")
@@ -163,7 +354,7 @@ const data = {
          const auth = 'Bearer ' + state.getters.getJWT
          const evaluative = state.getters.getEvaluativeByStatus(payload)
          const url = serverData.domain + serverData.statuses + "/" + evaluative.status.id
-         axios.put(url, {data:payload.data},{
+         axios.put(url, { data: payload.data }, {
             headers: {
                'Authorization': auth
             },
@@ -178,7 +369,7 @@ const data = {
             headers: {
                'Authorization': auth
             }
-            })
+         })
             .then(response => {
                resp = response.data.data
             })
@@ -193,15 +384,24 @@ const data = {
          let count = 1
 
          resp.forEach(course => {
+            course.strapiId = course.id
+            course.id = count
+            count++
             course.attributes.modules.forEach(module => {
+               module.strapiId = module.id
+               module.id = count
+               count++
                module.lessons.forEach(lesson => {
+                  lesson.strapiId = lesson.id
+                  lesson.id = count
+                  count++
                   lesson.expositives = lesson.expositives.data
                   lesson.expositives.forEach(expositive => {
                      Object.keys(expositive.attributes).forEach(key => {
                         expositive[key] = expositive.attributes[key];
                      });
                      expositive.strapiId = expositive.id
-                     expositive.contentType=expositive.type
+                     expositive.contentType = expositive.type
                      delete expositive.id
                      delete expositive.attributes
                      allExpositives.push(expositive)
@@ -212,7 +412,7 @@ const data = {
                         evaluative[key] = evaluative.attributes[key];
                      });
                      Object.keys(evaluative.content[0]).forEach(key => {
-                        if (key == "__component"){
+                        if (key == "__component") {
                            if (evaluative.content[0]["__component"] == "base.quiz") {
                               evaluative.type = "quiz";
                               evaluative.contentType = "quiz";
@@ -240,18 +440,12 @@ const data = {
                   lesson.contentType = "lesson"
                   lesson.internalId = "L" + lessonCount
                   lessonCount++
-                  lesson.strapiId=lesson.id
-                  lesson.id = count
-                  count++
                   allLessons.push(lesson);
                });
                module["children"] = module.lessons
                module.contentType = "module"
                module.internalId = "M" + moduleCount
                moduleCount++
-               module.strapiId = module.id
-               module.id = count
-               count++
                delete module.lessons
                allModules.push(module)
             });
@@ -263,9 +457,6 @@ const data = {
                }
             });
             course.contentType = "course"
-            course.strapiId = course.id
-            course.id = count
-            count++
             delete course.attributes
             allCourses.push(course);
          });
@@ -274,8 +465,16 @@ const data = {
          data.state.expositives = [...allExpositives];
          data.state.evaluatives = [...allEvaluatives];
          data.state.modules = [...allModules];
+         data.state.maxId = count
       },
 
+
+      //--------------------------Teacher---------------------------------------
+      async fetchEmptyCourse(state){
+         data.state.courses=emptyCourse
+         data.state.maxId=4
+         state.commit("updateStructure")
+      },
    },
    modules: {}
 };

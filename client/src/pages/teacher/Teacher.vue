@@ -8,13 +8,24 @@
       </v-system-bar>
 
       <!--Main-->
-      <v-main>
-         <Menu />
-         <v-container fluid>
-            <v-row>
-               <v-col cols="9">
-                  <Header :header="header" />
-                  <Resource :resource="resource" />
+      <v-main style="padding:24px 0 0 0">
+         <v-container fluid style="padding:0" fill-height>
+            <v-row class="fill-height">
+               <v-col cols="2">
+                  <Menu />
+               </v-col>
+               <v-col cols="8">
+                  <v-row style="padding-top: 12px;">
+                     <Header :header="header" />
+                  </v-row>
+                  <!--<Resource :resource="resource" />-->
+                  <v-row style="height:32rem">
+                     
+                     <v-card class="" width="100%" outlined style="width: 100%;">
+                        <Course outlined/>
+                     </v-card>
+                  </v-row>
+
                </v-col>
             </v-row>
          </v-container>
@@ -26,29 +37,33 @@
 
 <script>
 import { bus } from "@/main.js";
-import Resource from "./components/Resource.vue";
+import { mapActions } from "vuex";
+//import Resource from "./components/Resource.vue";
 import Menu from "./components/Menu.vue"
 import Header from "./components/Header.vue"
+import Course from "../student/Course.vue";
 
 export default {
    components: {
-      Resource,
+      //Resource,
       Menu,
-      Header
+      Header,
+      Course
    },
    data: () => ({
       resource: "main,Main",
       header: "main",
    }),
    methods: {
+      ...mapActions(["fetchEmptyCourse"]),
       setPage(payload) {
          this.resource = payload[0]
          this.header = payload[1]
       },
-      setResource(payload){
+      setResource(payload) {
          this.resource = payload
       },
-      setHeader(payload){
+      setHeader(payload) {
          this.header = payload
       }
    },
@@ -62,6 +77,8 @@ export default {
       bus.$on("changeHeader", payload => {
          this.setHeader(payload);
       });
+
+      this.fetchEmptyCourse()
    },
 };
 </script>
@@ -69,5 +86,10 @@ export default {
 <style>
 #teacher_bar {
    background-color: #454444;
+}
+
+.v-navigation-drawer,
+.v-navigation-drawer--fixed {
+   position: none !important;
 }
 </style>

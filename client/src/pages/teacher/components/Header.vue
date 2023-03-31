@@ -1,5 +1,5 @@
 <template>
-    <v-card class="mx-auto mb-2" max-width="100%" outlined v-if="header != ''">
+    <v-card class="mx-auto mb-2" width="100%" outlined >
         <div id="header">
             <v-list-item>
                 <v-list-item-content>
@@ -39,7 +39,7 @@ export default {
             } else if (this.header == "account") {
                 return "Account"
             } else {
-                return ""
+                return "asdfasdfD"
             }
         },
         getDescription() {
@@ -50,7 +50,7 @@ export default {
             } else if (this.header == "main") {
                 return "Here can teachers manage classes and courses for their students"
             } else {
-                return ""
+                return "sdfasdfD"
             }
         }
     },

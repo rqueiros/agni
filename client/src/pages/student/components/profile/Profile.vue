@@ -1,5 +1,5 @@
 <template>
-  <div id="profile" class="resource">
+  <div id="profile" class="resource" v-if="isStudent">
     <v-container fluid>
       <v-row>
         <v-col :cols="this.screenSmall ? 12 : 7">
@@ -122,6 +122,7 @@ export default {
     Gamification
   },
   created() {
+    this.role = this.getRole
     let lessons
     if (this.type =="course"){
       lessons = this.getLessonsByCourse(this.resource)
@@ -153,7 +154,8 @@ export default {
         { text: "Actions", value: "action" }
       ],
       sheets: [],
-      screenWidth: 0
+      screenWidth: 0,
+      role:""
     };
   },
   methods: {
@@ -174,9 +176,15 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["getLessonsByCourse", "getCompletationStatusByLesson", "getModuleByLesson", "getLessonsByModule"]),
+    ...mapGetters(["getLessonsByCourse", "getCompletationStatusByLesson", "getModuleByLesson", "getLessonsByModule", "getRole"]),
     screenSmall() {
       return this.screenWidth <= 768;
+    },
+    isStudent() {
+      return this.role == "student"
+    },
+    isTeacher() {
+      return this.role == "teacher"
     }
   },
   mounted() {
