@@ -1,10 +1,7 @@
 <template>
-    <div>Account</div>
+  <div>Account</div>
 </template>
-  
-<script>
 
-</script>
-  
+<script></script>
+
 <style></style>
-  

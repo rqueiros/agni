@@ -4,8 +4,6 @@
   </div>
 </template>
 
-
-
 <script>
 export default {
   name: "Resource",
@@ -22,11 +20,8 @@ export default {
         this.resource.contentType.slice(1);
       return () => import(`./${this.resource.contentType}/${componentName}`);
     }
-  },
+  }
 };
 </script>
 
-
-
-<style>
-</style>
+<style></style>

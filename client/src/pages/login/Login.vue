@@ -56,9 +56,7 @@
                           @click="studentLogin"
                         >
                           Student LOGIN
-                          <v-icon dark right>
-                            mdi-login-variant
-                          </v-icon>
+                          <v-icon dark right> mdi-login-variant </v-icon>
                         </v-btn>
                       </v-col>
 
@@ -71,12 +69,10 @@
                           @click="teacherlogin"
                         >
                           Teacher LOGIN
-                          <v-icon dark right>
-                            mdi-login-variant
-                          </v-icon>
+                          <v-icon dark right> mdi-login-variant </v-icon>
                         </v-btn>
                       </v-col>
-                      
+
                       <v-col class="d-flex" cols="12" sm="4" xsm="12" align-end>
                         <v-btn
                           class="ma-2"
@@ -86,13 +82,9 @@
                           @click="validate"
                         >
                           LOGIN
-                          <v-icon dark right>
-                            mdi-login-variant
-                          </v-icon>
+                          <v-icon dark right> mdi-login-variant </v-icon>
                         </v-btn>
                       </v-col>
-
-
                     </v-row>
                   </v-form>
                 </v-card-text>
@@ -164,9 +156,7 @@
                           @click="validate"
                         >
                           REGISTER
-                          <v-icon dark right>
-                            mdi-login-variant
-                          </v-icon>
+                          <v-icon dark right> mdi-login-variant </v-icon>
                         </v-btn>
                       </v-col>
                     </v-row>
@@ -192,11 +182,11 @@ export default {
   },
   methods: {
     ...mapActions(["login"]),
-    async studentLogin(){
-      this.login(["student","123456"])
+    async studentLogin() {
+      this.login(["student", "123456"]);
     },
-    async teacherlogin(){
-      this.login(["teacher","123456"])
+    async teacherlogin() {
+      this.login(["teacher", "123456"]);
     },
     validate() {
       if (this.$refs.loginForm.validate()) {
@@ -243,6 +233,4 @@ export default {
     }
   })
 };
-
 </script>
-

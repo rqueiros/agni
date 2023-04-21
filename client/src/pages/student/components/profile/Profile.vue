@@ -3,7 +3,6 @@
     <v-container fluid>
       <v-row>
         <v-col :cols="this.screenSmall ? 12 : 7">
-
           <!--Profile-->
           <v-card class="mx-auto mb-2" max-width="100%" outlined>
             <div class="header">
@@ -49,14 +48,14 @@
             </div>
 
             <!--PLAYER-->
-            <div id="exercises" style="text-align: left;">
+            <div id="exercises" style="text-align: left">
               <v-data-table
                 :headers="headers"
                 :items="sheets"
                 class="elevation-1 exercise"
                 mobile-breakpoint="0"
-                @click:row="play2">
-
+                @click:row="play2"
+              >
                 <template v-slot:item.name="{ item }">
                   {{ item.name }}
                 </template>
@@ -68,7 +67,11 @@
                 </template>
 
                 <template v-slot:item.status="{ item }">
-                  <v-chip :color="getColor(item.status)" dark style="font-size: 1vw; height:2.2vw">
+                  <v-chip
+                    :color="getColor(item.status)"
+                    dark
+                    style="font-size: 1vw; height: 2.2vw"
+                  >
                     {{ item.status }}%
                   </v-chip>
                 </template>
@@ -78,28 +81,24 @@
                     <v-icon>mdi-clipboard-play</v-icon>
                   </v-btn>
                 </template>
-
               </v-data-table>
             </div>
           </v-card>
         </v-col>
 
         <v-col cols="5" class="right_box">
-          <Gamification class="p-gamification"/>
+          <Gamification class="p-gamification" />
         </v-col>
       </v-row>
 
       <v-row>
         <v-col cols="12">
-          <Gamification class="p-gamification_XS"/>
+          <Gamification class="p-gamification_XS" />
         </v-col>
       </v-row>
-
     </v-container>
   </div>
 </template>
-
-
 
 <script>
 import { bus } from "@/main.js";
@@ -122,23 +121,28 @@ export default {
     Gamification
   },
   created() {
-    this.role = this.getRole
-    let lessons
-    if (this.type =="course"){
-      lessons = this.getLessonsByCourse(this.resource)
-    } else {
-      lessons = this.getLessonsByModule(this.resource)
-    }
-    this.sheets = []
-    lessons.forEach(lesson => {
-      const id = this.getModuleByLesson(lesson.strapiId).internalId+":"+lesson.internalId;
-      const rid = lesson.strapiId;
-      const name = lesson.name;
-      const status = this.getCompletationStatusByLesson(lesson.strapiId);
-      if (status){
-        this.sheets.push({ id, rid, name, status });
+    this.role = this.getRole;
+    if (this.role == "student") {
+      let lessons;
+      if (this.type == "course") {
+        lessons = this.getLessonsByCourse(this.resource);
+      } else {
+        lessons = this.getLessonsByModule(this.resource);
       }
-    });
+      this.sheets = [];
+      lessons.forEach(lesson => {
+        const id =
+          this.getModuleByLesson(lesson.strapiId).internalId +
+          ":" +
+          lesson.internalId;
+        const rid = lesson.strapiId;
+        const name = lesson.name;
+        const status = this.getCompletationStatusByLesson(lesson.strapiId);
+        if (status) {
+          this.sheets.push({ id, rid, name, status });
+        }
+      });
+    }
   },
   data() {
     return {
@@ -155,7 +159,7 @@ export default {
       ],
       sheets: [],
       screenWidth: 0,
-      role:""
+      role: ""
     };
   },
   methods: {
@@ -176,47 +180,48 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["getLessonsByCourse", "getCompletationStatusByLesson", "getModuleByLesson", "getLessonsByModule", "getRole"]),
+    ...mapGetters([
+      "getLessonsByCourse",
+      "getCompletationStatusByLesson",
+      "getModuleByLesson",
+      "getLessonsByModule",
+      "getRole"
+    ]),
     screenSmall() {
       return this.screenWidth <= 768;
     },
     isStudent() {
-      return this.role == "student"
+      return this.role == "student";
     },
     isTeacher() {
-      return this.role == "teacher"
+      return this.role == "teacher";
     }
   },
   mounted() {
     this.screenWidth = window.innerWidth;
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener("resize", this.handleResize);
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize);
-  },
+    window.removeEventListener("resize", this.handleResize);
+  }
 };
 </script>
 
-
-
 <style scoped>
-
-.p-gamification{
+.p-gamification {
   display: block;
 }
 
-.p-gamification_XS{
+.p-gamification_XS {
   display: none;
 }
 
 @media only screen and (max-width: 768px) {
-  .p-gamification{
+  .p-gamification {
     display: none;
   }
-  .p-gamification_XS{
+  .p-gamification_XS {
     display: block;
   }
-  
 }
-
 </style>

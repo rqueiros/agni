@@ -1,10 +1,7 @@
 <template>
-    <div>Settings</div>
+  <div>Settings</div>
 </template>
-  
-<script>
 
-</script>
-  
+<script></script>
+
 <style></style>
-  

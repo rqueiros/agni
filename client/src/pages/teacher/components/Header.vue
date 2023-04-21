@@ -1,67 +1,67 @@
 <template>
-    <v-card class="mx-auto mb-2" width="100%" outlined >
-        <div id="header">
-            <v-list-item>
-                <v-list-item-content>
-                    <v-list-item-title class="header_title">
-                        {{ getTitle }}
-                    </v-list-item-title>
+  <v-card class="mx-auto mb-2" width="100%" outline style="box-shadow:0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.2), 0px 1px 10px 0px rgba(0, 0, 0, 0.2)">
+    <div id="header">
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="header_title">
+            {{ getTitle }}
+          </v-list-item-title>
 
-                    <v-list-item-subtitle class="header_description">
-                        {{ getDescription }}
-                    </v-list-item-subtitle>
-                </v-list-item-content>
-            </v-list-item>
-        </div>
-    </v-card>
+          <v-list-item-subtitle class="header_description">
+            {{ getDescription }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </div>
+  </v-card>
 </template>
-  
+
 <script>
-console.log("here2")
+console.log("here2");
 export default {
-    name: "Header",
-    props: {
-        header: {
-            type: String,
-            default: () => null
-        }
+  name: "Header",
+  props: {
+    header: {
+      type: String,
+      default: () => null
+    }
+  },
+  computed: {
+    getTitle() {
+      if (this.header == "class") {
+        return "Class Managing";
+      } else if (this.header == "content") {
+        return "Content Managing";
+      } else if (this.header == "main") {
+        return "Welcome to the Agni Teacher side";
+      } else if (this.header == "settings") {
+        return "Settings";
+      } else if (this.header == "account") {
+        return "Account";
+      } else {
+        return "Content Managing";
+      }
     },
-    computed: {
-        getTitle() {
-            if (this.header == "class") {
-                return "Class Managing"
-            } else if (this.header == "content") {
-                return "Content Managing"
-            } else if (this.header == "main") {
-                return "Welcome to the Agni Teacher side"
-            } else if (this.header == "settings") {
-                return "Settings"
-            } else if (this.header == "account") {
-                return "Account"
-            } else {
-                return "asdfasdfD"
-            }
-        },
-        getDescription() {
-            if (this.header == "class") {
-                return "Here you can create and manage the occurrences of your classes"
-            } else if (this.header == "content") {
-                return "Here you can create and manage a course, expositives (pdf,.. content), evaluative (progEx, Quiz) and questions"
-            } else if (this.header == "main") {
-                return "Here can teachers manage classes and courses for their students"
-            } else {
-                return "sdfasdfD"
-            }
-        }
-    },
+    getDescription() {
+      if (this.header == "class") {
+        return "Here you can create and manage the occurrences of your classes";
+      } else if (this.header == "content") {
+        return "Here you can create and manage a course, expositives (pdf,.. content), evaluative (progEx, Quiz) and questions";
+      } else if (this.header == "main") {
+        return "Here can teachers manage classes and courses for their students";
+      } else {
+        return "Create and manage a course, expositives (pdf,.. content), evaluative (progEx, Quiz) and questions";
+      }
+    }
+  }
 };
 </script>
-  
+
 <style>
 #header {
-    text-align: center;
+  text-align: center;
 }
 .header_title {
-    font-size: 1.5em;
+  font-size: 1.5em;
 }
 </style>

@@ -6,32 +6,93 @@
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
     </v-toolbar>
 
-    <!-- Navigation Drawer-->
-    <v-navigation-drawer app width="25%" v-model="drawer" 
-                        class="m-navigation_drawer fill-height" 
-                        :permanent="!screenSmall" :temporary="screenSmall" 
-                        style="position: absolute; top:0; height: 100%;">
 
-       <!---------------------Student------------------------------------------>
-      <v-sheet color="grey lighten-4" class="m-profile_sheet" 
-              v-if="this.role=='student'">
-        <v-avatar color="red" class="m-profile" 
-                  @click="selectResource(-1)">
-          <v-icon dark class="m-icon">
-            mdi-card-account-details
-          </v-icon>
+    <v-navigation-drawer app width="25%" v-model="drawer" class="m-navigation_drawer fill-height"
+      :permanent="!screenSmall" :temporary="screenSmall" style="position: absolute; top: 0; height: 100%">
+
+      <!---------------------Student------------------------------------------>
+      <v-sheet color="grey lighten-4" class="m-profile_sheet" v-if="isStudent">
+        <v-avatar color="red" class="m-profile" @click="selectResource(-1)">
+          <v-icon dark class="m-icon"> mdi-card-account-details </v-icon>
         </v-avatar>
         <div>guest@esmad.ipp.pt</div>
       </v-sheet>
-      <!---->
-       <!---------------------Teacher------------------------------------------>
-      <v-sheet color="grey lighten-4" class="m-profile_sheet" 
-              v-if="this.role=='teacher'">
-        <div>Change to Student Mode -></div>
-      </v-sheet>
+
+      <v-divider v-if="isStudent" />
+
+      <v-treeview return-object :items="items" color="error" open-on-click editable @update:active="selectResource"
+        @update:open="selectResource" item-disabled="locked" hoverable activatable selected-color="primary"
+        id="menuTreeView" v-if="isStudent">
+        <template v-slot:label="{ item }">
+          <span class="course_smallText">
+            {{ item.name }}
+          </span>
+        </template>
+        <template v-slot:prepend="{ item, open }">
+          <v-icon v-if="item.contentType == 'course'" color="black" class="m_icon">
+            {{ "mdi-cloud-braces" }}
+          </v-icon>
+          <v-icon v-else-if="item.contentType == 'module'" color="red" class="m_icon">
+            {{ open ? "mdi-folder-open" : "mdi-folder" }}
+          </v-icon>
+          <v-icon v-else color="gray" class="m_icon">
+            {{ files[item.contentType] }}
+          </v-icon>
+          {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
+        </template>
+      </v-treeview>
       <!---->
 
-      <v-divider></v-divider>
+
+      <!---------------------Teacher------------------------------------------>
+      <v-sheet color="grey lighten-4" class="m-profile_sheet" v-if="isTeacher">
+        <div>Change to Student Mode -></div>
+      </v-sheet>
+
+      <v-divider v-if="isTeacher" />
+
+      <v-treeview return-object :items="items" color="error" open-on-click editable @update:active="selectResource"
+        @update:open="selectResource" item-disabled="locked" hoverable activatable selected-color="primary"
+        id="menuTreeView" v-if="isTeacher">
+        <template v-slot:label="{ item }">
+          <v-btn v-if="item.type == 'add'" small style="font-size: 0.7vw"
+            @click="addButton(item.contentType, item.parentId)">
+            <v-icon class="m-edit_icon" :label="item">mdi-plus</v-icon>
+            {{ item.name }}
+          </v-btn>
+          <span v-else class="course_smallText">
+            <Editable :type="item.contentType" :value="item.name" :id="item.strapiId" :field="'name'" :placeholder="item.contentType.charAt(0).toUpperCase()+item.contentType.slice(1)+' name'"
+            @input="editableChange" onclick="event.stopPropagation()" />
+          </span>
+        </template>
+
+        <template v-slot:append="{ item }">
+          <div style="display: flex; align-items: center;">
+            <span style="display: flex; flex-direction: column;">
+              <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" class="course_iconButtonS"
+                @click="moveButton(item.contentType, item.strapiId, 'up')" onclick="event.stopPropagation()">
+                <v-icon color="gray" class="course_IconS"> mdi-arrow-up </v-icon>
+              </v-btn>
+              <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" class="course_iconButtonS"
+                @click="moveButton(item.contentType, item.strapiId, 'down')" onclick="event.stopPropagation()">
+                <v-icon color="gray" class="course_IconS"> mdi-arrow-down </v-icon>
+              </v-btn>
+            </span>
+            <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" class="course_iconButtonS"
+              onclick="event.stopPropagation()">
+              <v-icon color="gray" class="course_IconS"> mdi-pencil </v-icon>
+            </v-btn>
+            <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" class="course_iconButtonS"
+              @click="deleteButton(item.contentType, item.strapiId)" onclick="event.stopPropagation()">
+              <v-icon color="gray" class="course_IconS"> mdi-delete </v-icon>
+            </v-btn>
+            <div v-if="item.contentType == 'course'" style="width:3.8em"></div>
+          </div>
+        </template>
+      </v-treeview>
+      <!---->
+
+
       <!--
       <v-draggable-treeview return-object open-on-click v-model="items" color="error" @update:active="selectResource"
         @update:open="selectResource" item-disabled="locked" hoverable :item-props="{ active: activeItem }"
@@ -61,79 +122,12 @@
 
       </v-draggable-treeview>-->
 
-      <v-treeview return-object :items="items" color="error" 
-                  open-on-click editable @update:active="selectResource"
-                  @update:open="selectResource" item-disabled="locked" 
-                  hoverable activatable selected-color="primary"
-                  id="menuTreeView">
-
-        <!---------------------Student----------------------------------------->
-        <template v-slot:prepend="{ item, open }" v-if="this.role=='student'">
-          <v-icon v-if="item.contentType == 'course'" color="black" class="m-icon">
-            {{ "mdi-cloud-braces" }}
-          </v-icon>
-          <v-icon v-else-if="item.contentType == 'module'" color="red" class="m-icon">
-            {{ open ? "mdi-folder-open" : "mdi-folder" }}
-          </v-icon>
-          <v-icon v-else color="gray" class="m-icon">
-            {{ files[item.type] }}
-          </v-icon>
-          {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
-        </template>
-        <!---->
-                
-        
-        <!---------------------Teacher----------------------------------------->
-        <template v-slot:label="{ item, }" v-if="this.role=='teacher'">
-          <v-btn v-if="item.type == 'add'" small style="font-size: 0.7vw;"
-                @click="addButton(item.contentType, item.parentId)">
-            <v-icon class="m-edit_icon" :label=item>mdi-plus</v-icon> {{ item.name }}
-          </v-btn>
-          <Editable v-else :type="item.contentType" :value="item.name" 
-                    :id="item.strapiId" :field="'name'" @input="editableChange"/>
-        </template>
-
-        <template v-slot:append="{ item, }" v-if="this.role=='teacher'">
-          <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" 
-                style="height:1vw;width: 1vw;"
-                @click="upButton(item.contentType, item.strapiId)">
-            <v-icon color="gray" class="m-edit_icon">
-              mdi-arrow-up
-            </v-icon>
-          </v-btn>
-          <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" 
-                style="height:1vw;width: 1vw;"
-                @click="downButton(item.contentType, item.strapiId)">
-            <v-icon color="gray" class="m-edit_icon">
-              mdi-arrow-down
-            </v-icon>
-          </v-btn>
-          <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" 
-                style="height:1vw;width: 1vw;">
-            <v-icon color="gray" class="m-edit_icon">
-              mdi-pencil
-            </v-icon>
-          </v-btn>
-          <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" 
-                style="height:1vw;width: 1vw;"
-                @click="deleteButton(item.contentType, item.strapiId)">
-            <v-icon color="gray" class="m-edit_icon">
-              mdi-delete
-            </v-icon>
-          </v-btn>
-        </template>
-        <!---->
-
-      </v-treeview>
     </v-navigation-drawer>
   </div>
 </template>
 
-
-
 <script>
-
-    // TODO: implement a previous/next navigation in the editor component
+// TODO: implement a previous/next navigation in the editor component
 
 import { mapGetters, mapMutations } from "vuex";
 import Editable from "../../../components/Editable.vue";
@@ -142,7 +136,7 @@ export default {
   name: "Menu",
 
   components: {
-    Editable,
+    Editable
   },
 
   data: () => ({
@@ -153,36 +147,59 @@ export default {
     files: {
       course: "mdi-cloud-braces",
       pdf: "mdi-file-pdf",
-      sheet: "mdi-file-document-outline"
-    },
+      lesson: "mdi-file-document-outline"
+    }
   }),
 
   created() {
-    this.role = this.getRole
+    this.role = this.getRole;
     this.$store.watch(
       state => state.courses,
       (newVal, oldVal) => {
         console.log(`Value of course changed from ${oldVal} to ${newVal}`);
-        if (this.role == "student") {
-          this.setCourse()
-        } else if (this.role == "teacher") {
-          this.setEditableCourse()
-        }
+        this.setCourse();
       }
     );
-    if (this.role == "teacher"){
-      this.setEditableCourse()
+    this.setCourse();
+  },
+
+  mounted() {
+    this.screenWidth = window.innerWidth;
+    window.addEventListener("resize", this.handleResize);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+  },
+
+  computed: {
+    ...mapGetters(["getCourse", "getCompletationStatusBySheetId", "getRole"]),
+    screenSmall() {
+      return this.screenWidth <= 768;
+    },
+    isStudent() {
+      return this.role == "student";
+    },
+    isTeacher() {
+      return this.role == "teacher";
     }
   },
 
   methods: {
-    ...mapMutations(["addLessonByModuleId", "addModuleByCourseId",
-      "deleteLesson", "deleteModule", "createEditableCourse", "upLesson", 
-      "upModule", "downLesson", "downModule", "editableInput"]),
+    ...mapMutations([
+      "addLessonByModuleId",
+      "addModuleByCourseId",
+      "deleteLesson",
+      "deleteModule",
+      "createEditableCourse",
+      "moveLesson",
+      "moveModule",
+      "editableInput"
+    ]),
 
     //--------------------------Student-----------------------------------------
     setCourse() {
-      this.items = this.getCourse
+      this.items = this.getCourse;
     },
     getCompletationStatus(item) {
       if (item.file == "sheet") {
@@ -210,76 +227,66 @@ export default {
     },
 
     //--------------------------Teacher-----------------------------------------
-    setEditableCourse() {
-      this.createEditableCourse()
-      this.items = this.getCourse
-    },
     addButton(type, parentId) {
-      console.log(this.items)
       if (type == "lesson") {
-        this.addLessonByModuleId(parentId)
+        this.addLessonByModuleId(parentId);
       } else if (type == "module") {
-        this.addModuleByCourseId(parentId)
+        this.addModuleByCourseId(parentId);
       }
     },
     deleteButton(type, id) {
       if (type == "lesson") {
-        this.deleteLesson(id)
+        this.deleteLesson(id);
       } else if (type == "module") {
-        this.deleteModule(id)
+        this.deleteModule(id);
       }
     },
-    upButton(type, id){
+    moveButton(type, id, direction) {
       if (type == "lesson") {
-        this.upLesson(id)
+        this.moveLesson([id, direction]);
       } else if (type == "module") {
-        this.upModule(id)
+        this.moveModule([id, direction]);
       }
     },
-    downButton(type, id){
-      if (type == "lesson") {
-        this.downLesson(id)
-      } else if (type == "module") {
-        this.downModule(id)
-      }
-    },
-    editableChange(obj){
-      this.editableInput(obj)
+    editableChange(obj) {
+      this.editableInput(obj);
     },
 
     //--------------------------Else--------------------------------------------
     handleResize() {
       this.screenWidth = window.innerWidth;
-    },
-  },
-
-  computed: {
-    ...mapGetters(["getCourse", "getCompletationStatusBySheetId", "getRole"]),
-    screenSmall() {
-      return this.screenWidth <= 768;
     }
-  },
-
-  mounted() {
-    this.screenWidth = window.innerWidth;
-    window.addEventListener('resize', this.handleResize);
-  },
-
-  beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize);
-  },
+  }
 };
 </script>
 
-
-
 <style scoped>
+/* Icons */
+#menuTreeView>>>.v-icon.v-icon {
+  /* for the > icons */
+  font-size: 1.5em;
+}
+
+.m_icon {
+  /*font-size: 1em;*/
+}
+
+.m_editIcon {
+  font-size: 1.3em !important;
+}
+
+
+
+#menuTreeView>>>.v-treeview-node__toggle {
+  width: 1em;
+}
+
+
 #menuTreeView>>>.v-treeview-node__root {
-  display: flex
+  display: flex;
 }
 
 .m-navigation_drawer {
-  font-size: 1.1vw;
   top: 0;
 }
 
@@ -297,13 +304,15 @@ export default {
   cursor: pointer;
 }
 
-.m-icon {
-  font-size: 1.7vw;
+
+
+
+
+
+#menuTreeView>>>.v-treeview-node__level {
+  width: 1.5em;
 }
 
-.m-edit_icon {
-  font-size: 1.1vw !important;
-}
 
 /*
 #menuTreeView>>>.v-treeview-node__append {
@@ -311,9 +320,7 @@ export default {
   min-width: 0;
 }*/
 
-#menuTreeView>>>.v-treeview-node__level {
-  width: 1.8vw;
-}
+
 
 #menuTreeView>>>.v-treeview-node__prepend {
   min-width: 0;
@@ -327,7 +334,6 @@ export default {
   display: none;
 }
 
-
 @media only screen and (max-width: 768px) {
   .m-toolbar {
     display: block;
@@ -335,12 +341,9 @@ export default {
 
   .m-navigation_drawer {
     width: 75% !important;
-    font-size: 3.5vw;
   }
 
-  .m-icon {
-    font-size: 3.7vw;
-  }
+
 
   #menuTreeView>>>.v-treeview-node__level {
     width: 5vw;
@@ -359,5 +362,4 @@ export default {
   .m-profile_sheet {
     padding: 2vw 16px;
   }
-}
-</style>
+}</style>

@@ -3,34 +3,37 @@
     <!--STATEMENT-->
     <v-list-item>
       <v-list-item-content>
-
-        <v-list-item-title class="resource_title">
-          <!---------------------Student--------------------------------------->
+        <v-list-item-title class="course_title">
+          <!--Student-->
           <div v-if="isStudent">
             {{ getModuleByResourceId(resource.strapiId, resource.contentType).internalId }}.
             {{ getModuleByResourceId(resource.strapiId, resource.contentType).name }}
           </div>
-          <!---->
-          <!---------------------Teacher--------------------------------------->
-          <Editable v-if="isTeacher" :type="'module'"
+          <!--Teacher-->
+          <Editable v-if="isTeacher" :type="'module'" :field="'name'" :placeholder="'Module Name'"
             :value="getModuleByResourceId(resource.strapiId, resource.contentType).name"
-            :id="getModuleByResourceId(resource.strapiId, resource.contentType).strapiId" :field="'name'"
-            @input="editableChange"></Editable>
-          <!---->
+            :id="getModuleByResourceId(resource.strapiId, resource.contentType).strapiId" @input="editableChange">
+          </Editable>
         </v-list-item-title>
 
-        <v-list-item-subtitle class="resource_subtitle">
-          <!---------------------Student--------------------------------------->
+        <v-list-item-subtitle class="course_subtitle" v-if="resource.contentType != 'lesson'">
+          <div v-if="isStudent">
+            {{ getLessonByResourceId(resource.strapiId).name }}
+          </div>
+          <Editable placeholder="Lesson name" v-if="isTeacher" :type="'lesson'"
+            :value="getLessonByResourceId(resource.strapiId).name" :id="getLessonByResourceId(resource.strapiId).strapiId"
+            :field="'name'" @input="editableChange"></Editable>
+        </v-list-item-subtitle>
+
+        <v-list-item-subtitle class="course_subtitle">
           <div v-if="isStudent">
             {{ resource.name }}
           </div>
-          <!---->
-          <!---------------------Teacher--------------------------------------->
-          <Editable v-if="isTeacher" :type="'lesson'" :value="resource.name" :id="resource.strapiId" :field="'name'"
-            @input="editableChange"></Editable>
-          <!---->
+          <Editable placeholder="Lesson name" v-if="isTeacher && resource.contentType=='lesson'" :type="'lesson'" :value="resource.name"
+            :id="resource.strapiId" :field="'name'" @input="editableChange"></Editable>
+          <Editable placeholder="Exercise name" v-if="isTeacher && resource.contentType!='lesson'" :type="'evaluative'" :value="resource.name"
+            :id="resource.strapiId" :field="'name'" @input="editableChange"></Editable>
         </v-list-item-subtitle>
-
       </v-list-item-content>
       <v-list-item-avatar tile class="box" color="red">
         <v-icon large color="white" class="box_icon">
@@ -40,28 +43,27 @@
     </v-list-item>
 
     <!---------------------Student--------------------------------------------->
-    <v-card-text class="resource_text" v-if="resource.description && isStudent"
-      v-html="resource.description"></v-card-text>
-    <v-card-text v-if="resource.statement" v-html="resource.statement"></v-card-text>
+    <v-card-text class="course_text" v-if="resource.description && isStudent" v-html="resource.description"></v-card-text>
+    <v-card-text class="course_text" v-if="resource.statement && isStudent" v-html="resource.statement"></v-card-text>
     <v-alert v-if="resource.html != undefined" color="#2A3B4D" dark icon="mdi-language-html5" dense>
       <code>
-          <div v-for="line in html_escape(resource.html)" :key="line">
-            {{ line }}
-          </div>
-        </code>
+                  <div v-for="line in html_escape(resource.html)" :key="line">
+                    {{ line }}
+                  </div>
+                </code>
     </v-alert>
     <!---->
     <!---------------------Teacher--------------------------------------------->
-    <v-card-text v-if="resource.description && isTeacher">
-      <Editable :type="'lesson'" :value="resource.description"
-        :id="resource.strapiId" :field="'description'" @input="editableChange" />
+    <v-card-text v-if="resource.contentType == 'lesson' && isTeacher" class="course_text">
+      <Editable :type="'lesson'" placeholder="Lesson description" :value="resource.description" :id="resource.strapiId"
+        :field="'description'" @input="editableChange" />
     </v-card-text>
-    <v-card-text v-if="resource.statement && isTeacher">
-      <Editable :type="'evaluative'" :value="resource.statement"
-        :id="resource.strapiId" :field="'statement'" @input="editableChange" />
+    <v-card-text v-if="resource.type == 'code' && isTeacher" class="course_text">
+      <Editable placeholder="Exercise statement" :type="'evaluative'" :value="resource.statement" :id="resource.strapiId"
+        :field="'statement'" @input="editableChange" />
     </v-card-text>
     <!---->
-
+    <v-card-text v-if="resource.contentType=='quiz'"></v-card-text>
   </div>
 </template>
 
@@ -79,24 +81,28 @@ export default {
   },
 
   components: {
-    Editable,
+    Editable
   },
 
   data: () => ({
-    role: "",
+    role: ""
   }),
 
   created() {
-    this.role = this.getRole
+    this.role = this.getRole;
   },
 
   computed: {
-    ...mapGetters(["getModuleByResourceId", "getSheetByResourceId", "getRole"]),
+    ...mapGetters([
+      "getModuleByResourceId",
+      "getLessonByResourceId",
+      "getRole"
+    ]),
     isStudent() {
-      return this.role == "student"
+      return this.role == "student";
     },
     isTeacher() {
-      return this.role == "teacher"
+      return this.role == "teacher";
     }
   },
 
@@ -140,8 +146,8 @@ export default {
       return lines;
     },
     editableChange(obj) {
-      this.editableInput(obj)
-    },
+      this.editableInput(obj);
+    }
   }
 };
 </script>

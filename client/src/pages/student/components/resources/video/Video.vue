@@ -41,12 +41,12 @@ import Player from "@/pages/student/components/resources/video/Player.vue";
 export default {
   name: "Video",
   components: {
-    Player,
+    Player
   },
   props: {
     resource: {
       type: Object,
-      default: () => { }
+      default: () => {}
     }
   },
   data() {

@@ -7,7 +7,7 @@
       <div class="mr-2"><v-icon>mdi-school</v-icon>learnJS v0.7.7</div>
     </v-system-bar>
     <!--Main-->
-    <v-main style="padding:24px 0px 0px 0%;">
+    <v-main style="padding: 24px 0px 0px 0%">
       <Course />
     </v-main>
   </v-app>
@@ -18,8 +18,7 @@ import Course from "./Course.vue";
 
 export default {
   components: {
-    Course,
-  },
-}
+    Course
+  }
+};
 </script>
-

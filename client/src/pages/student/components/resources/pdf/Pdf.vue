@@ -28,20 +28,18 @@
   </div>
 </template>
 
-
-
 <script>
 import Player from "@/pages/student/components/resources/pdf/Player.vue";
 
 export default {
   name: "Pdf",
   components: {
-    Player,
+    Player
   },
   props: {
     resource: {
       type: Object,
-      default: () => { }
+      default: () => {}
     }
   },
   data() {
@@ -64,14 +62,12 @@ export default {
   },
   mounted() {
     this.screenWidth = window.innerWidth;
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener("resize", this.handleResize);
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize);
-  },
+    window.removeEventListener("resize", this.handleResize);
+  }
 };
 </script>
-
-
 
 <style></style>

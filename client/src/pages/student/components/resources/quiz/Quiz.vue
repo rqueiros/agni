@@ -7,6 +7,7 @@
             <!--STATEMENT-->
             <Header :resource="resource" />
             <!--PLAYER-->
+
             <Quizzer :resource="resource" ref="quizzer" />
 
             <!--
@@ -17,14 +18,12 @@
             ></v-rating>-->
 
             <!--FEEDBACK-->
-            <v-expansion-panels>
+            <v-expansion-panels v-if="isStudent">
               <v-expansion-panel>
                 <v-expansion-panel-header disable-icon-rotate>
                   Questions (0)
                   <template v-slot:actions>
-                    <v-icon color="teal">
-                      mdi-comment-multiple
-                    </v-icon>
+                    <v-icon color="teal"> mdi-comment-multiple </v-icon>
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
@@ -51,6 +50,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import Header from "@/pages/student/components/resources/Header.vue";
 import Quizzer from "@/pages/student/components/resources/quiz/Quizzer.vue";
 export default {
@@ -67,12 +67,25 @@ export default {
   },
   data() {
     return {
-      screenWidth:0
+      screenWidth: 0
     };
   },
+  created() {
+    this.role = this.getRole;
+  },
   computed: {
+    ...mapGetters(["getRole"]),
+    getR() {
+      return this.resource;
+    },
     screenSmall() {
       return this.screenWidth <= 768;
+    },
+    isStudent() {
+      return this.role == "student";
+    },
+    isTeacher() {
+      return this.role == "teacher";
     }
   },
   methods: {
@@ -82,11 +95,11 @@ export default {
   },
   mounted() {
     this.screenWidth = window.innerWidth;
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener("resize", this.handleResize);
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize);
-  },
+    window.removeEventListener("resize", this.handleResize);
+  }
 };
 </script>
 

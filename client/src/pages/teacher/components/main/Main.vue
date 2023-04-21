@@ -1,19 +1,16 @@
 <template>
-    <div>
-     <div>Main</div>
-    </div>
+  <div>
+    <div>Main</div>
+  </div>
 </template>
-  
-<script>
 
+<script>
 export default {
-    components: {
-    },
-    data: () => ({
-      type: "main"
-   }),
-}
+  components: {},
+  data: () => ({
+    type: "main"
+  })
+};
 </script>
-  
+
 <style></style>
-  

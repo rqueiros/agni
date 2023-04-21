@@ -3,63 +3,81 @@
     <v-container fluid>
       <v-row>
         <v-col :cols="this.screenSmall ? 12 : 7">
-          <v-card class="mx-auto" max-width="100%" outlined>
-
+          <v-card max-width="100%" outlined>
             <Header :resource="resource" />
 
             <!--<Expositives :resource="resource" />-->
+
+            <v-spacer v-if="isTeacher" style="height: 12px"></v-spacer>
+
             <div id="expositives" v-if="expoLen || isTeacher">
-              <v-card outlined style="border-radius: 0;">
-                <v-btn style="width: 100%; margin-bottom: 2vw;" v-if="!evalLen && isTeacher && !showExpositives"
-                  @click="showExpositives = true">
+              <v-card outlined style="border-radius: 0; display: flex;">
+                <!-----------------Teacher------------------------------------->
+                <v-btn style="width: 100%;" v-if="!expoLen && isTeacher && !showExpositives" 
+                  class="course_button course_text" @click="showExpositives = true">
                   <v-icon>mdi-plus</v-icon>Expositives
                 </v-btn>
-                <v-bottom-navigation grow :elevation="0" dense style="box-shadow: none; height: 24px;" v-model="index"
-                  v-if="showExpositives || expoLen">
-                  <v-btn v-for="(item, index) in expositives" :key="index" style="padding:0">
-                    <div>
-                      <v-icon>{{ getIcon(item.type) }}</v-icon> {{ item.name }}
-                    </div>
-                  </v-btn>
-                  <v-btn icon v-if="isTeacher">
-                    <v-icon class="box_icon" small>
-                      mdi-plus
-                    </v-icon>
-                  </v-btn>
-                  <v-btn icon v-if="isTeacher" @click="removeExpositives">
-                    <v-icon class="box_icon" small>
-                      mdi-delete
-                    </v-icon>
-                  </v-btn>
-                </v-bottom-navigation>
+                <!---->
+
+                <div style="display: flex; width: 100%;">
+                  <v-bottom-navigation grow style="box-shadow: none; height: 2rem;" id="navBar" v-model="index"
+                    v-if="showExpositives || expoLen">
+                    <v-btn v-for="(item, i) in getExpostives" :key="i" class="course_smallText"
+                      style="padding: 0 0.5em; border-left: solid; border-right: solid; border-width: 0.01em; border-color: lightgray;">
+                      <div style="display: flex; align-items: center;">
+                        <v-icon>{{ getIcon(item.type) }}</v-icon>
+                        <span v-if="isStudent">
+                          {{ item.name }}
+                        </span>
+                        <Editable v-if="isTeacher" :type="'expositive'" :value="item.name" :id="item.strapiId" placeholder="Expositive name"
+                          :field="'name'" @input="editableChange" onclick="event.stopPropagation()"></Editable>
+                        <v-spacer style="width:1em"></v-spacer>
+                        <v-icon class="course_IconS" v-if="isTeacher" @click="deleteExpo(item.strapiId)">mdi-delete</v-icon>
+                      </div>
+                    </v-btn>
+                  </v-bottom-navigation>
+
+                  <div v-if="(showExpositives || expoLen) && isTeacher" style="display: flex; height: 2rem;">
+                    <v-btn icon style="min-width: 0;" @click="addExpositiveByLessonId(resource.strapiId)"
+                      class="course_iconButtonL">
+                      <v-icon> mdi-plus </v-icon>
+                    </v-btn>
+                    <v-btn icon style="min-width: 0;" @click="removeExpositives" class="course_iconButtonL">
+                      <v-icon> mdi-delete </v-icon>
+                    </v-btn>
+                  </div>
+                </div>
               </v-card>
 
-              <component v-if="expoLen" :is="getComponent" :resource="expo" ref="expo"></component>
+              <component v-if="expoLen" :is="getComponent" :resource="getExpo" ref="expo"></component>
             </div>
 
+            <v-spacer style="height: 24px"></v-spacer>
+
             <Evaluatives :resource="resource" />
+
+            <v-spacer style="height: 24px"></v-spacer>
 
             <v-expansion-panels v-if="isStudent">
               <v-expansion-panel>
                 <v-expansion-panel-header disable-icon-rotate>
                   Questions (0)
                   <template v-slot:actions>
-                    <v-icon color="teal">
-                      mdi-comment-multiple
-                    </v-icon>
+                    <v-icon color="teal"> mdi-comment-multiple </v-icon>
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <code>
-                          It will be possible to pose questions in future versions
-                        </code>
+                                  It will be possible to pose questions in future versions
+                                </code>
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card>
         </v-col>
         <v-col cols="5">
-          <Timeline :resource="expo" @onMilestone="setMilestone" ref="timeline" class="r-timeline" />
+          <Timeline :resource="resource.expositives[index]" @onMilestone="setMilestone" ref="timeline"
+            class="r-timeline" />
         </v-col>
       </v-row>
       <v-row>
@@ -75,10 +93,10 @@
 import Header from "@/pages/student/components/resources/Header.vue";
 //import Expositives from "@/pages/student/components/resources/lesson/Expositives.vue";
 import Evaluatives from "@/pages/student/components/resources/lesson/Evaluatives.vue";
-import Timeline from "@/pages/student/components/resources/Timeline.vue"
+import Timeline from "@/pages/student/components/resources/Timeline.vue";
+import Editable from "../../../../../components/Editable.vue";
 
-import { mapGetters } from "vuex";
-
+import { mapGetters, mapMutations } from "vuex";
 
 export default {
   name: "Lesson",
@@ -86,7 +104,8 @@ export default {
     Header,
     //Expositives,
     Evaluatives,
-    Timeline
+    Timeline,
+    Editable
   },
   props: {
     resource: {
@@ -105,11 +124,14 @@ export default {
     };
   },
   created() {
-    this.role = this.getRole
-    if (!("expositives" in this.resource) || (this.resource.expositives.lenght == 0)) {
-      this.expositives = []
+    this.role = this.getRole;
+    if (
+      !("expositives" in this.resource) ||
+      this.resource.expositives.length < 1
+    ) {
+      this.expositives = [];
     } else {
-      this.showExpositives = true
+      this.showExpositives = true;
       let i = 1;
       this.resource.expositives.forEach(expositive => {
         this.expositives.push({
@@ -125,38 +147,70 @@ export default {
   },
   mounted() {
     this.screenWidth = window.innerWidth;
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener("resize", this.handleResize);
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener("resize", this.handleResize);
   },
   computed: {
     ...mapGetters(["getRole"]),
     screenSmall() {
       return this.screenWidth <= 768;
     },
+    getExpostives() {
+      return this.resource.expositives
+    },
+    getExpo() {
+      return this.resource.expositives[this.index];
+    },
     getComponent() {
-      this.expo = this.resource.expositives[this.index]
+      if (this.resource.expositives.length == 0) {
+        return null
+      }
+      if (this.index == undefined) {
+        this.setIndex(0)
+      }
       const componentName =
-        this.expositives[this.index].type.charAt(0).toUpperCase() +
-        this.expositives[this.index].type.slice(1);
-      return () => import(`../${this.expositives[this.index].type}/${componentName}`);
+        this.resource.expositives[this.index].type.charAt(0).toUpperCase() +
+        this.resource.expositives[this.index].type.slice(1);
+      return () =>
+        import(`../${this.resource.expositives[this.index].type}/${componentName}`);
     },
     expoLen() {
-      return this.expositives.length > 0
+      return this.resource.expositives.length > 0;
     },
     isStudent() {
-      return this.role == "student"
+      return this.role == "student";
     },
     isTeacher() {
-      return this.role == "teacher"
+      return this.role == "teacher";
     }
   },
   methods: {
-    removeExpositives(){
-      this.index=0,
-      this.expositives=[],
-      this.showExpositives=false
+    ...mapMutations([
+      "addExpositiveByLessonId",
+      "deleteExpositive",
+      "editableInput"
+    ]),
+    deleteExpo(id) {
+      if(this.index == this.resource.expositives.findIndex(e => e.strapiId == id)){
+        if (this.index > 0){
+          this.setIndex(this.index-1)
+        }
+      }
+      this.deleteExpositive(id)
+    },
+    setIndex(i) {
+      this.index = i
+    },
+    editableChange(obj) {
+      this.editableInput(obj);
+    },
+    removeExpositives() {
+      this.index = 0
+      this.resource.expositives = []
+      this.showExpositives = false
+      //missing delete all of structure
     },
     handleResize() {
       this.screenWidth = window.innerWidth;
@@ -186,7 +240,7 @@ export default {
           icon = "mdi-file-pdf-box";
           break;
         default:
-          icon = "mdi-code-json";
+          icon = "";
           break;
       }
       return icon;
@@ -195,7 +249,37 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+
+.course_IconS{
+  font-size:1.685em !important;
+}
+#navBar>>>.v-btn__content {
+  flex: auto;
+}
+
+#navBar>>>.v-item-group.v-bottom-navigation .v-btn {
+  max-width: none !important;
+  min-width: 0 !important;
+  font-weight: none !important;
+}
+
+#navBar>>>.v-btn {
+  font-size: none !important;
+}
+
+.v-item-group.v-bottom-navigation .v-btn {
+  max-width: none !important;
+  min-width: 0 !important;
+  font-weight: none !important;
+}
+
+
+
+.teacherCard {
+  margin-bottom: 2vw;
+}
+
 .r-timeline {
   display: block;
 }

@@ -1,15 +1,8 @@
 <template>
   <div style="text-align: right">
-    <AceEditor
-      ref="myEditor"
-      v-model="code"
-      @init="editorInit"
-      @onchange="editorChange"
-      lang="javascript"
-      theme="ambiance"
-      width="100%"
-      height="250px"
-      :options="{
+    Solution
+    <AceEditor ref="myEditor" v-model="code" @init="editorInit" @onchange="editorChange" lang="javascript"
+      theme="ambiance" width="100%" height="250px" :options="{
         enableBasicAutocompletion: true,
         enableLiveAutocompletion: true,
         fontSize: 17,
@@ -20,33 +13,91 @@
         tabSize: 2,
         showPrintMargin: false,
         showGutter: true
-      }"
-      :commands="[
-        {
-          name: 'save',
-          bindKey: { win: 'Ctrl-s', mac: 'Command-s' },
-          exec: dataSumit,
-          readOnly: true
-        }
-      ]"
-    />
-    <span class="caption mr-2">(autosave each 10 seconds)</span>
+      }" :commands="[
+  {
+    name: 'save',
+    bindKey: { win: 'Ctrl-s', mac: 'Command-s' },
+    exec: dataSumit,
+    readOnly: true
+  }
+]" />
+
+    <v-spacer style="height: 2vw"></v-spacer>   
+
+    <v-btn style="width: 100%" v-if="isTeacher && !showSkeleton" @click="showSkeleton = true">
+      <v-icon>mdi-plus</v-icon>Skeleton
+    </v-btn>
+    <div v-if="isTeacher && showSkeleton">
+      Skeleton 
+      <v-btn icon @click="showSkeleton=false">
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
+    </div>
+    <AceEditor ref="myEditor" v-model="code" @init="editorInit" @onchange="editorChange" lang="javascript" v-if="isTeacher && showSkeleton"
+      theme="ambiance" width="100%" height="250px" :options="{
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true,
+        fontSize: 17,
+        highlightActiveLine: true,
+        enableSnippets: true,
+        enableEmmet: true,
+        showLineNumbers: true,
+        tabSize: 2,
+        showPrintMargin: false,
+        showGutter: true
+      }" :commands="[
+  {
+    name: 'save',
+    bindKey: { win: 'Ctrl-s', mac: 'Command-s' },
+    exec: dataSumit,
+    readOnly: true
+  }
+]" />
+
+    <v-spacer style="height: 2vw"></v-spacer>
+
+    <v-btn style="width: 100%" v-if="isTeacher && !showContext" @click="showContext = true">
+      <v-icon>mdi-plus</v-icon>Context
+    </v-btn>
+    <div v-if="isTeacher && showContext">
+      Context 
+      <v-btn icon @click="showContext=false">
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
+    </div>
+    <AceEditor ref="myEditor" v-model="code" @init="editorInit" @onchange="editorChange" lang="javascript" v-if="isTeacher && showContext"
+      theme="ambiance" width="100%" height="250px" :options="{
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true,
+        fontSize: 17,
+        highlightActiveLine: true,
+        enableSnippets: true,
+        enableEmmet: true,
+        showLineNumbers: true,
+        tabSize: 2,
+        showPrintMargin: false,
+        showGutter: true
+      }" :commands="[
+  {
+    name: 'save',
+    bindKey: { win: 'Ctrl-s', mac: 'Command-s' },
+    exec: dataSumit,
+    readOnly: true
+  }
+]" />
+
+    <span v-if="isStudent" class="caption mr-2">(autosave each 10 seconds)</span>
     <v-card-actions>
       <v-btn color="error" class="mb-2" @click="backToSheet">
         BACK TO SHEET<v-icon right dark> mdi-autorenew </v-icon>
       </v-btn>
-      <v-btn
-        color="success"
-        class="mb-2"
-        @click="dataSumit"
-        :disabled="statusSaveButton"
-      >
+      <v-btn color="success" class="mb-2" @click="dataSumit" :disabled="statusSaveButton" v-if="isStudent">
         SAVE
         <pre>(Ctrl+S)</pre>
         <v-icon right dark> mdi-content-save </v-icon>
       </v-btn>
 
-      <v-btn color="primary" dark class="mb-2" @click="getTeachersCode">
+      <v-btn color="primary" dark class="mb-2" @click="getTeachersCode" v-if="isStudent">
         GET TEACHER'S CODE<v-icon right dark> mdi-account-switch </v-icon>
       </v-btn>
     </v-card-actions>
@@ -54,6 +105,7 @@
 </template>
 
 <script>
+/* global JSHINT */
 import { bus } from "@/main.js";
 
 import { html2dom } from "@/assets/utils/html2dom.js";
@@ -77,11 +129,22 @@ export default {
       statusSaveButton: false,
       statusResetButton: false,
       mapDetector: [],
-      originalLog: ""
+      originalLog: "",
+      showContext:false,
+      showSkeleton:false
     };
   },
+  created() {
+    this.role = this.getRole;
+  },
   computed: {
-    ...mapGetters(["getLessonByResourceId", "getStatusByResourceId"])
+    ...mapGetters(["getLessonByResourceId", "getStatusByResourceId", "getRole"]),
+    isStudent() {
+      return this.role == "student";
+    },
+    isTeacher() {
+      return this.role == "teacher";
+    },
   },
   methods: {
     ...mapActions(["setProgress"]),
@@ -91,12 +154,20 @@ export default {
       bus.$emit("changeIt", [lesson.strapiId, lesson.contentType]);
     },
     loadCode() {
-      if (this.getStatusByResourceId(this.resource.strapiId).answer[0].code=="" && this.resource.skeleton){
-        this.code = this.resource.skeleton
-      } else if (this.getStatusByResourceId(this.resource.strapiId).answer[0].code!=""){
-        this.code = this.getStatusByResourceId(this.resource.strapiId).answer[0].code
+      if (
+        this.getStatusByResourceId(this.resource.strapiId).answer[0].code ==
+        "" &&
+        this.resource.skeleton
+      ) {
+        this.code = this.resource.skeleton;
+      } else if (
+        this.getStatusByResourceId(this.resource.strapiId).answer[0].code != ""
+      ) {
+        this.code = this.getStatusByResourceId(
+          this.resource.strapiId
+        ).answer[0].code;
       } else {
-        this.code = ""
+        this.code = "";
       }
     },
     async dataSumit() {
@@ -105,11 +176,11 @@ export default {
       const logs = [];
       this.statusSaveButton = true;
       //this.setProgress({ id: this.resource.id, code: this.code });
-      this.setProgress({ 
-        id: this.resource.strapiId, 
-        data : {
-          answer:[{__component:"solution.code",code:this.code}]
-        } 
+      this.setProgress({
+        id: this.resource.strapiId,
+        data: {
+          answer: [{ __component: "solution.code", code: this.code }]
+        }
       });
 
       if (this.resource.html) {
@@ -120,9 +191,9 @@ export default {
         //console.log(this.code);
       }
       // 1. Turn off window functions
-      window.prompt = (..._args) => {};
-      window.confirm = (..._args) => {};
-      window.alert = (..._args) => {};
+      window.prompt = (..._args) => { console.log(_args) };
+      window.confirm = (..._args) => { console.log(_args) };
+      window.alert = (..._args) => { console.log(_args) };
 
       // 2. Replace console.log with stub implementation.
       const originalLog = console.log;
@@ -218,7 +289,8 @@ export default {
       return editorRef.getSelection().getAllRanges().length;
     },
 
-    editorInit: function(_editor) {
+    editorInit: function (_editor) {
+      console.log(_editor)
       require("brace/ext/language_tools"); //language extension prerequsite...
       require("brace/mode/html");
       require("brace/mode/javascript"); //language
@@ -247,7 +319,7 @@ export default {
 
     gotoLine(line) {
       this.$refs.myEditor.editor.resize(true);
-      this.$refs.myEditor.editor.scrollToLine(line, true, true, function() {});
+      this.$refs.myEditor.editor.scrollToLine(line, true, true, function () { });
       this.$refs.myEditor.editor.gotoLine(line, 0, true);
     },
 
@@ -269,7 +341,7 @@ export default {
         );
       }
       // this is not a strong regex, but enough to use at the time
-      return codeStr.replace(/for *\(.*\{|while *\(.*\{|do *\{/g, function(
+      return codeStr.replace(/for *\(.*\{|while *\(.*\{|do *\{/g, function (
         loopHead
       ) {
         var id = parseInt(Math.random() * Number.MAX_SAFE_INTEGER);
@@ -294,6 +366,7 @@ export default {
   background: rgba(100, 200, 100, 0.5);
   z-index: 20;
 }
+
 .bar {
   position: absolute;
   background: rgba(100, 100, 200, 0.5);

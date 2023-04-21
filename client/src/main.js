@@ -12,7 +12,6 @@ Vue.use(VuePlayerPlugin, {
   loadComponent: true // create the global player component <vytia-player></vytia-player>
 });
 
-
 Vue.config.productionTip = false;
 
 export const bus = new Vue();

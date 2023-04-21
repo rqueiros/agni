@@ -5,15 +5,11 @@
         <v-img :src="require('../../assets/learnJS.png')"></v-img>
         <v-btn class="ma-2" outlined color="black" @click="login">
           LOGIN
-          <v-icon dark right>
-            mdi-login-variant
-          </v-icon>
+          <v-icon dark right> mdi-login-variant </v-icon>
         </v-btn>
         <v-btn class="ma-2" outlined color="black" @click="go">
           GITHUB
-          <v-icon dark right>
-            mdi-github
-          </v-icon>
+          <v-icon dark right> mdi-github </v-icon>
         </v-btn>
       </v-container>
     </v-main>

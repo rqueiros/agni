@@ -1,13 +1,23 @@
 <template>
   <div id="expositives">
-    <v-card outlined style="border-radius: 0;">
-      <v-bottom-navigation grow :elevation="0" dense style="box-shadow: none; height: 24px;" v-model="index">
-      <v-btn v-for="(item, index) in expositives" :key="index" style="padding:0">
-        <div>
-          <v-icon>{{ getIcon(item.type) }}</v-icon> {{item.name}}
-        </div>
-      </v-btn>
-    </v-bottom-navigation>
+    <v-card outlined style="border-radius: 0">
+      <v-bottom-navigation
+        grow
+        :elevation="0"
+        dense
+        style="box-shadow: none; height: 24px"
+        v-model="index"
+      >
+        <v-btn
+          v-for="(item, index) in expositives"
+          :key="index"
+          style="padding: 0"
+        >
+          <div>
+            <v-icon>{{ getIcon(item.type) }}</v-icon> {{ item.name }}
+          </div>
+        </v-btn>
+      </v-bottom-navigation>
     </v-card>
 
     <component :is="getComponent" :resource="expo"></component>
@@ -22,24 +32,25 @@ export default {
   props: {
     resource: {
       type: Object,
-      default: () => { }
+      default: () => {}
     }
   },
   data() {
     return {
       expositives: [],
-      index:0,
-      expo:{}
+      index: 0,
+      expo: {}
     };
   },
   computed: {
     ...mapGetters(["getResourceById", "getProgressFromResourceId"]),
     getComponent() {
-      this.expo=this.resource.expositives[this.index]
+      this.func()
       const componentName =
         this.expositives[this.index].type.charAt(0).toUpperCase() +
         this.expositives[this.index].type.slice(1);
-      return () => import(`../${this.expositives[this.index].type}/${componentName}`);
+      return () =>
+        import(`../${this.expositives[this.index].type}/${componentName}`);
     }
   },
   created() {
@@ -57,6 +68,9 @@ export default {
   },
 
   methods: {
+    func(){
+      this.expo = this.resource.expositives[this.index];
+    },
     getIcon(subtype) {
       let icon = "";
       switch (subtype) {
@@ -83,13 +97,13 @@ export default {
           break;
       }
       return icon;
-    },
+    }
   }
 };
 </script>
 
 <style scoped>
-.v-item-group.v-bottom-navigation .v-btn.v-btn--active:not(:hover):before{
+.v-item-group.v-bottom-navigation .v-btn.v-btn--active:not(:hover):before {
   opacity: 0.18 !important;
 }
 </style>

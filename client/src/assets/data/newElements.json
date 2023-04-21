@@ -1,0 +1,43 @@
+{
+  "emptyCourse": [
+    {
+      "new": true,
+      "id": 1,
+      "strapiId": 1,
+      "contentType": "course",
+      "name": "",
+      "goals": [],
+      "children": [
+        {
+          "new": true,
+          "id": 2,
+          "strapiId": 2,
+          "contentType": "module",
+          "name": "",
+          "children": [
+            {
+              "new": true,
+              "id": 3,
+              "strapiId": 3,
+              "contentType": "lesson",
+              "name": "",
+              "description": "",
+              "evaluatives": [],
+              "expositives": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "newGoal": {
+    "new": true,
+    "goal": "New Goal"
+  },
+  "newCondition": {
+    "new": true,
+    "afterPercDone": "",
+    "afterWeek": "",
+    "type": ""
+  }
+}

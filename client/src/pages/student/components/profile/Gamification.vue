@@ -11,7 +11,7 @@
       </v-list-item-content>
 
       <v-list-item-avatar tile size="5.5vw" color="green">
-        <v-icon color="white" style="font-size: 2.5vw;">
+        <v-icon color="white" style="font-size: 2.5vw">
           mdi-gamepad-variant
         </v-icon>
       </v-list-item-avatar>

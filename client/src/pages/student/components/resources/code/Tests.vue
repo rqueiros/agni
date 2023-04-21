@@ -1,46 +1,29 @@
 <template>
   <div>
     <v-card class="mx-auto" outlined>
+
       <v-list-item>
         <v-list-item-content>
-          <v-list-item-title class="display-1"> TESTS </v-list-item-title>
-          <v-list-item-subtitle
-            >Run the teacher tests and create your owns!</v-list-item-subtitle
-          >
+          <v-list-item-title class="resource_title"> TESTS </v-list-item-title>
+          <v-list-item-subtitle v-if="isStudent">Run the teacher tests and create your owns!</v-list-item-subtitle>
         </v-list-item-content>
 
         <v-list-item-avatar tile class="box" color="blue">
           <v-icon color="white" class="box_icon"> mdi-robot-confused </v-icon>
         </v-list-item-avatar>
       </v-list-item>
-      <v-data-table
-        :headers="headers"
-        :items="tests"
-        sort-by="input"
-        group-by="type"
-        class="elevation-1"
-      >
+
+      <!---------------STUDENT------------------------------------------------->
+      <v-data-table v-if="isStudent" :headers="headers" :items="tests" sort-by="input" group-by="type" class="elevation-1">
         <template v-slot:top>
           <v-toolbar flat>
             <v-dialog v-model="dialog" max-width="500px">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  @click="run"
-                  color="success"
-                  :disabled="getErrors"
-                  class="mb-2 mr-2"
-                  v-bind="attrs"
-                >
+                <v-btn @click="run" color="success" :disabled="getErrors" class="mb-2 mr-2" v-bind="attrs">
                   Run Tests
                 </v-btn>
                 <!--<v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">-->
-                <v-btn
-                  color="primary"
-                  dark
-                  class="mb-2"
-                  v-bind="attrs"
-                  @click="newTest"
-                >
+                <v-btn color="primary" dark class="mb-2" v-bind="attrs" @click="newTest">
                   New Test
                 </v-btn>
               </template>
@@ -52,16 +35,10 @@
                   <v-container>
                     <v-row>
                       <v-col cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="editedItem.input"
-                          label="Input data"
-                        ></v-text-field>
+                        <v-text-field v-model="editedItem.input" label="Input data"></v-text-field>
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="editedItem.expected"
-                          label="Expected"
-                        ></v-text-field>
+                        <v-text-field v-model="editedItem.expected" label="Expected"></v-text-field>
                       </v-col>
                     </v-row>
                   </v-container>
@@ -78,17 +55,11 @@
             </v-dialog>
             <v-dialog v-model="dialogDelete" max-width="500px">
               <v-card>
-                <v-card-title class="headline"
-                  >Are you sure you want to delete this test?</v-card-title
-                >
+                <v-card-title class="headline">Are you sure you want to delete this test?</v-card-title>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="closeDelete"
-                    >Cancel</v-btn
-                  >
-                  <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                    >OK</v-btn
-                  >
+                  <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                  <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
                   <v-spacer></v-spacer>
                 </v-card-actions>
               </v-card>
@@ -97,20 +68,19 @@
         </template>
         <template v-slot:group.header="{ items, isOpen, toggle }">
           <th colspan="3">
-            <v-icon @click="toggle"
-              >{{
-                items[0].type == "metric"
-                  ? "mdi-firework"
-                  : items[0].type == "log"
-                  ? "mdi-math-log"
-                  : "mdi-robot-confused"
-              }}
+            <v-icon @click="toggle">{{
+              items[0].type == "metric"
+              ? "mdi-firework"
+              : items[0].type == "log"
+                ? "mdi-math-log"
+                : "mdi-robot-confused"
+            }}
             </v-icon>
 
             {{
               items[0].type == "metric"
-                ? ` ${items[0].type} (extra challenge):`
-                : items[0].type == "log"
+              ? ` ${items[0].type} (extra challenge):`
+              : items[0].type == "log"
                 ? ` console logs:`
                 : ` general tests:`
             }}
@@ -127,11 +97,79 @@
         <template v-slot:item.expected="{ item }">
           {{
             item.options && !item.options.showExpected
-              ? "hidden"
-              : item.expected
+            ? "hidden"
+            : item.expected
           }}
         </template>
       </v-data-table>
+      <!---->
+
+      <!---------------Teacher------------------------------------------------->
+      <v-data-table :headers="teacherHeaders" :items="tests" class="elevation-1"
+        v-if="isTeacher" mobile-breakpoint="0" :no-data-text="''">
+        <template v-slot:top>
+          <v-toolbar flat>
+            <v-dialog v-model="dialog" max-width="500px">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn @click="run" color="success" :disabled="getErrors" class="mb-2 mr-2" v-bind="attrs">
+                  Run Tests
+                </v-btn>
+              </template>
+            </v-dialog>
+          </v-toolbar>
+        </template>
+        <template v-slot:body="{ items }">
+          <tbody>
+            <template v-for="item in items">
+              <tr :key="item.strapiId">
+                <td>
+                  <Editable :type="'test'" :value="item.input" :id="item.strapiId" :field="'input'"
+                    @input="editableChange"></Editable>
+                </td>
+                <td></td>
+                <td>
+                  <Editable :type="'test'" :value="item.expected" :id="item.strapiId" :field="'expected'"
+                    @input="editableChange"></Editable>
+                </td>
+                <td>
+                  {{ item.type }}
+                </td>
+                <td>
+                  {{ item.subtype }}
+                </td>
+                <td>
+                  <v-btn icon v-if="item.show">
+                    <v-icon>
+                      mdi-eye
+                    </v-icon>
+                  </v-btn>
+                  <v-btn icon v-if="!item.show">
+                    <v-icon>
+                      mdi-eye-off
+                    </v-icon>
+                  </v-btn>
+                </td>
+                <td>
+                  <v-btn icon @click="deleteTest(item.strapiId)">
+                    <v-icon> mdi-delete </v-icon>
+                  </v-btn>
+                </td>
+              </tr>
+            </template>
+            <template>
+              <tr style="background-color: transparent !important">
+                <td :colspan="teacherHeaders.length" style="padding: 0">
+                  <v-btn style="width: 100%" @click="addTestByEvaluativeId(resource.strapiId)">
+                    <v-icon>mdi-plus</v-icon> Add Test
+                  </v-btn>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </template>
+      </v-data-table>
+      <!---->
+
       <!-- <br />
        <v-alert
       color="#2A3B4D"
@@ -162,10 +200,16 @@
 import Swal from "sweetalert2";
 import { html2dom } from "@/assets/utils/html2dom.js";
 import "sweetalert2/src/sweetalert2.scss";
-import { mapActions, mapGetters } from "vuex";
+import { mapActions, mapGetters, mapMutations } from "vuex";
+import Editable from "../../../../../components/Editable.vue";
 /* import * as LJS from "@/assets/utils/test.js";
  */ export default {
   name: "Tests",
+
+  components: {
+    Editable
+  },
+
   props: {
     resource: Object,
     errors: Array,
@@ -195,6 +239,20 @@ import { mapActions, mapGetters } from "vuex";
       { text: "Output", value: "output" },
       { text: "Expected", value: "expected" }
     ],
+    teacherHeaders: [
+      {
+        text: "Input",
+        align: "start",
+        sortable: true,
+        value: "input"
+      },
+      { text: "Output", value: "output" },
+      { text: "Expected", value: "expected" },
+      { text: "Type", value: "type" },
+      { text: "Subtype", value: "subtype" },
+      { text: "", value: "show" },
+      { text: "", value: "" }
+    ],
     editedIndex: -1,
     editedItem: {
       input: "",
@@ -210,7 +268,12 @@ import { mapActions, mapGetters } from "vuex";
     nTestsSuccess: 0
   }),
 
+  created() {
+    this.role = this.getRole;
+  },
+
   computed: {
+    ...mapGetters(["getStatusByResourceId", "getRole"]),
     formTitle() {
       return this.editedIndex === -1 ? "New Test" : "Edit Test";
     },
@@ -223,7 +286,12 @@ import { mapActions, mapGetters } from "vuex";
     /* tests2() {
       return this.resource.tests.filter((test) => test.type == "metric");
     }, */
-    ...mapGetters(["getStatusByResourceId"])
+    isStudent() {
+      return this.role == "student";
+    },
+    isTeacher() {
+      return this.role == "teacher";
+    }
   },
 
   watch: {
@@ -237,7 +305,14 @@ import { mapActions, mapGetters } from "vuex";
 
   methods: {
     ...mapActions(["setProgress"]),
-
+    ...mapMutations([
+      "addTestByEvaluativeId",
+      "deleteTest",
+      "editableInput"
+    ]),
+    editableChange(obj) {
+      this.editableInput(obj);
+    },
     newTest() {
       Swal.fire(
         "Not available!",
@@ -266,7 +341,9 @@ import { mapActions, mapGetters } from "vuex";
 
       setTimeout(async () => {
         this.nTestsSuccess = 0;
-        this.code = this.getStatusByResourceId(this.resource.strapiId).answer[0].code;
+        this.code = this.getStatusByResourceId(
+          this.resource.strapiId
+        ).answer[0].code;
 
         const originalCode = this.code;
 
