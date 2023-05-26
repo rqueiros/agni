@@ -30,10 +30,7 @@
       ]
     }
   ],
-  "newGoal": {
-    "new": true,
-    "goal": "New Goal"
-  },
+
   "newCondition": {
     "new": true,
     "afterPercDone": "",

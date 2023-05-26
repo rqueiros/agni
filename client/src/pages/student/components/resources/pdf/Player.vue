@@ -87,7 +87,7 @@ export default {
       return this.role == "student";
     },
     isTeacher() {
-      return this.role == "teacher";
+      return this.role == "teacher" || this.role =="author" || this.role=="viewer";
     }
   },
   methods: {

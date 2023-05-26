@@ -7,12 +7,24 @@
       "modules": {
          "populate": {
             "name": true,
-            "condition": true,
+            "condition": {
+               "populate":{
+                  "afterWeek":true,
+                  "afterPercDone":true,
+                  "type":true
+               }
+            },
             "lessons": {
                "populate": {
                   "name": true,
                   "description": true,
-                  "condition": true,
+                  "condition": {
+                     "populate":{
+                        "afterWeek":true,
+                        "afterPercDone":true,
+                        "type":true
+                     }
+                  },
                   "expositives": {
                      "populate": {
                         "name": true,

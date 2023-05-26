@@ -2,13 +2,13 @@
   <div id="quiz">
     <v-container fluid>
       <v-row>
-        <v-col :cols="this.screenSmall ? 12 : 7">
+        <v-col :cols="(this.screenSize=='xs' || this.screenSize=='sm') && isStudent ? 12 : 7">
           <v-card class="mx-auto" max-width="100%" outlined>
             <!--STATEMENT-->
             <Header :resource="resource" />
             <!--PLAYER-->
 
-            <Quizzer :resource="resource" ref="quizzer" />
+            <Quizzer :resource="resource" :screenSize="screenSize" ref="quizzer" />
 
             <!--
             <v-rating
@@ -36,14 +36,6 @@
             </v-expansion-panels>
           </v-card>
         </v-col>
-        <v-col cols="5">
-          <v-row>
-            <v-col cols="12"> </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12"> </v-col>
-          </v-row>
-        </v-col>
       </v-row>
     </v-container>
   </div>
@@ -55,51 +47,46 @@ import Header from "@/pages/student/components/resources/Header.vue";
 import Quizzer from "@/pages/student/components/resources/quiz/Quizzer.vue";
 export default {
   name: "Quiz",
+
   components: {
     Header,
     Quizzer
   },
+
   props: {
     resource: {
       type: Object,
       default: () => {}
+    },
+    screenSize: {
+      type: String,
+      default: () => ""
     }
   },
+
   data() {
     return {
-      screenWidth: 0
     };
   },
-  created() {
-    this.role = this.getRole;
-  },
+
   computed: {
     ...mapGetters(["getRole"]),
     getR() {
       return this.resource;
     },
-    screenSmall() {
-      return this.screenWidth <= 768;
-    },
     isStudent() {
-      return this.role == "student";
+      return this.getRole == "student";
     },
     isTeacher() {
-      return this.role == "teacher";
+      return this.getRole == "teacher" || this.getRole =="author" || this.getRole=="viewer";
+    },
+    isViewer() {
+      return this.getRole == "viewer"
+    },
+    isAuthor() {
+      return this.getRole == "author"
     }
   },
-  methods: {
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    }
-  },
-  mounted() {
-    this.screenWidth = window.innerWidth;
-    window.addEventListener("resize", this.handleResize);
-  },
-  beforeUnmount() {
-    window.removeEventListener("resize", this.handleResize);
-  }
 };
 </script>
 

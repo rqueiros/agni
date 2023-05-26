@@ -1,18 +1,23 @@
 <template>
-  <div id="evaluatives" v-if="evalLen || isTeacher">
-    <v-card outlined>
+  <div id="evaluatives" v-if="evalLen || isAuthor">
+    <v-card outlined class="rounded-0" style="border-left: 0; border-right: 0;">
 
-      <!---------------STUDENT------------------------------------------------->
-      <v-data-table :headers="headers" :items="loadResource" class="elevation-1" @click:row="play2"
-        v-if="showEvaluatives && isStudent" mobile-breakpoint="0" :no-data-text="''">
+      <!--Author-->
+      <v-btn width="100%" v-if="!evalLen && isAuthor && !showEvaluatives" @click="showEvaluatives = true"
+        class="course_button" small>
+        <v-icon>mdi-plus</v-icon>Exercises
+      </v-btn>
+
+      <!--Student-->
+      <v-data-table :headers="headers" :items="loadResource" @click:row="play" v-if="showEvaluatives && isStudent"
+        mobile-breakpoint="0" :no-data-text="''">
         <template v-slot:top>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-subtitle class="course_subtitle">Exercises:</v-list-item-subtitle>
+              <v-list-item-subtitle :class="getSubtitleClass(screenSize)">Exercises:</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </template>
-
         <template v-slot:item.type="{ item }">
           <v-icon :title="item.type">
             {{ getIcon(item.type) }}
@@ -28,37 +33,19 @@
             <v-icon>mdi-clipboard-play</v-icon>
           </v-btn>
         </template>
-
       </v-data-table>
-      <!---->
 
-
-      <!---------------TEACHER------------------------------------------------->
-
-      <v-btn style="width: 100%" v-if="!evalLen && isTeacher && !showEvaluatives" @click="showEvaluatives = true"
-        class="course_button course_text">
-        <v-icon>mdi-plus</v-icon>Exercises
-      </v-btn>
-
-      <!--
-      <div style="height:2rem">
-        <span class="resource_subtitle">Exercises:</span>
-        <v-btn icon style="min-width: 0;" @click="removeExpositives" class="course_iconButtonL">
-          <v-icon class="box_icon" small> mdi-delete </v-icon>
-        </v-btn>
-      </div>-->
-
-
-      <v-data-table :headers="teacherHeaders" :items="loadResource" class="elevation-1"
-        v-if="showEvaluatives && isTeacher" mobile-breakpoint="0" :no-data-text="''">
-        <template v-slot:top >
+      <!--Author-->
+      <v-data-table :headers="teacherHeaders" :items="loadResource" v-if="showEvaluatives && isAuthor"
+        mobile-breakpoint="0" :no-data-text="''" hide-default-footer>
+        <template v-slot:top>
           <v-list-item style="min-height: 0; padding-right: 0;">
             <v-list-item-content>
-              <v-list-item-subtitle class="course_subtitle">Exercises:</v-list-item-subtitle>
+              <v-list-item-subtitle :class="getSubtitleClass(screenSize)">Exercises:</v-list-item-subtitle>
             </v-list-item-content>
-              <v-btn icon class="course_iconButtonL" @click="removeEvaluatives">
-                <v-icon> mdi-delete </v-icon>
-              </v-btn>
+            <v-btn icon @click="removeEvaluatives" small class="mr-1">
+              <v-icon :size="getIconMediumSize(screenSize)"> mdi-delete </v-icon>
+            </v-btn>
           </v-list-item>
         </template>
         <template v-slot:body="{ items }">
@@ -82,25 +69,27 @@
               <tr v-if="item.type != 'new'" :key="item.id" @click="play(item)">
                 <td>{{ item.id }}</td>
                 <td>
-                  <v-icon :title="item.type" class="course_IconS">
-                    {{ getIcon(item.type) }}
+                  <v-icon :title="item.contentType" :size="getIconMediumSize(screenSize)">
+                    {{ getIcon(item.contentType) }}
                   </v-icon>
                 </td>
                 <td>
-                  <Editable :type="'evaluative'" :value="item.name" :id="item.rid" :field="'name'" @input="editableChange" placeholder="Exercise name"
-                    onclick="event.stopPropagation()"></Editable>
+                  <span :class="getSmallTextClass(screenSize)">
+                    <Editable :type="'evaluative'" :value="item.name" :id="item.rid" :field="'name'"
+                      @input="editableChange" placeholder="Exercise name" onclick="event.stopPropagation()"></Editable>
+                  </span>
                 </td>
                 <td>
                   <v-btn icon @click="deleteEvaluative(item.rid)" class="course_iconButtonS">
-                    <v-icon class="course_IconS"> mdi-delete </v-icon>
+                    <v-icon :size="getIconSmallSize(screenSize)"> mdi-delete </v-icon>
                   </v-btn>
                 </td>
               </tr>
             </template>
             <template>
               <tr style="background-color: transparent !important">
-                <td :colspan="headers.length" style="padding: 0">
-                  <v-btn style="width: 100%" @click="addEvaluative" class="course_button course_text">
+                <td :colspan="teacherHeaders.length" class="pa-0">
+                  <v-btn width="100%" @click="addEvaluative" class="course_button my-3" small>
                     <v-icon>mdi-plus</v-icon> Add Exercise
                   </v-btn>
                 </td>
@@ -109,7 +98,23 @@
           </tbody>
         </template>
       </v-data-table>
-      <!---->
+
+      <!--Viewer-->
+      <v-data-table :headers="viewerHeaders" :items="loadResource" @click:row="play" v-if="showEvaluatives && isViewer"
+        mobile-breakpoint="0" :no-data-text="''">
+        <template v-slot:top>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-subtitle :class="getSubtitleClass(screenSize)">Exercises:</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        <template v-slot:item.type="{ item }">
+          <v-icon :title="item.type">
+            {{ getIcon(item.type) }}
+          </v-icon>
+        </template>
+      </v-data-table>
 
     </v-card>
   </div>
@@ -161,47 +166,47 @@ export default {
     resource: {
       type: Object,
       default: () => { }
+    },
+    screenSize: {
+      type: String,
+      default: () => ""
     }
   },
 
   data() {
     return {
       headers: [
-        {
-          text: "#",
-          align: "start",
-          sortable: true,
-          value: "id"
-        },
+        { text: "#", align: "start", sortable: true, value: "id" },
         { text: "Name", value: "name" },
         { text: "Type", value: "type" },
         { text: "Solving status (%)", value: "grade" },
         { text: "Actions", value: "action" }
       ],
       teacherHeaders: [
-        {
-          text: "#",
-          align: "start",
-          sortable: true,
-          value: "id"
-        },
+        { text: "#", align: "start", sortable: true, value: "id" },
         { text: "Type", value: "type" },
         { text: "Name", value: "name" },
         { text: "", value: "" }
       ],
+      viewerHeaders: [
+        { text: "#", align: "start", sortable: true, value: "id" },
+        { text: "Type", value: "type" },
+        { text: "Name", value: "name" },
+      ],
       evaluatives: [],
-      role: "",
       showEvaluatives: false
     };
   },
 
   created() {
-    this.role = this.getRole;
     this.loadResource;
   },
 
   computed: {
-    ...mapGetters(["getResourceById", "getStatusByResourceId", "getRole"]),
+    ...mapGetters([
+      "getResourceById", "getStatusByResourceId", "getRole",
+      "getSubtitleClass", "getIconMediumSize", "getIconSmallSize", "getSmallTextClass"
+    ]),
     loadResource() {
       let ev = [];
       if (
@@ -232,7 +237,8 @@ export default {
             id: i,
             rid: evaluative.strapiId,
             name: evaluative.name,
-            type: evaluative.type
+            type: evaluative.type,
+            contentType: evaluative.contentType
           });
           i++;
         });
@@ -243,10 +249,16 @@ export default {
       return this.resource.evaluatives.length > 0;
     },
     isStudent() {
-      return this.role == "student";
+      return this.getRole == "student";
     },
     isTeacher() {
-      return this.role == "teacher";
+      return this.getRole == "teacher" || this.getRole == "author" || this.getRole == "viewer";
+    },
+    isAuthor() {
+      return this.getRole == "author"
+    },
+    isViewer() {
+      return this.getRole == "viewer"
     }
   },
 
@@ -257,9 +269,6 @@ export default {
       "deleteEvaluative",
       "editableInput"
     ]),
-    handleButtonClick() {
-      console.log("Button clicked");
-    },
     editableChange(obj) {
       this.editableInput(obj);
     },
@@ -277,11 +286,6 @@ export default {
       this.showEvaluatives = false;
     },
     play(value) {
-      console.log(value)
-      bus.$emit("changeIt", [value.rid, "evaluative"]);
-    },
-    play2(value) {
-      console.log(value)
       bus.$emit("changeIt", [value.rid, "evaluative"]);
     },
     getIcon(subtype) {

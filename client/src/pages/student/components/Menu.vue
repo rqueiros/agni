@@ -1,207 +1,242 @@
 <template>
-  <div>
+  <div id="CourseMenu">
 
-    <!-- Toolbar for XS screen -->
-    <v-toolbar color="white" absolute right width="100vw" class="m-toolbar">
+    <!-- Toolbar for small screen -->
+    <v-toolbar 
+    absolute right dense outlined 
+    width="100vw"
+    :color="isStudent ? 'grey lighten-2' : ''"
+    :elevation="isTeacher ? '0' : '1'"  
+    :style="isTeacher ? 'border-top:0;border-right:0;border-left:0' : ''"
+    :class="smallScreen ? 'd-block' : 'd-none'"
+    :rounded="isTeacher">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-spacer></v-spacer>
+      <div v-if="isStudent" class="mr-2">
+        <v-icon class="mr-2">mdi-school</v-icon>
+        learnJS v0.7.7
+      </div>
     </v-toolbar>
 
-
-    <v-navigation-drawer app width="25%" v-model="drawer" class="m-navigation_drawer fill-height"
-      :permanent="!screenSmall" :temporary="screenSmall" style="position: absolute; top: 0; height: 100%">
-
-      <!---------------------Student------------------------------------------>
-      <v-sheet color="grey lighten-4" class="m-profile_sheet" v-if="isStudent">
-        <v-avatar color="red" class="m-profile" @click="selectResource(-1)">
-          <v-icon dark class="m-icon"> mdi-card-account-details </v-icon>
-        </v-avatar>
-        <div>guest@esmad.ipp.pt</div>
+    <v-navigation-drawer 
+    app 
+    v-model="drawer" 
+    class="m-navigation_drawer" 
+    :width="smallScreen ? '50%' : '25%'"
+    :permanent="!smallScreen"
+    :temporary="smallScreen">
+      <v-sheet color="grey lighten-4" class="px-4 py-3">
+        <!--Student-->
+        <div v-if="isStudent" class="m-profile">
+          <v-avatar 
+          color="red" 
+          :size="getAvatarSmallSize(screenSize)" 
+          @click="selectResource(-1)">
+            <v-icon dark :size="getIconSmallSize(screenSize)"> 
+              mdi-card-account-details 
+            </v-icon>
+          </v-avatar>
+          <div>{{ getUsername }}</div>
+        </div>
+        <!--Teacher-->
+        <div v-if="isTeacher">Account</div>
       </v-sheet>
 
-      <v-divider v-if="isStudent" />
+      <v-divider />
 
-      <v-treeview return-object :items="items" color="error" open-on-click editable @update:active="selectResource"
-        @update:open="selectResource" item-disabled="locked" hoverable activatable selected-color="primary"
-        id="menuTreeView" v-if="isStudent">
+      <v-treeview 
+      dense open-on-click return-object hoverable activatable 
+      id="menuTreeView" 
+      color="error" 
+      item-disabled="locked"
+      :items="items" 
+      :class="getSmallTextClass(screenSize)" 
+      @update:active="selectResource" 
+      @update:open="selectResource">
         <template v-slot:label="{ item }">
-          <span class="course_smallText">
+          <!--Student + Viewer-->
+          <span v-if="isStudent || isViewer">
             {{ item.name }}
           </span>
+          <!--Author-->
+          <div v-if="isAuthor">
+            <div v-if="item.type == 'add'" class="pa-1">
+              <v-btn @click="addButton(item.contentType, item.parentId)" small>
+                <v-icon :label="item">mdi-plus</v-icon>
+                {{ item.name }}
+              </v-btn>
+            </div>
+            <span v-else>
+              <Editable 
+              :type="item.contentType" 
+              :value="item.name" 
+              :id="item.strapiId" 
+              :field="'name'"
+              :placeholder="item.contentType.charAt(0).toUpperCase() + item.contentType.slice(1) + ' name'"
+              @input="editableInput" 
+              onclick="event.stopPropagation()"/>
+            </span>
+          </div>
         </template>
-        <template v-slot:prepend="{ item, open }">
-          <v-icon v-if="item.contentType == 'course'" color="black" class="m_icon">
-            {{ "mdi-cloud-braces" }}
+
+        <!--Student + Viewer-->
+        <template v-if="isStudent || isViewer" v-slot:prepend="{ item, open }">
+          <v-icon v-if="item.contentType == 'course'" 
+          color="black" 
+          :size="getIconSmallSize(screenSize)">
+            mdi-cloud-braces
           </v-icon>
-          <v-icon v-else-if="item.contentType == 'module'" color="red" class="m_icon">
+          <v-icon v-else-if="item.contentType == 'module'" 
+          color="red" 
+          :size="getIconSmallSize(screenSize)">
             {{ open ? "mdi-folder-open" : "mdi-folder" }}
           </v-icon>
-          <v-icon v-else color="gray" class="m_icon">
-            {{ files[item.contentType] }}
+          <v-icon v-else color="gray" :size="getIconSmallSize(screenSize)">
+            mdi-file-document-outline
           </v-icon>
           {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
         </template>
-      </v-treeview>
-      <!---->
 
-
-      <!---------------------Teacher------------------------------------------>
-      <v-sheet color="grey lighten-4" class="m-profile_sheet" v-if="isTeacher">
-        <div>Change to Student Mode -></div>
-      </v-sheet>
-
-      <v-divider v-if="isTeacher" />
-
-      <v-treeview return-object :items="items" color="error" open-on-click editable @update:active="selectResource"
-        @update:open="selectResource" item-disabled="locked" hoverable activatable selected-color="primary"
-        id="menuTreeView" v-if="isTeacher">
-        <template v-slot:label="{ item }">
-          <v-btn v-if="item.type == 'add'" small style="font-size: 0.7vw"
-            @click="addButton(item.contentType, item.parentId)">
-            <v-icon class="m-edit_icon" :label="item">mdi-plus</v-icon>
-            {{ item.name }}
-          </v-btn>
-          <span v-else class="course_smallText">
-            <Editable :type="item.contentType" :value="item.name" :id="item.strapiId" :field="'name'" :placeholder="item.contentType.charAt(0).toUpperCase()+item.contentType.slice(1)+' name'"
-            @input="editableChange" onclick="event.stopPropagation()" />
-          </span>
-        </template>
-
-        <template v-slot:append="{ item }">
-          <div style="display: flex; align-items: center;">
-            <span style="display: flex; flex-direction: column;">
-              <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" class="course_iconButtonS"
-                @click="moveButton(item.contentType, item.strapiId, 'up')" onclick="event.stopPropagation()">
-                <v-icon color="gray" class="course_IconS"> mdi-arrow-up </v-icon>
+        <!--Teacher-->
+        <template v-if="isTeacher" v-slot:append="{ item }">
+          <!--Author-->
+          <div v-if="isAuthor" class="d-flex align-center">
+            <span class="d-flex flex-column">
+              <v-btn v-if="item.contentType != 'course' && item.type != 'add'" 
+              icon x-small
+              @click="moveButton(item.contentType, item.strapiId, 'up')" 
+              onclick="event.stopPropagation()">
+                <v-icon color="gray" :size="getIconSmallSize(screenSize)">
+                  mdi-arrow-up
+                </v-icon>
               </v-btn>
-              <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" class="course_iconButtonS"
-                @click="moveButton(item.contentType, item.strapiId, 'down')" onclick="event.stopPropagation()">
-                <v-icon color="gray" class="course_IconS"> mdi-arrow-down </v-icon>
+              <v-btn v-if="item.contentType != 'course' && item.type != 'add'" 
+              icon x-small
+              @click="moveButton(item.contentType, item.strapiId, 'down')" 
+              onclick="event.stopPropagation()">
+                <v-icon color="gray" :size="getIconSmallSize(screenSize)">
+                  mdi-arrow-down
+                </v-icon>
               </v-btn>
             </span>
-            <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" class="course_iconButtonS"
-              onclick="event.stopPropagation()">
-              <v-icon color="gray" class="course_IconS"> mdi-pencil </v-icon>
+            <v-btn v-if="item.type != 'add'" 
+            icon x-small 
+            @click="openDialog(item)" 
+            onclick="event.stopPropagation()">
+              <v-icon color="gray" :size="getIconSmallSize(screenSize)">
+                mdi-pencil
+              </v-icon>
             </v-btn>
-            <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'" class="course_iconButtonS"
-              @click="deleteButton(item.contentType, item.strapiId)" onclick="event.stopPropagation()">
-              <v-icon color="gray" class="course_IconS"> mdi-delete </v-icon>
+            <v-btn v-if="item.contentType != 'course' && item.type != 'add'"
+            icon x-small
+            @click="deleteButton(item.contentType, item.strapiId)" 
+            onclick="event.stopPropagation()">
+              <v-icon color="gray" :size="getIconSmallSize(screenSize)">
+                mdi-delete
+              </v-icon>
             </v-btn>
-            <div v-if="item.contentType == 'course'" style="width:3.8em"></div>
           </div>
+
+          <!--Viewer-->
+          <v-btn v-if="isViewer" 
+          icon x-small 
+          @click="openDialog(item)" 
+          onclick="event.stopPropagation()">
+            <v-icon color="gray" :size="getIconSmallSize(screenSize)">
+              mdi-information-outline
+            </v-icon>
+          </v-btn>
         </template>
       </v-treeview>
-      <!---->
-
-
-      <!--
-      <v-draggable-treeview return-object open-on-click v-model="items" color="error" @update:active="selectResource"
-        @update:open="selectResource" item-disabled="locked" hoverable :item-props="{ active: activeItem }"
-        selected-color="primary" id="menuTreeView">
-
-
-        <template v-slot:label="{ item, open, active }">
-          <v-btn v-if="item.type == 'add'" small @click="addButton(item.contentType, item.parentId)">
-            <v-icon :label=item>mdi-plus</v-icon> {{ item.name }}
-          </v-btn>
-          <Editable v-else :type="item.contentType" :value="item.name"></Editable> {{ open }} {{ active }}
-        </template>
-
-        <template v-slot:append="{ item, }">
-          <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'">
-            <v-icon color="gray" class="m-edit_icon">
-              mdi-pencil
-            </v-icon>
-          </v-btn>
-          <v-btn icon v-if="item.contentType != 'course' && item.type != 'add'"
-            @click="deleteIcon(item.contentType, item.strapiId)">
-            <v-icon color="gray" class="m-edit_icon">
-              mdi-delete
-            </v-icon>
-          </v-btn>
-        </template>
-
-      </v-draggable-treeview>-->
-
     </v-navigation-drawer>
+
+    <MenuDialog 
+    :screenSize="screenSize" 
+    :dialogItem="dialogItem" 
+    :dialog="dialog" />
+
   </div>
 </template>
 
 <script>
-// TODO: implement a previous/next navigation in the editor component
-
+import { bus } from "@/main.js";
 import { mapGetters, mapMutations } from "vuex";
+
 import Editable from "../../../components/Editable.vue";
+import MenuDialog from '../../teacher/components/dialog/MenuDialog.vue';
 
 export default {
-  name: "Menu",
+  name: "CourseMenu",
+
+  props: {
+    screenSize: {
+      type: String,
+      default: () => ""
+    }
+  },
 
   components: {
-    Editable
+    Editable,
+    MenuDialog
   },
 
   data: () => ({
     drawer: false,
-    screenWidth: 0,
-    role: "",
     items: [],
-    files: {
-      course: "mdi-cloud-braces",
-      pdf: "mdi-file-pdf",
-      lesson: "mdi-file-document-outline"
-    }
+    dialog: false,
+    dialogItem: {}
   }),
 
   created() {
-    this.role = this.getRole;
+    bus.$on("dialogChange", payload => {
+      this.dialog = payload
+    });
+
     this.$store.watch(
       state => state.courses,
-      (newVal, oldVal) => {
-        console.log(`Value of course changed from ${oldVal} to ${newVal}`);
+      () => {
         this.setCourse();
       }
     );
     this.setCourse();
   },
 
-  mounted() {
-    this.screenWidth = window.innerWidth;
-    window.addEventListener("resize", this.handleResize);
-  },
-
-  beforeUnmount() {
-    window.removeEventListener("resize", this.handleResize);
-  },
-
   computed: {
-    ...mapGetters(["getCourse", "getCompletationStatusBySheetId", "getRole"]),
-    screenSmall() {
-      return this.screenWidth <= 768;
-    },
+    ...mapGetters([
+      "getCourse", "getCompletationStatusBySheetId", 
+      "getRole", "getUsername",
+      "getIconSmallSize", "getSmallTextClass", "getButtonSize", 
+      "getAvatarSmallSize",
+    ]),
     isStudent() {
-      return this.role == "student";
+      return this.getRole == "student";
     },
     isTeacher() {
-      return this.role == "teacher";
+      return this.getRole == "teacher" || this.getRole == "author" || this.getRole == "viewer";
+    },
+    isAuthor() {
+      return this.getRole == "author";
+    },
+    isViewer() {
+      return this.getRole == "viewer";
+    },
+    smallScreen(){
+      return this.screenSize == 'xs' || this.screenSize == 'sm'
     }
   },
 
   methods: {
     ...mapMutations([
-      "addLessonByModuleId",
-      "addModuleByCourseId",
-      "deleteLesson",
-      "deleteModule",
-      "createEditableCourse",
-      "moveLesson",
-      "moveModule",
-      "editableInput"
+      "addLessonByModuleId", "deleteLesson", "moveLesson",
+      "addModuleByCourseId", "deleteModule", "moveModule",
+      "editableInput",
     ]),
 
     //--------------------------Student-----------------------------------------
     setCourse() {
       this.items = this.getCourse;
     },
-    getCompletationStatus(item) {
+    getCompletationStatus(item) { //TODO reimplemet it 
       if (item.file == "sheet") {
         if (this.getCompletationStatusBySheetId(item.id) == 100)
           return "mdi-book-check";
@@ -248,56 +283,24 @@ export default {
         this.moveModule([id, direction]);
       }
     },
-    editableChange(obj) {
-      this.editableInput(obj);
+    openDialog(item) {
+      if (item.condition == null && item.contentType != 'course') {
+        this.addConditionByLMId([item.strapiId, item.contentType])
+      }
+      this.dialogItem = item
+      this.dialog = true
     },
-
-    //--------------------------Else--------------------------------------------
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    }
   }
 };
 </script>
 
 <style scoped>
-/* Icons */
-#menuTreeView>>>.v-icon.v-icon {
-  /* for the > icons */
-  font-size: 1.5em;
-}
-
-.m_icon {
-  /*font-size: 1em;*/
-}
-
-.m_editIcon {
-  font-size: 1.3em !important;
-}
-
-
-
-#menuTreeView>>>.v-treeview-node__toggle {
-  width: 1em;
-}
-
-
-#menuTreeView>>>.v-treeview-node__root {
-  display: flex;
-}
-
 .m-navigation_drawer {
-  top: 0;
-}
-
-.m-profile_sheet {
-  padding: 1vw 16px;
-}
-
-.m-profile {
-  width: 3.5vw !important;
-  height: 3.5vw !important;
-  min-width: 0 !important;
+  position: absolute;
+  top: 0 !important;
+  max-height: 100% !important;
+  height: 100% !important;
+  border-radius: 4px 0 0 4px;
 }
 
 .m-profile:hover {
@@ -305,61 +308,13 @@ export default {
 }
 
 
-
-
-
-
+#menuTreeView>>>.v-icon.v-icon {
+  font-size: 1.5em;
+}
+#menuTreeView>>>.v-treeview-node__toggle {
+  width: 1em;
+}
 #menuTreeView>>>.v-treeview-node__level {
   width: 1.5em;
 }
-
-
-/*
-#menuTreeView>>>.v-treeview-node__append {
-  width: 0;
-  min-width: 0;
-}*/
-
-
-
-#menuTreeView>>>.v-treeview-node__prepend {
-  min-width: 0;
-}
-
-#menuTreeView>>>.v-treeview-node__root {
-  min-height: 3.5vw;
-}
-
-.m-toolbar {
-  display: none;
-}
-
-@media only screen and (max-width: 768px) {
-  .m-toolbar {
-    display: block;
-  }
-
-  .m-navigation_drawer {
-    width: 75% !important;
-  }
-
-
-
-  #menuTreeView>>>.v-treeview-node__level {
-    width: 5vw;
-  }
-
-  #menuTreeView>>>.v-treeview-node__root {
-    min-height: 8vw;
-  }
-
-  .m-profile {
-    width: 8vw !important;
-    height: 8vw !important;
-    min-width: 0 !important;
-  }
-
-  .m-profile_sheet {
-    padding: 2vw 16px;
-  }
-}</style>
+</style>

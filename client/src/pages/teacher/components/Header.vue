@@ -1,53 +1,81 @@
 <template>
-  <v-card class="mx-auto mb-2" width="100%" outline style="box-shadow:0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.2), 0px 1px 10px 0px rgba(0, 0, 0, 0.2)">
-    <div id="header">
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="header_title">
-            {{ getTitle }}
-          </v-list-item-title>
-
-          <v-list-item-subtitle class="header_description">
-            {{ getDescription }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-    </div>
-  </v-card>
+  <div id="header" class="mb-2" style="width: 100%;">
+    <v-app-bar dense rounded elevation="0" class="mt-n1">
+      <v-btn rounded elevation="0">
+        <v-icon>mdi-arrow-left</v-icon>
+      </v-btn>
+      <span class="mx-4">{{ getTitle }}</span>
+      <v-spacer></v-spacer>
+      <v-btn class="mr-1" rounded color="primary">
+        <v-icon>mdi-content-save</v-icon>
+      </v-btn>
+      <v-btn class="mx-1" rounded color="primary">
+        <v-icon>mdi-publish</v-icon>
+      </v-btn>
+      <v-btn class="mx-1" rounded color="primary">
+        <v-icon>mdi-content-copy</v-icon>
+      </v-btn>
+      <v-btn class="ml-1" rounded color="error">
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
+    </v-app-bar>
+    
+    <!--
+    <v-row>
+      <v-col cols="7">
+        <div class="text-h5 text-left">
+          {{ getTitle }}
+        </div>
+        <div class="text-body-2 text-left">
+          {{ getDescription }}
+        </div>
+      </v-col>
+      <v-col cols="5" class="d-flex flex-row-reverse">
+        <Buttons :resource="resource"/>
+      </v-col>
+    </v-row>-->
+  </div>
 </template>
 
 <script>
-console.log("here2");
+//import Buttons from './Buttons.vue';
+
 export default {
   name: "Header",
+
   props: {
-    header: {
+    resource: {
       type: String,
       default: () => null
     }
   },
+
+  components: {
+    //Buttons
+  },
+
   computed: {
     getTitle() {
-      if (this.header == "class") {
+      if (this.resource.includes("class")) {
         return "Class Managing";
-      } else if (this.header == "content") {
+      } else if (this.resource.includes("content")) {
         return "Content Managing";
-      } else if (this.header == "main") {
+      } else if (this.resource.includes("main")) {
         return "Welcome to the Agni Teacher side";
-      } else if (this.header == "settings") {
+      } else if (this.resource.includes("settings")) {
         return "Settings";
-      } else if (this.header == "account") {
+      } else if (this.resource.includes("account")) {
         return "Account";
       } else {
         return "Content Managing";
       }
     },
     getDescription() {
-      if (this.header == "class") {
+      if (this.resource.includes("class")) {
         return "Here you can create and manage the occurrences of your classes";
-      } else if (this.header == "content") {
+      } else if (this.resource.includes("content")) {
         return "Here you can create and manage a course, expositives (pdf,.. content), evaluative (progEx, Quiz) and questions";
-      } else if (this.header == "main") {
+      } else if (this.resource.includes("main")) {
         return "Here can teachers manage classes and courses for their students";
       } else {
         return "Create and manage a course, expositives (pdf,.. content), evaluative (progEx, Quiz) and questions";
@@ -57,11 +85,13 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 #header {
   text-align: center;
 }
+
 .header_title {
   font-size: 1.5em;
 }
+
 </style>

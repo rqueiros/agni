@@ -2,24 +2,14 @@
   <div id="code">
     <v-container fluid>
       <v-row>
-        <v-col :cols="this.screenSmall ? 12 : 7">
+        <v-col :cols="this.screenSize=='xs' || this.screenSize=='sm' ? 12 : 7">
           <v-card class="mx-auto" max-width="100%" outlined>
             <!--STATEMENT-->
-            <Header :resource="resource" />
+            <Header :resource="resource" :screenSize="screenSize"/>
             <!--PLAYER-->
-            <Editor
-              :resource="resource"
-              @onErrors="setErrors"
-              @onLogs="setLogs"
-              ref="editor"
-            />
+            <Editor :resource="resource" @onErrors="setErrors" @onLogs="setLogs" ref="editor" />
 
-            <v-rating
-              v-model="rating"
-              background-color="orange lighten-3"
-              color="orange"
-              v-if="isStudent"
-            >
+            <v-rating v-model="rating" background-color="orange lighten-3" color="orange" v-if="isStudent">
             </v-rating>
             <!--FEEDBACK-->
             <v-expansion-panels v-if="isStudent">
@@ -34,14 +24,8 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <v-data-table
-                    :headers="headers"
-                    :items="errors"
-                    :items-per-page="5"
-                    @click:row="handleClick"
-                    sort-by="row"
-                    class="elevation-1"
-                  >
+                  <v-data-table :headers="headers" :items="errors" :items-per-page="5" @click:row="handleClick"
+                    sort-by="row" class="elevation-1">
                     <template v-slot:item.row="{ item }">
                       {{ item.row + 1 }}
                     </template>
@@ -49,8 +33,8 @@
                       <v-icon small class="mr-2" color="red">
                         {{
                           item.type == "info"
-                            ? "mdi-information"
-                            : "mdi-close-circle"
+                          ? "mdi-information"
+                          : "mdi-close-circle"
                         }}
                       </v-icon>
                     </template>
@@ -68,14 +52,8 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <v-data-table
-                    :headers="headers"
-                    :items="logs"
-                    :items-per-page="5"
-                    @click:row="handleClick"
-                    sort-by="row"
-                    class="elevation-1"
-                  >
+                  <v-data-table :headers="headers" :items="logs" :items-per-page="5" @click:row="handleClick"
+                    sort-by="row" class="elevation-1">
                     <template v-slot:item.row="{ item }">
                       {{ item.row + 1 }}
                     </template>
@@ -83,8 +61,8 @@
                       <v-icon small class="mr-2" color="blue">
                         {{
                           item.type == "log"
-                            ? "mdi-clipboard-edit"
-                            : "mdi-close-circle"
+                          ? "mdi-clipboard-edit"
+                          : "mdi-close-circle"
                         }}
                       </v-icon>
                     </template>
@@ -99,38 +77,24 @@
                   </template>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <code
-                    >It will be possible to pose questions in future
-                    versions</code
-                  >
+                  <code>It will be possible to pose questions in future
+                      versions</code>
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card>
         </v-col>
 
-        <v-col cols="5">
-          <Tests
-            :resource="resource"
-            :errors="errors"
-            :logs="logs"
-            @onSaveCode="saveCode"
-            ref="tests"
-            class="r-tests"
-          />
+        <v-col cols="5" style="padding-left:0">
+          <Tests :resource="resource" :errors="errors" :logs="logs" @onSaveCode="saveCode" ref="tests" class="r-tests" 
+          :screenSize="screenSize" :class="(screenSize=='xs' || screenSize=='sm') ? 'd-none' : 'd-block'"/>
         </v-col>
       </v-row>
 
-      <v-row>
-        <v-col cols="12">
-          <Tests
-            :resource="resource"
-            :errors="errors"
-            :logs="logs"
-            @onSaveCode="saveCode"
-            ref="tests"
-            class="r-tests_XS"
-          />
+      <v-row :class="(screenSize=='xs' || screenSize=='sm') ? 'd-block' : 'd-none'">
+        <v-col cols="12" >
+          <Tests :resource="resource" :errors="errors" :logs="logs" @onSaveCode="saveCode" ref="tests"
+          :screenSize="screenSize" />
         </v-col>
       </v-row>
     </v-container>
@@ -145,17 +109,24 @@ import Tests from "@/pages/student/components/resources/code/Tests.vue";
 
 export default {
   name: "Code",
+
   components: {
     Header,
     Editor,
     Tests
   },
+
   props: {
     resource: {
       type: Object,
       default: () => null
+    },
+    screenSize: {
+      type: String,
+      default: () => ""
     }
   },
+
   data() {
     return {
       headers: [
@@ -180,6 +151,9 @@ export default {
     this.role = this.getRole;
   },
   methods: {
+    testM() {
+      this.$refs.editor.testM()
+    },
     setErrors(errors) {
       this.errors = errors;
     },
@@ -205,7 +179,7 @@ export default {
       return this.role == "student";
     },
     isTeacher() {
-      return this.role == "teacher";
+      return this.role == "teacher" || this.role == "author" || this.role == "viewer";
     },
   },
   mounted() {
@@ -214,6 +188,12 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.handleResize);
+    console.log("codeBeforeUnmoutn")
+  },
+  unmounted() {
+    // perform clean-up tasks here
+    // such as removing event listeners, clearing timeouts or intervals, or cancelling API requests
+    console.log("unmounted")
   },
 };
 </script>

@@ -1,12 +1,12 @@
 <template>
   <div>
     <!--{{ getResourceById(resource.strapiId,"evaluative") }}-->
-    <v-stepper v-model="e1" v-if="this.resource.questions.length>0" id="stepper">
+    <v-stepper v-model="e1" v-if="this.resource.questions.length > 0" id="stepper">
       <v-stepper-header>
         <template v-for="n in resource.questions.length">
-          <v-stepper-step :complete="e1 > n" :step="n" editable :key="n + 'abc'" v-if="isStudent">
+          <v-stepper-step :complete="e1 > n" :step="n" editable :key="n + 'abc'" v-if="isStudent || isViewer">
           </v-stepper-step>
-          <v-stepper-step :step="n" editable :key="n + 'abc'" v-if="isTeacher">
+          <v-stepper-step :step="n" editable :key="n + 'abc'" v-if="isAuthor">
           </v-stepper-step>
 
           <v-divider v-if="n !== resource.questions.length" :key="n + 'abcd'"></v-divider>
@@ -15,12 +15,12 @@
 
       <v-stepper-items>
         <v-stepper-content v-for="n in resource.questions.length" :step="n" :key="n + 'sec'">
-          <v-btn v-if="isTeacher" style="position: absolute; top:8px; right: 6px; z-index: 1;" icon
+          <v-btn v-if="isAuthor" style="position: absolute; top:8px; right: 6px; z-index: 1;" icon
             class="course_iconButtonL" @click="delQ(resource.questions[n - 1].strapiId)">
             <v-icon class=""> mdi-delete </v-icon>
           </v-btn>
           <v-card class="mb-3" color="lighten-1" height="100%">
-            <v-list-item v-if="isStudent">
+            <v-list-item v-if="isStudent || isViewer">
               <v-list-item-content>
                 <div v-html="n + '. ' + resource.questions[n - 1].question"></div>
                 <v-list-item-subtitle>
@@ -32,7 +32,7 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="isTeacher">
+            <v-list-item v-if="isAuthor">
               <v-list-item-content>
                 <Editable :type="'question'" style="padding-right: 1em;" :value="resource.questions[n - 1].question"
                   :id="resource.questions[n - 1].strapiId" :field="'question'" @input="editableChange"
@@ -61,9 +61,9 @@
                     </tr>
                   </table>
 
-                  <v-btn v-if="isTeacher" class="course_button course_text" width="100%" @click="
+                  <v-btn v-if="isAuthor" class="course_button course_text" width="100%" @click="
                     addAnswerByQuestionId(resource.questions[n - 1].strapiId)
-                  ">
+                    ">
                     <v-icon> mdi-plus </v-icon>
                     Add Answer
                   </v-btn>
@@ -72,7 +72,7 @@
             </v-list-item>
           </v-card>
 
-          <v-btn v-show="n != steps" color="success" @click="nextStep(n)" class="mr-2" v-if="isStudent">
+          <v-btn v-show="n != steps" color="success" @click="nextStep(n)" class="mr-2" v-if="isStudent || isViewer">
             Continue
           </v-btn>
 
@@ -80,7 +80,7 @@
             Finish
           </v-btn>
 
-          <v-btn v-if="isTeacher" class="course_button course_text" width="100%"
+          <v-btn v-if="isAuthor" class="course_button course_text" width="100%"
             @click="addQuestionByQuestionId(resource.questions[n - 1].strapiId)">
             <v-icon> mdi-plus </v-icon>
             Add Question
@@ -88,7 +88,7 @@
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
-    <v-btn v-if="isTeacher && resource.questions.length==0" class="course_button course_text" width="100%"
+    <v-btn v-if="isAuthor && resource.questions.length == 0" class="course_button course_text" width="100%"
       @click="addQuestionByResourceId(resource.strapiId)">
       <v-icon> mdi-plus </v-icon>
       Add Question
@@ -109,6 +109,10 @@ export default {
     resource: {
       type: Object,
       default: () => { }
+    },
+    screenSize: {
+      type: String,
+      default: () => ""
     }
   },
   components: {
@@ -125,7 +129,6 @@ export default {
   },
   created() {
     //this.quiz = this.getQuizByResourceId(this.resource.quizId);
-    this.role = this.getRole;
     if ("questions" in this.resource) {
       this.steps = this.resource.questions.length;
     } else {
@@ -160,10 +163,16 @@ export default {
       "getResourceById"
     ]),
     isStudent() {
-      return this.role == "student";
+      return this.getRole == "student";
     },
     isTeacher() {
-      return this.role == "teacher";
+      return this.getRole == "teacher" || this.getRole == "author" || this.getRole == "viewer";
+    },
+    isAuthor() {
+      return this.getRole == "author";
+    },
+    isViewer() {
+      return this.getRole == "viewer";
     },
     getSteps() {
       return this.resource.questions.length;
@@ -259,15 +268,16 @@ export default {
 </script>
 
 <style scoped>
-
-#stepper>>>.v-input--selection-controls{
+#stepper>>>.v-input--selection-controls {
   margin-top: 0 !important;
   padding-bottom: 0 !important;
 }
-#stepper>>>.v-messages{
+
+#stepper>>>.v-messages {
   min-height: 0 !important;
 }
-.checkboxes>>> .v-icon{
+
+.checkboxes>>>.v-icon {
   font-size: 1.2em !important;
 }
 </style>

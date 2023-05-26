@@ -1,7 +1,5 @@
 <template>
-  <div id="resource">
     <component :is="getComponent"></component>
-  </div>
 </template>
 
 <script>

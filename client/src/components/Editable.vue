@@ -1,10 +1,10 @@
 <template>
   <div>
     <!-- @blur="valueLocal = $event.target.value; func()"   v-on:dblclick="dblclick"-->
-    <input
+    <input 
       type="text" ref="edit" v-show="edit" :placeholder="placeholder"
-      :value="valueLocal" :class="'editable '+getClass"
-      style="width: 100%;"
+      :value="valueLocal" :class="'editable '"
+      style="width: calc(100% - 2px); margin:1px;padding-left:4px;"
       @blur="valueLocal = $event.target.value; func();"
       @keydown.enter="handleEnter"
     />
@@ -93,36 +93,17 @@ export default {
   },
 
   computed:{
-    getClass(){
-      if (this.size=="title"){
-        return "title"
-      } else if (this.size=="subtitle"){
-        return "subtitle" 
-      } else {
-        return ""
-      }
-    }
+
   }
 };
 </script>
 
 <style scoped>
 .editable {
-  background-color: lightgrey;
+  background-color: rgb(226, 226, 226);
   font-size: inherit;
   padding: 1px;
   border-radius: 5px;
-}
-.text{
-  font-size: 1vw !important;
-}
-
-.title{
-  font-size: 2vw;
-}
-
-.subtitle{
-  font-size:1.5vw;
 }
 .editable:hover {
   cursor: text !important;

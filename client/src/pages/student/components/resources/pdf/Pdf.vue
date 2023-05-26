@@ -1,6 +1,6 @@
 <template>
   <div id="pdf">
-    <v-card class="mx-auto" max-width="100%" outlined>
+    <v-card class="mx-auto rounded-0" max-width="100%" outlined style="border-left: 0;border-right: 0;border-top: 0;">
       <!--STATEMENT-->
       <!--<Header :resource="resource" />-->
       <!--PLAYER-->

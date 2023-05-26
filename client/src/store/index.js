@@ -2,7 +2,6 @@ import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
 import router from "../router";
-import newElements from "../assets/data/newElements.json";
 
 Vue.use(Vuex);
 
@@ -17,18 +16,30 @@ const data = {
     lessons: [],
     expositives: [],
     evaluatives: [],
-    maxId: 0
+    statuses: [],
+    occurrences:[],
+    classes:[],
+    students:[],
+    maxId: 0,
+    changed:false,
   },
   getters: {
     //------------------------Authentication----------------------------------
     isLogged: state => state.login,
     getJWT: state => state.jwt,
     getRole: state => state.role,
+    getUsername: state => state.user.username,
 
     //--------------------------Student---------------------------------------
 
     //-------Course
     getCourse: state => state.courses,
+    getPublishedAt: state => {
+      if (state.courses.length > 0){
+        return state.courses[0].publishedAt
+      }
+      return null
+    },
 
     //-------Module
     getModuleByLesson: state => id => {
@@ -47,7 +58,7 @@ const data = {
       );
     },
     getModuleByResourceId: (state, getters) => {
-      return function(id, type) {
+      return function (id, type) {
         if (type == "lesson") {
           return getters.getModuleByLesson(id);
         } else if (type == "code" || type == "quiz") {
@@ -79,7 +90,7 @@ const data = {
 
     //-------Resource
     getResourceById: state => {
-      return function(id, type) {
+      return function (id, type) {
         if (type != "course" && type != "module") {
           return state[type + "s"].find(r => r.strapiId == id);
         }
@@ -105,11 +116,71 @@ const data = {
         ? status.reduce((a, b) => a + b, 0) / status.length
         : null;
     },
+    getStatusTeacher: state => id => {
+      return state.statuses.filter(s => s.strapiId == id)
+    },
 
     //-------Evaluative
     getEvaluativeByStatus: state => payload => {
       return state.evaluatives.find(e => e.strapiId == payload.id);
-    }
+    },
+
+    //--------------------------Teacher---------------------------------------
+    getOccurrence: state => state.occurrences,
+
+
+
+    //--------------------------Sizes---------------------------------------
+    getIconSmallSize: () => size => {
+      if (size=="xs" || size=="sm") return "x-large"
+      else if (size=="md") return "medium"
+      else return "x-large"
+    },
+    getIconMediumSize: () => size => {
+      if (size=="xs" || size=="sm") return "xx-large"
+      else if (size=="md") return "x-large"
+      else return "xx-large"
+    },
+    getIconBigSize: () => size => {
+      if (size=="xs" || size=="sm") return "xx-large"
+      else if (size=="md") return "x-large"
+      else return "xx-large"
+    },
+    getAvatarSmallSize: () => size => {
+      if (size=="xs" || size=="sm") return "50"
+      else if (size=="md") return "40"
+      else return "50"
+    },
+    getAvatarMediumSize: () => size => {
+      if (size=="xs" || size=="sm") return "65"
+      else if (size=="md") return "55"
+      else return "65"
+    },
+    getSmallTextClass: () => size => {
+      if (size=="xs" || size=="sm") return "text-body-2";
+      else if (size=="md") return "text-caption";
+      else return "text-body-2";
+    },
+    getTextClass: () => size => {
+      if (size=="xs" || size=="sm") return "text-body-1"
+      else if (size=="md") return "text-body-2"
+      else return "text-body-1"
+    },
+    getTitleClass: () => size => {
+      if (size=="xs" || size=="sm") return "text-h5"
+      else if (size=="md") return "text-h5"
+      else return "text-h5"
+    },
+    getSubtitleClass: () => size => {
+      if (size=="xs" || size=="sm") return "text-h6"
+      else if (size=="md") return "text-subtitle-1"
+      else return "text-h6"
+    },
+    getButtonSize: () => size => {
+      if (size=="xs" || size=="sm") return ""
+      else if (size=="md") return "small"
+      else return ""
+    },
   },
   mutations: {
     //-----------------------Authentication-----------------------------------
@@ -144,7 +215,7 @@ const data = {
             locked: true,
             parentId: module.strapiId
           });
-          state.maxId += 1 
+          state.maxId += 1
         });
         course.children.push({
           strapiId: 0,
@@ -156,28 +227,41 @@ const data = {
           locked: true,
           parentId: course.strapiId
         });
-        state.maxId += 1 
+        state.maxId += 1
       });
       this.commit("updateStructure");
+      this.commit("setChanged",true)
     },
     setCourseField(state, [id, field, value]) {
       const course = state.courses.find(c => c.strapiId == id);
       course[field] = value;
+      if (!(field in course.changed)) {
+        course.changed.push(field)
+      }
+      this.commit("updateStructure");
     },
 
     //-------Goal
     setGoalField(state, [id, field, value]) {
       const goal = state.courses.filter(c => "goals" in c).flatMap(c => c.goals).find(g => g.strapiId == id);
       goal[field] = value;
+      this.commit("updateStructure");
     },
-    addGoalByCourseId(state, id){
+    addGoalByCourseId(state, id) {
       const course = state.courses.find(c => c.strapiId == id)
-      const n = Math.max(...state.courses.filter(c => "goals" in c).flatMap(c => c.goals).map(g => g.strapiId))
-      let goal = newElements.newGoal
-      goal.strapiId = n+1
+      let n = Math.max(...state.courses.filter(c => "goals" in c).flatMap(c => c.goals).map(g => g.strapiId))
+      if (n < 0) {
+        n = 0;
+      }
+      let goal = {
+        "new": true,
+        "goal": ""
+      }
+      goal.strapiId = n + 1
       course.goals.push(goal)
+      this.commit("updateStructure");
     },
-    deleteGoal(state, id){
+    deleteGoal(state, id) {
       const course = state.courses.filter(c => "goals" in c).find(c => c.goals.map(g => g.strapiId).includes(id));
       const index = course.goals.findIndex(g => g.strapiId == id)
       course.goals.splice(index, 1)
@@ -189,16 +273,16 @@ const data = {
       const course = state.courses.find(c => c.strapiId == id);
       const n = Math.max(...state.modules.map(m => m.strapiId));
       let module = {
-        "strapiId" : n + 1,
-        "id" : state.maxId,
+        "strapiId": n + 1,
+        "id": state.maxId,
         "new": true,
         "contentType": "module",
         "name": "",
         "children": [
           {
             "strapiId": 0,
-            "id" : state.maxId + 1,
-            "parentId" : n + 1,
+            "id": state.maxId + 1,
+            "parentId": n + 1,
             "type": "add",
             "contentType": "lesson",
             "name": "add Lesson",
@@ -220,16 +304,16 @@ const data = {
       course.children.splice(index, 1);
       this.commit("updateStructure");
     },
-    moveModule(state, [id, direction]){
+    moveModule(state, [id, direction]) {
       const course = state.courses.find(c =>
         c.children.map(m => m.strapiId).includes(id)
       );
       const index = course.children.findIndex(obj => obj.strapiId == id);
       const module = course.children[index];
-      if (index > 0 && direction=='up') {
+      if (index > 0 && direction == 'up') {
         course.children.splice(index, 1);
         course.children.splice(index - 1, 0, module);
-      } else if (index < course.children.length - 2 && direction=='down') {
+      } else if (index < course.children.length - 2 && direction == 'down') {
         course.children.splice(index, 1);
         course.children.splice(index + 1, 0, module);
       }
@@ -250,8 +334,8 @@ const data = {
         .find(m => m.strapiId == id);
       const n = Math.max(...state.lessons.map(l => l.strapiId));
       let lesson = {
-        "strapiId" : n + 1,
-        "id" : state.maxId,
+        "strapiId": n + 1,
+        "id": state.maxId,
         "new": true,
         "contentType": "lesson",
         "name": "",
@@ -271,7 +355,7 @@ const data = {
       module.children.splice(index, 1);
       this.commit("updateStructure");
     },
-    moveLesson(state, [id, direction]){
+    moveLesson(state, [id, direction]) {
       const course = state.courses[0];
       const module = state.courses
         .flatMap(c => c.children)
@@ -283,10 +367,10 @@ const data = {
       const indexModule = state.courses.flatMap(c => c.children).findIndex(
         obj => obj.strapiId == module.strapiId
       );
-      if (indexLesson > 0 && direction=='up') {
+      if (indexLesson > 0 && direction == 'up') {
         module.children.splice(indexLesson, 1);
         module.children.splice(indexLesson - 1, 0, lesson);
-      } else if (indexModule > 0 && direction=='up') {
+      } else if (indexModule > 0 && direction == 'up') {
         module.children.splice(indexLesson, 1);
         const newModule = course.children[indexModule - 1];
         newModule.children.splice(newModule.children.length - 1, 0, lesson);
@@ -310,20 +394,33 @@ const data = {
     },
 
     //-------Condition
-    setConditionField(state, [id, field, value]){
-      const condition = [...state.courses.flatMap(c => c.children).filter(m => "condition" in m).map(m => m.condition),...state.courses.flatMap(c => c.children).flatMap(m => m.children).filter(l => "condition" in l).map(l => l.condition)].findIndex(c => c.strapiId==id)
+    setConditionField(state, [id, field, value]) {
+      let condition;
+      try{ //TODO find better solution
+        condition = state.courses.flatMap(c => c.children).flatMap(m => m.children).filter(l => "condition" in l).map(l => l.condition).find(c => c.strapiId == id)
+      }catch (err){
+        condition = state.courses.flatMap(c => c.children).filter(m => "condition" in m).map(m => m.condition).find(c => c.strapiId == id)
+      }
       condition[field] = value;
       this.commit("updateStructure");
     },
-    addCondition(state, [id, type]){
+    addConditionByLMId(state, [id, type]) {
       let element;
-      if (type=="lesson"){
-        element = state.courses.flatMap(c => c.children).flatMap(m => m.children).findIndex(l => l.strapiId==id)
-      } else if (type=="module"){
-        element = state.courses.flatMap(c => c.children).findIndex(m => m.strapiId==id)
+      if (type == "lesson") {
+        element = state.courses.flatMap(c => c.children).flatMap(m => m.children).find(l => l.strapiId == id)
+      } else if (type == "module") {
+        element = state.courses.flatMap(c => c.children).find(m => m.strapiId == id)
       }
-      const n = Math.max([...state.courses.flatMap(c => c.children).filter(m => "condition" in m).map(m => m.condition),...state.courses.flatMap(c => c.children).flatMap(m => m.children).filter(l => "condition" in l).map(l => l.condition)])
-      let condition = newElements.newCondition
+      let n = Math.max(...[...state.courses.flatMap(c => c.children).filter(m => "condition" in m && m.condition!=null).map(m => m.condition.strapiId), ...state.courses.flatMap(c => c.children).flatMap(m => m.children).filter(l => "condition" in l && l.condition!=null).map(l => l.condition.strapiId)])
+      if (n < 0) {
+        n = 0;
+      }
+      let condition = {
+        "new": true,
+        "afterPercDone": "",
+        "afterWeek": "",
+        "type": ""
+      }
       condition.strapiId = n + 1
       element.condition = condition
       this.commit("updateStructure")
@@ -341,10 +438,10 @@ const data = {
       }
       let expositive = {
         "new": true,
-        "strapiId" : n + 1,
+        "strapiId": n + 1,
         "name": "",
-        "type" : "newExpo",
-        "milestones":[]
+        "type": "newExpo",
+        "milestones": []
       }
       lesson.expositives.push(expositive);
       this.commit("updateStructure");
@@ -358,7 +455,7 @@ const data = {
       expositive[field] = value;
       this.commit("updateStructure");
     },
-    deleteExpositive(state, id){
+    deleteExpositive(state, id) {
       let lesson = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
@@ -375,15 +472,15 @@ const data = {
         .flatMap(m => m.children)
         .flatMap(l => l.expositives)
         .find(e => e.strapiId == id);
-      expositive.file=file;
-      if(file.type.includes("pdf")){
+      expositive.file = file;
+      if (file.type.includes("pdf")) {
         expositive.contentType = "pdf";
         expositive.type = "pdf";
-      } else if(file.type.includes("video")){
+      } else if (file.type.includes("video")) {
         expositive.contentType = "video";
         expositive.type = "video";
       }
-      
+
       this.commit("updateStructure");
     },
 
@@ -398,12 +495,15 @@ const data = {
         n = 0;
       }
       let evaluative = {
-        "strapiId" : n + 1,
+        "strapiId": n + 1,
         "new": true,
         "type": "new",
+        "contentType": "",
         "name": "",
         "questions": [],
-        "tests":[]
+        "tests": [],
+        "contexts": [],
+        "skeleton": ""
       }
       lesson.evaluatives.push(evaluative);
       this.commit("updateStructure");
@@ -441,17 +541,19 @@ const data = {
         evaluative.questions.push({
           question: "",
           strapiId: i + 1,
-          correctAnswer:[],
+          correctAnswer: [],
           answers: [
             { answer: "", strapiId: i2 + 1 },
             { answer: "", strapiId: i2 + 2 }
           ]
         });
-      } else if(type=="code"){
+      } else if (type == "code") {
         evaluative.statement = ""
+        evaluative.solution = ""
+        evaluative.skeleton = ""
       }
+      evaluative.type = ""
       evaluative.contentType = type;
-      evaluative.type = type;
       this.commit("updateStructure");
     },
     deleteEvaluative(state, id) {
@@ -622,9 +724,9 @@ const data = {
         .flatMap(e => e.questions)
         .find(q => q.answers.map(a => a.strapiId).includes(id));
       const index = question.answers.findIndex(a => a.strapiId == id);
-      if (index in question.correctAnswer){
-        const ind2 = question.correctAnswer.findIndex(c => c==index)
-        question.correctAnswer = question.correctAnswer.map(c => {if (c > index){return c-1}else{return c}})
+      if (index in question.correctAnswer) {
+        const ind2 = question.correctAnswer.findIndex(c => c == index)
+        question.correctAnswer = question.correctAnswer.map(c => { if (c > index) { return c - 1 } else { return c } })
         question.correctAnswer.splice(ind2, 1)
       }
       question.answers.splice(index, 1);
@@ -644,12 +746,18 @@ const data = {
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "code")
         .flatMap(e => e.tests.map(t => t.strapiId));
-      const i = Math.max(tests);
+      let i = Math.max(...tests);
+      if (i < 0) {
+        i = 0;
+      }
       evaluative.tests.push({
-        strapiId: i+1,
-        input:"",
-        expected:"",
-        show:false
+        strapiId: i + 1,
+        input: "",
+        expected: "",
+        type: "",
+        subtype: "",
+        output: "",
+        show: false
       });
       this.commit("updateStructure");
     },
@@ -693,9 +801,9 @@ const data = {
         i = 0;
       }
       evaluative.milestones.push({
-        strapiId: i+1,
-        frame:"",
-        label:""
+        strapiId: i + 1,
+        frame: "",
+        label: ""
       });
       this.commit("updateStructure");
     },
@@ -719,6 +827,59 @@ const data = {
       milestone[field] = value;
       this.commit("updateStructure");
     },
+
+    //-------Context
+    addContextByEvaluativeId(state, id) {
+      const evaluative = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .flatMap(l => l.evaluatives)
+        .find(e => e.strapiId == id);
+      const contexts = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .flatMap(l => l.evaluatives)
+        .filter(e => e.contentType == "code")
+        .flatMap(e => e.contexts.map(t => t.strapiId));
+      let i = Math.max(...contexts);
+      if (i < 0) {
+        i = 0;
+      }
+      evaluative.contexts.push({
+        strapiId: i + 1,
+        format: "",
+        name: "",
+        text: "",
+        contentType: "new",
+        show: false
+      });
+      this.commit("updateStructure");
+    },
+    deleteContext(state, id) {
+      const evaluative = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .flatMap(l => l.evaluatives)
+        .filter(e => e.contentType == "code")
+        .find(e => e.contexts.map(t => t.strapiId).includes(id));
+      const index = evaluative.contexts.findIndex(t => t.strapiId == id);
+      evaluative.contexts.splice(index, 1);
+      this.commit("updateStructure");
+    },
+    setContextField(state, [id, field, value]) {
+      const context = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .flatMap(l => l.evaluatives)
+        .filter(e => e.contentType == "code")
+        .flatMap(e => e.contexts)
+        .find(t => t.strapiId == id);
+      context[field] = value;
+      this.commit("updateStructure");
+    },
+
+
+
 
 
     //-------Etc
@@ -747,25 +908,35 @@ const data = {
         this.commit("setTestField", [id, field, value]);
       } else if (type == "milestone") {
         this.commit("setMilestoneField", [id, field, value]);
+      } else if (type == "context") {
+        this.commit("setContextField", [id, field, value]);
+      }else if (type == "goal") {
+        this.commit("setGoalField", [id, field, value]);
       }
     },
-    deleteStructure(state){
-      state.courses=[]
-      state.modules= []
-      state.lessons= []
-      state.expositives= []
-      state.evaluatives= []
+    deleteStructure(state) {
+      this.commit("setChanged",true)
+      state.courses = []
+      state.modules = []
+      state.lessons = []
+      state.expositives = []
+      state.evaluatives = []
+      state.occurrences = []
+      state.statuses = []
+      state.classes = []
+      state.students = []
     },
     updateStructure(state) {
+      this.commit("setChanged",false)
       state.modules = state.courses.flatMap(c => c.children);
       state.lessons = state.modules.flatMap(c => c.children);
       state.evaluatives = []
       state.lessons.forEach(l => {
-         if ("evaluatives" in l && l.evaluatives.length != undefined && l.evaluatives.length > 0){
-            l.evaluatives.forEach(e => {
-               state.evaluatives.push(e)
-            })
-         }
+        if ("evaluatives" in l && l.evaluatives.length != undefined && l.evaluatives.length > 0) {
+          l.evaluatives.forEach(e => {
+            state.evaluatives.push(e)
+          })
+        }
       })
       //state.evaluatives = state.lessons.flatMap(c => c.evaluatives);
       state.expositives = state.lessons.flatMap(c => c.expositives);
@@ -783,6 +954,22 @@ const data = {
          })
       })*/
     },
+    setChanged(state, changed){
+      state.changed = changed
+    }
+
+    //-------Statuses
+    /*
+    setTeacherProgress(state, obj){
+      const code = obj.code
+      const id = obj.id
+      if (state.statuses.map(s => s.strapiId).includes(id)){
+        const status = state.statuses.filter(s => s.strapiId = id)
+        status.code = code
+      } else {
+        state.statuses.push({strapiId:id, code:code})
+      }
+    }*/
   },
   actions: {
     //--------------------------Authentication--------------------------------
@@ -947,22 +1134,674 @@ const data = {
     //--------------------------Teacher---------------------------------------
     async fetchEmptyCourse(state) {
       state.commit("deleteStructure")
-      data.state.courses = newElements.emptyCourse;
+      data.state.courses = [
+        {
+          "new": true,
+          "changed": [],
+          "id": 1,
+          "strapiId": 1,
+          "contentType": "course",
+          "name": "",
+          "type": "",
+          "goals": [],
+          "children": [
+            {
+              "new": true,
+              "changed": [],
+              "id": 2,
+              "strapiId": 2,
+              "contentType": "module",
+              "name": "",
+              "condition": { "strapiId": 1 },
+              "children": [
+                {
+                  "new": true,
+                  "changed": [],
+                  "id": 3,
+                  "strapiId": 3,
+                  "contentType": "lesson",
+                  "name": "",
+                  "description": "",
+                  "evaluatives": [],
+                  "expositives": [],
+                  "condition": { "strapiId": 2 },
+                }
+              ]
+            }
+          ]
+        }
+      ];
       data.state.maxId = 4;
       state.commit("createEditableCourse")
+    },
+    async fetchCourseTeacher(state, id) {
+      state.commit("deleteStructure")
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      const url = serverData.domain + serverData.courses + "/" + id;
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          }
+        })
+        .then(response => {
+          resp = response.data.data;
+        });
+      if (resp.attributes.author.data != null && resp.attributes.author.data.id == data.state.user.id) {
+        this.commit("setRole", "author");
+      } else {
+        this.commit("setRole", "viewer");
+      }
+      const course = externalFunctions.prepareCourse(resp)
+
+      data.state.courses = [course];
+      data.state.modules = [...data.state.courses.flatMap(c => c.children)];
+      data.state.lessons = [...data.state.modules.flatMap(m => m.children)];
+      data.state.expositives = [...data.state.lessons.flatMap(l => l.expositives)];
+      data.state.evaluatives = [...data.state.lessons.flatMap(l => l.evaluatives)];
+      
+      if (data.state.role == "author"){
+        state.commit("createEditableCourse")
+      }
+    },
+    async fetchCollectionTypes(state, parameters) {
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      let url = serverData.domain;
+      switch (parameters.collectionType) {
+        case "course":
+          url += serverData.courses
+          break;
+        case "expositive":
+          url += serverData.expositives
+          break;
+        case "evaluative":
+          url += serverData.evaluatives
+          break;
+        case "question":
+          url += serverData.questions
+          break;
+        case "occurrence":
+          url += serverData.occurrences
+          break;
+        default:
+          return null
+      }
+      let params = {}
+      if (parameters.my) {
+        params["filters[author][id][$eq]"] = data.state.user.id
+      }
+      if (parameters.draft) {
+        params["filters[publishedAt][$notNull]"] = ""
+      }
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          },
+          params: params
+        })
+        .then(response => {
+          resp = response.data.data;
+        });
+      switch (parameters.collectionType) {
+        case "course":
+          resp = externalFunctions.cleanCourseData(resp)
+          break;
+        case "expositive":
+          resp = externalFunctions.cleanExpositiveData(resp)
+          break;
+        case "evaluative":
+          resp = externalFunctions.cleanEvaluativeData(resp)
+          break;
+        case "question":
+          resp = externalFunctions.cleanQuestionData(resp)
+          break;
+        case "occurrence":
+          resp = externalFunctions.cleanOccurrenceData(resp)
+          break;
+      }
+      return resp
+    },
+    async publishCourse(state) {
+      let publishedAt = data.state.courses[0].publishedAt
+      let id = data.state.courses[0].strapiId
+      if (publishedAt == null){
+        const now = new Date();
+        publishedAt = now.toISOString();
+      } else {
+        publishedAt = null
+      }
+      //let resp;
+      const auth = "Bearer " + state.getters.getJWT;
+      let url = serverData.domain + serverData.courses + "/" + id;
+      await axios.put(
+        url,
+        { data: {"publishedAt":publishedAt} },
+        {
+          headers: {
+            Authorization: auth
+          }
+        }
+      )/*.then(response => {
+        resp = response.data.data;
+        console.log(resp)
+      });*/
+      data.state.courses[0].publishedAt=publishedAt
+    },
+    async saveCourse(state) {
+      const isNew = data.state.courses[0].new ? true : false
+      const course = externalFunctions.prepareCourseForServer(data.state.courses[0])
+      let resp;
+      let id;
+      const auth = "Bearer " + state.getters.getJWT;
+      let url = serverData.domain + serverData.courses;
+      if (isNew) {
+        course.publishedAt = null
+        await axios.post(
+          url,
+          { data: { publishedAt: null } },
+          {
+            headers: {
+              Authorization: auth
+            }
+          }
+        ).then(response => {
+          resp = response.data;
+          id = resp.id
+        });
+      } else {
+        id = course.id
+      }
+      url += "/" + id
+      await axios.put(
+        url,
+        { data: course },
+        {
+          headers: {
+            Authorization: auth
+          }
+        }
+      ).then(response => {
+        resp = response.data.data;
+      });
+      state.commit("deleteStructure")
+      state.dispatch("fetchCourseTeacher",id)
+    },
+    async deleteCourse(state, id) {
+      //let resp;
+      const auth = "Bearer " + state.getters.getJWT;
+      let url = serverData.domain + serverData.courses + "/" + id;
+      await axios.delete(
+        url,
+        {
+          headers: {
+            Authorization: auth
+          }
+        }
+      )/*.then(response => {
+        resp = response.data;
+      });*/
+      state.commit("deleteStructure")
+    },
+    async fetchCloneBody(state, id) {
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      let params = { populate: "cloneBody" }
+      const url = serverData.domain + serverData.courses + "/" + id;
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          },
+          params: params
+        })
+        .then(response => {
+          resp = response.data.data;
+        });
+      return externalFunctions.prepareCloneCourse(resp)
+    },
+    async fetchClone(state, bodyData) {
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      let params = { populate: "cloneData" + JSON.stringify(bodyData) }
+      const url = serverData.domain + serverData.courses + "/" + bodyData.id;
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          },
+          params: params
+        })
+        .then(response => {
+          resp = response.data.data;
+        });
+      resp.new = true
+      const course = externalFunctions.prepareCourse(resp)
+
+      data.state.courses = [course];
+      data.state.modules = [...data.state.courses.flatMap(c => c.children)];
+      data.state.lessons = [...data.state.modules.flatMap(m => m.children)];
+      data.state.expositives = [...data.state.lessons.flatMap(l => l.expositives)];
+      data.state.evaluatives = [...data.state.lessons.flatMap(l => l.evaluatives)];
+      state.commit("createEditableCourse")
+    },
+    async fetchOccurrence(state, id){
+      state.commit("deleteStructure")
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      const url = serverData.domain + serverData.occurrences + "/" + id;
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          }
+        })
+        .then(response => {
+          resp = response.data.data;
+        });      
+      const occ = externalFunctions.prepareOccurrence(resp)
+
+      data.state.occurrences = [occ];
+      data.state.classes = [...data.state.occurrences.flatMap(o => o.classes)];
+      data.state.students = [...data.state.classes.flatMap(c => c.students)];
+      data.state.statuses = [...data.state.students.flatMap(s => s.statuses)];
     }
   },
   modules: {}
 };
 
 const serverData = {
-  domain: "https://agni.dcc.fc.up.pt/strapi",
-  //domain: "http://localhost:1337",
+  //domain: "https://agni.dcc.fc.up.pt/strapi",
+  domain: "http://localhost:1337",
   authentication: "/api/auth/local",
   register: "/api/auth/local/register",
   me: "/api/users/me?populate=*",
   courses: "/api/courses",
-  statuses: "/api/statuses"
+  expositives: "/api/expositives",
+  evaluatives: "/api/evaluatives",
+  questions: "/api/questions",
+  statuses: "/api/statuses",
+  occurrences: "/api/occurrences",
+  classes: "/api/classes",
+  students: "/api/students"
 };
+
+const externalFunctions = {
+  prepareCourseForServer(course) {
+    let newCourse = {}
+
+    //normal Course fields
+    if (course.new) {
+      newCourse.name = course.name
+      newCourse.type = (course.type == "") ? null : course.type
+    } else {
+      newCourse.id = course.strapiId
+      course.changed.forEach(field => {
+        newCourse[field] = course[field]
+      })
+    }
+
+    //Course goals
+    newCourse.goals = []
+    course.goals.forEach(goal => {
+      if (goal.new) {
+        newCourse.push({ goal: goal.goal })
+      } else {
+        let newGoal = { id: goal.strapiId }
+        goal.changed.forEach(field => {
+          newGoal[field] = goal[field]
+        })
+        newCourse.push(newGoal)
+      }
+    })
+
+    //Course modules
+    newCourse.modules = []
+    course.children.forEach(module => {
+      if (module.type == "add") {
+        return
+      }
+      let newModule = {}
+      if (module.new) {
+        newModule.name = module.name/*
+        let condition = module.condition
+        delete condition.strapiId
+        newModule.condition = condition*/
+      } else {
+        newModule.id = module.strapiId
+        module.changed.forEach(field => {
+          newModule[field] = module[field]
+        })
+        //newModule.condition.id = module.condition.strapiId
+      }
+
+      //module lessons
+      newModule.lessons = []
+      module.children.forEach(lesson => {
+        if (lesson.type == "add") {
+          return
+        }
+        let newLesson = {}
+        if (lesson.new) {
+          newLesson.name = lesson.name
+          newLesson.description = lesson.description/*
+          let condition = lesson.condition
+          delete condition.strapiId
+          newLesson.condition = condition*/
+        } else {
+          newLesson.id = lesson.strapiId
+          lesson.changed.forEach(field => {
+            newLesson[field] = lesson[field]
+          })
+          //newLesson.condition.id = lesson.condition.strapiId
+        }
+
+        //TODO expositives and evalutaives prepare
+        //newLesson.expositives = []
+        //newLesson.evaluatives = []
+
+        newModule.lessons.push(newLesson)
+      })
+
+      newCourse.modules.push(newModule)
+    })
+
+    return newCourse
+  },
+  prepareCloneCourse(resp) {
+    let course = resp;
+    let count = 1;
+
+    course.strapiId = course.id;
+    course.id = count;
+    count++;
+    course.attributes.modules.forEach(module => {
+      module.name = "M. " + module.name
+      module.strapiId = module.id;
+      module.id = count;
+      count++;
+      module.lessons.forEach(lesson => {
+        lesson.name = "L. " + lesson.name
+        lesson.strapiId = lesson.id;
+        lesson.id = count;
+        count++;
+        lesson.children = []
+        lesson.expositives = lesson.expositives.data;
+        for (let i = 0; i < lesson.expositives.length; i++) {
+          const le = lesson.expositives[i].attributes
+          le.name = "Exp. " + le.name
+          le.strapiId = lesson.expositives[i].id
+          le.id = count
+          count++
+          lesson.children.push(le)
+        }
+        lesson.evaluatives = lesson.evaluatives.data;
+        for (let i = 0; i < lesson.evaluatives.length; i++) {
+          const le = lesson.evaluatives[i].attributes
+          le.name = "Exe. " + le.name
+          le.strapiId = lesson.evaluatives[i].id
+          le.id = count
+          count++
+          lesson.children.push(le)
+        }
+        delete lesson.expositives
+        delete lesson.evaluatives
+      });
+      module.children = module.lessons;
+      delete module.lessons;
+    });
+    Object.keys(course.attributes).forEach(key => {
+      if (key == "modules") {
+        course.children = course.attributes[key];
+      } else {
+        course[key] = course.attributes[key];
+      }
+    });
+    delete course.attributes;
+    return course
+  },
+  prepareCourse(resp) {
+    let course = resp;
+
+    let moduleCount = 1;
+    let lessonCount = 1;
+    let count = 1;
+
+    course.strapiId = course.id;
+    course.id = count;
+    count++;
+    course.changed = []
+
+    course.attributes.goals.forEach(goal => {
+      goal.strapiId = goal.id
+      delete goal.id
+    })
+
+    course.attributes.modules.forEach(module => {
+      if("condition" in module && module.condition!=null){
+        module.condition.strapiId = module.condition.id
+        delete module.condition.id
+      }
+      module.strapiId = module.id;
+      module.id = count;
+      module.changed = []
+      count++;
+      module.lessons.forEach(lesson => {
+        if("condition" in lesson && lesson.condition!=null){
+          lesson.condition.strapiId = lesson.condition.id
+          delete lesson.condition.id
+        }
+        lesson.strapiId = lesson.id;
+        lesson.id = count;
+        lesson.changed = []
+        count++;
+        lesson.expositives = lesson.expositives.data;
+        for (let i = 0; i < lesson.expositives.length; i++) {
+          lesson.expositives[i] = externalFunctions.prepareExpositive(lesson.expositives[i])
+        }
+        lesson.evaluatives = lesson.evaluatives.data;
+        for (let i = 0; i < lesson.evaluatives.length; i++) {
+          lesson.evaluatives[i] = externalFunctions.prepareEvaluative(lesson.evaluatives[i])
+        }
+        lesson.contentType = "lesson";
+        lesson.internalId = "L" + lessonCount;
+        lessonCount++;
+      });
+      module.children = module.lessons;
+      module.contentType = "module";
+      module.internalId = "M" + moduleCount;
+      moduleCount++;
+      delete module.lessons;
+    });
+    Object.keys(course.attributes).forEach(key => {
+      if (key == "modules") {
+        course.children = course.attributes[key];
+      } else {
+        course[key] = course.attributes[key];
+      }
+    });
+    course.contentType = "course";
+    delete course.attributes;
+    data.state.maxId = count;
+    return course
+  },
+  prepareExpositive(resp) {
+    const expositive = resp
+    Object.keys(expositive.attributes).forEach(key => {
+      expositive[key] = expositive.attributes[key];
+    });
+    expositive.strapiId = expositive.id;
+    expositive.contentType = expositive.type;
+    delete expositive.id;
+    delete expositive.attributes;
+    return expositive
+  },
+  prepareEvaluative(resp) {
+    const evaluative = resp
+    Object.keys(evaluative.attributes).forEach(key => {
+      evaluative[key] = evaluative.attributes[key];
+    });
+    if (evaluative.content) {
+      Object.keys(evaluative.content[0]).forEach(key => {
+        if (key == "__component") {
+          if (evaluative.content[0]["__component"] == "base.quiz") {
+            evaluative.type = "quiz";
+            evaluative.contentType = "quiz";
+          } else {
+            evaluative.contentType = "code";
+          }
+        } else if (key == "questions") {
+          evaluative.questions = evaluative.content[0]["questions"].data;
+          for (var i = 0; i < evaluative.questions.length; i++) {
+            evaluative.questions[i] = externalFunctions.prepareQuestion(evaluative.questions[i])
+          }
+        } else if (key != "id") {
+          evaluative[key] = evaluative.content[0][key];
+        }
+      });
+    }
+    evaluative.strapiId = evaluative.id;
+    delete evaluative.content;
+    delete evaluative.id;
+    delete evaluative.attributes;
+    return evaluative
+  },
+  prepareQuestion(resp) {
+    const question = resp
+    Object.keys(question.attributes).forEach(key2 => {
+      question[key2] = question.attributes[key2];
+    });
+    delete question.attributes;
+    return question
+  },
+  cleanCourseData(resp) {
+    let newResp = []
+    resp.forEach(course => {
+      let newCourse = {}
+      newCourse.strapiId = course.id
+      newCourse.name = course.attributes.name
+      newCourse.type = course.attributes.type
+      newCourse.state = (course.attributes.publishedAt == null) ? "Draft" : "Published"
+      if (course.attributes.author.data != null) {
+        newCourse.my = data.state.user.email == course.attributes.author.data.attributes.email
+      } else {
+        newCourse.my = false
+      }
+      newResp.push(newCourse)
+    })
+    return newResp
+  },
+  cleanExpositiveData(resp) {
+    let newResp = []
+    resp.forEach(expositive => {
+      let newExpositive = {}
+      newExpositive.strapiId = expositive.id
+      newExpositive.name = expositive.attributes.name
+      newExpositive.type = expositive.attributes.type
+      newExpositive.my = data.state.user.email == expositive.attributes.author.data.attributes.email
+      newExpositive.state = (expositive.attributes.publishedAt == null) ? "Draft" : "Published"
+      newResp.push(newExpositive)
+    })
+    return newResp
+  },
+  cleanEvaluativeData(resp) {
+    let newResp = []
+    resp.forEach(evaluative => {
+      let newEvaluative = {}
+      newEvaluative.strapiId = evaluative.id
+      newEvaluative.name = evaluative.attributes.name
+      newEvaluative.type = evaluative.attributes.content[0].__component.split(".")[1]
+      newEvaluative.my = data.state.user.email == evaluative.attributes.author.data.attributes.email
+      newEvaluative.state = (evaluative.attributes.publishedAt == null) ? "Draft" : "Published"
+      newResp.push(newEvaluative)
+    })
+    return newResp
+  },
+  cleanQuestionData(resp) {
+    let newResp = []
+    resp.forEach(question => {
+      let newQuestion = {}
+      newQuestion.strapiId = question.id
+      newQuestion.question = question.attributes.question
+      newQuestion.my = data.state.user.email == question.attributes.author.data.attributes.email
+      newQuestion.state = (question.attributes.publishedAt == null) ? "Draft" : "Published"
+      newResp.push(newQuestion)
+    })
+    return newResp
+  },
+  cleanOccurrenceData(resp) {
+    let occ = {currentOcc:[], draftOcc:[], pastOcc:[]}
+    let date = new Date()
+    resp.forEach(occurrence => {
+      let newOcc = {}
+      newOcc.id = occurrence.id
+      newOcc.year = occurrence.attributes.year
+      newOcc.startDate = occurrence.attributes.startDate
+      newOcc.endDate = occurrence.attributes.endDate
+      newOcc.course = {}
+      if (occurrence.attributes.courses.data.length >0){
+        newOcc.course.name = occurrence.attributes.courses.data[0].attributes.name
+        newOcc.course.type = occurrence.attributes.courses.data[0].attributes.type
+        newOcc.classes = occurrence.attributes.classes.data.map(c => c.attributes)
+      }
+      let startDate = (newOcc.startDate==null) ? null : new Date(newOcc.startDate)
+      let endDate = (newOcc.endDate==null) ? null : new Date(newOcc.endDate)
+      if (date > endDate && endDate!=null){
+        occ.pastOcc.push(newOcc)
+      } else if (startDate < date && date < endDate && startDate!=null && endDate!=null){
+        occ.currentOcc.push(newOcc)
+      } else {
+        occ.draftOcc.push(newOcc)
+      }
+    })
+    return occ
+  },
+  prepareOccurrence(resp) {
+    let occ = resp.attributes
+    occ.id = resp.id
+    occ.classes.data.forEach(c => {
+      c.attributes.students.data.forEach(student => {
+        student.attributes.statuses.data.forEach(status => {
+          Object.keys(status.attributes).forEach(key => {
+            status[key] = status.attributes[key];
+          });
+          delete status.attributes
+        })
+        Object.keys(student.attributes).forEach(key => {
+          student[key] = student.attributes[key];
+        });
+        student.statuses = student.statuses.data
+        delete student.attributes
+      })
+      Object.keys(c.attributes).forEach(key => {
+        c[key] = c.attributes[key];
+      });
+      c.students = c.students.data
+      delete c.attributes
+    })
+    occ.classes = occ.classes.data
+    delete occ.attributes
+    occ.courses.data.forEach(course =>{
+      Object.keys(course.attributes).forEach(key => {
+        course[key] = course.attributes[key];
+      });
+      delete course.attributes
+    })
+    occ.courses = occ.courses.data[0]
+
+    return occ
+  },/*
+  prepareClass(resp){
+
+  },
+  prepareStudent(resp){
+
+  },
+  prepareStatuses(resp){
+
+  }*/
+}
 
 export default new Vuex.Store(data);

@@ -1,8 +1,8 @@
 <template>
-  <div ref="course" :class="getCourseClass">
-    <v-sheet class="fill-height pa">
-      <Menu @onResourceClicked="setResource" />
-      <Resource v-if="resource" :resource="resource" />
+  <div id="course" ref="course" :class="getCourseClass" class="fill-height">
+    <v-sheet class="fill-height rounded">
+      <Menu @onResourceClicked="setResource" :screenSize="screenSize"/>
+      <Resource v-if="resource" :resource="resource" :screenSize="screenSize" ref="resource"/>
       <div v-else>
         <Profile v-if="isResource != 0" :resource="isResource" :type="type" />
       </div>
@@ -63,11 +63,22 @@ export default {
       } else {
         return "courseXL"
       }
-    }
+    },
+    screenSize(){
+      const size = this.courseWidth
+      if (size <= 480) return "xs"
+      else if (size <= 768) return "sm"
+      else if (size <= 1024) return "md"
+      else if (size <= 1280) return "lg"
+      else return "xl"
+    },
   },
 
   methods: {
     setResource(resourceId, type) {
+      if (this.resource && this.resource != null && this.resource.contentType=="code"){
+        this.$refs.resource.testM()
+      }
       this.resource = null;
       this.isResource = resourceId;
       this.type = type;
@@ -86,58 +97,30 @@ export default {
 </script>
 
 <style>
+/*IMPORTANT */
+.course_iconButtonS {
+  height: 1.1em !important;
+  width: 1.1em !important;
+  min-width: 0 !important;
+}
+
 /* Course Size */
 .courseXS{font-size: 1em;}
 .courseS{font-size: 1em;}
-.courseM{font-size: 0.75em;}
+.courseM{font-size: 0.85em;}
 .courseL{font-size: 1em;}
 .courseXL{font-size: 1em;}
 
 
-/* Text Styles */
-.course_title {
-  font-size: 1.8em;
-  text-align: left;
-}
-.course_subtitle {
-  font-size: 1.1em;
-  font-weight: 500;
-  text-align: left;
-}
-.course_text {
-  font-size: 0.9em !important;
-  font-weight: 400 !important;
-}
-.course_smallText{
-  font-size: 0.8em !important;
-  font-weight: 400 !important;
-}
-
-
-/* Paddings */
-.v-list-item{
-  padding: 0 0.7em;
-}
-.v-list-item__content{
-  padding: 0.6em 0;
-}
-.v-card__text{
-  padding: 0.7em;
-}
-
 .resource {
-  padding: 0 0 0 25%;
+  padding: 0 0 0 25% !important;
 }
+
 
 /* Buttons */
 .course_button{
   height: 2rem !important;
   min-height: 0 !important;
-}
-.course_iconButtonS {
-  height: 1.1em !important;
-  width: 1.1em !important;
-  min-width: 0 !important;
 }
 .course_iconButtonL {
   height: 2.2em !important;
@@ -149,27 +132,6 @@ export default {
 }
 
 
-
-/* Boxes */
-.box {
-  height: 4.5em !important;
-  min-width: 0 !important;
-  width: 4.5em !important;
-}
-.box_icon {
-  font-size: 2.2em !important;
-}
-
-
-
-.header {
-  text-align: left;
-}
-
-/*
-.right_box {
-  padding-left: 0;
-}*/
 
 .v-stepper__header{
   height: 4em !important;
@@ -193,57 +155,8 @@ export default {
   margin:0 !important;
 }
 
-
-.v-data-table>.v-data-table__wrapper>table>tbody>tr>td {
-  font-size: 1em;
-  height: 3.5em;
-}
-
-.v-data-table>.v-data-table__wrapper>table>thead>tr>th {
-  font-size: 0.9em;
-  height: 3.5em;
-}
-
-.v-card__actions {
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.v-data-footer,
-.v-data-footer__select .v-select__selections .v-select__selection--comma {
-  font-size: 0.9vw;
-}
-/*
-.v-btn--icon.v-size--default .v-icon,
-.v-btn--fab.v-size--default .v-icon {
-  font-size: 1.8vw;
-}
-
-.v-data-table .v-icon {
-  font-size: 1.8vw;
-}*/
-
-.v-data-table>.v-data-table__wrapper>table>tbody>tr>td,
-.v-data-table>.v-data-table__wrapper>table>tbody>tr>th,
-.v-data-table>.v-data-table__wrapper>table>thead>tr>td,
-.v-data-table>.v-data-table__wrapper>table>thead>tr>th,
-.v-data-table>.v-data-table__wrapper>table>tfoot>tr>td,
-.v-data-table>.v-data-table__wrapper>table>tfoot>tr>th {
-  padding: 0 0.8vw;
-}
-
 .v-btn:not(.v-btn--round).v-size--default {
   min-width: 0;
-}
-/*
-.v-btn__content .v-icon.v-icon--left,
-.v-btn__content .v-icon.v-icon--right {
-  font-size: 1.4vw;
-  margin-left: 0.5vw;
-}*/
-
-.v-card__actions>.v-btn.v-btn {
-  padding: 0 1vw;
 }
 
 .v-application--is-ltr .v-data-footer__select {
@@ -263,60 +176,4 @@ export default {
   margin-left: 0.55vw;
 }
 
-@media only screen and (max-width: 768px) {
-  .resource {
-    padding: 60px 0 0 0;
-  }
-
-  /*
-  .resource_title {
-    font-size: 5vw;
-    font-weight: 400;
-  }
-
-  .resource_subtitle {
-    font-size: 3vw;
-    font-weight: 500;
-  }
-
-  .resource_text {
-    font-size: 2.5vw;
-  }
-
-  .box {
-    height: 12vw !important;
-    min-width: 0 !important;
-    width: 12vw !important;
-  }
-
-  .box_icon {
-    font-size: 5vw !important;
-  }*/
-
-  /*
-  .v-data-table>.v-data-table__wrapper>table>tbody>tr>td {
-    font-size: 2.5vw;
-    height: 9vw;
-  }
-
-  .v-data-table>.v-data-table__wrapper>table>thead>tr>th {
-    font-size: 2.5vw;
-    height: 9vw;
-  }
-
-  .v-btn--icon.v-size--default .v-icon,
-  .v-btn--fab.v-size--default .v-icon {
-    font-size: 4vw;
-  }
-  
-  .v-btn:not(.v-btn--round).v-size--default {
-    min-width: 0;
-    font-size: 2vw;
-    height: 5vw;
-  }*/
-
-  .v-card__actions>.v-btn.v-btn {
-    padding: 0 1vw;
-  }
-}
 </style>

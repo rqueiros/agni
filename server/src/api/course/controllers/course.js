@@ -22,12 +22,19 @@ module.exports = createCoreController(uid, () => {
    return {
       async find(ctx) {
          const author = ctx.state.user
-         if (author.role.id == 3){
-            const res = await getStudentCourses(author,ctx)
+         if (author.role.id == 3) {
+            const res = await getStudentCourses(author, ctx)
             return this.transformResponse(res)
          } else {
+            const params = {"$or":[{author:{id:{"$eq":author.id}}},{publishedAt:{"$null":null}}]}
+            let filters;
+            if (Object.keys(ctx.query).length == 0){
+               filters = {filters: params}
+            } else {
+               filters = {filters : {"$and":[params,ctx.query.filters]}}
+            }
             const entity = await strapi.entityService.findMany(uid, {
-               ...ctx.query,
+               ...filters,
                populate: courseStructure,
             })
             const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
@@ -45,7 +52,7 @@ module.exports = createCoreController(uid, () => {
                populate: courseStructure,
             })
             let courseData = await this.sanitizeOutput(entity, ctx)
-            courseData = cloneCourse(courseData,cloneData)
+            courseData = cloneCourse(courseData, cloneData)
             return this.transformResponse(courseData)
 
          } else if (typeof (populate) == "string" && populate == "cloneBody") {
@@ -69,15 +76,29 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          let result = []
-         let data = JSON.parse(ctx.request.body["data"])
-         const images = ctx.request.files["files.image"]
-         const files = ctx.request.files["files.file"]
-         const check = checkImagesFiles(images, files, data)
-         if (check == "image") {
-            return ctx.badRequest(error.imageError.message, error.imageError.details)
-         } else if (check == "file") {
-            return ctx.badRequest(error.fileError.message, error.fileError.details)
+         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
+         // create draft
+         if (data.publishedAt == null) {
+            data.author = ctx.state.user.id
+            const course = await strapi.db.query("api::course.course").create({
+               data: data
+            });
+            return course;
          }
+         // check for wrong files
+         let images = []
+         let files = []
+         if (ctx.request.files) {
+            images = ctx.request.files["files.image"]
+            files = ctx.request.files["files.file"]
+            const check = checkImagesFiles(images, files, data)
+            if (check == "image") {
+               return ctx.badRequest(error.imageError.message, error.imageError.details)
+            } else if (check == "file") {
+               return ctx.badRequest(error.fileError.message, error.fileError.details)
+            }
+         }
+         // create single/multiple content
          data = (Array.isArray(data) == false) ? [data] : data
          for (const key of Array(data.length).keys()) {
             const ctx2 = await prepareCtx(ctx, images, files, data[key])
@@ -85,32 +106,56 @@ module.exports = createCoreController(uid, () => {
             result.push(r)
          }
          result = (result.length == 1) ? result[0] : result
-         //return this.transformResponse(result)
          return result
       },
 
       async update(ctx) {
-         /*if (!verifyAuthor(ctx)){
-           return ctx.unauthorized(`You can't update this entry`);
-         }*/
-         const data = JSON.parse(ctx.request.body["data"])
-         const images = ctx.request.files["files.image"]
-         const files = ctx.request.files["files.file"]
-         const check = checkImagesFiles(images, files, data)
-         if (check == "image") {
-            return ctx.badRequest(error.imageError.message, error.imageError.details)
-         } else if (check == "file") {
-            return ctx.badRequest(error.fileError.message, error.fileError.details)
+         // check permission to update content
+         const { id } = ctx.request.params
+         const permission = await verifyAuthor(ctx.state.user.id, id)
+         if (!permission) {
+            return ctx.unauthorized(`No permission to update this content`);
          }
+         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
+
+         // check for wrong files
+         let images = []
+         let files = []
+         if (ctx.request.files) {
+            images = ctx.request.files["files.image"]
+            files = ctx.request.files["files.file"]
+            const check = checkImagesFiles(images, files, data)
+            if (check == "image") {
+               return ctx.badRequest(error.imageError.message, error.imageError.details)
+            } else if (check == "file") {
+               return ctx.badRequest(error.fileError.message, error.fileError.details)
+            }
+         }
+
+         if(data.publishedAt && data.publishedAt != null){
+            //const ctx2 = ctx
+            //ctx2.request.body.data.data = JSON.stringify({publishedAt:data.publishedAt})
+            await super.update(ctx)
+            delete data.publishedAt
+            ctx.request.body.data.data = JSON.stringify(data)
+            const result2 = await super.update(ctx)
+            return result2
+         }
+
+         // update content
          const ctx2 = await prepareCtx(ctx, images, files, data)
          const result = await super.update(ctx2)
          return result
       },
 
       async delete(ctx) {
-         /*if (!verifyAuthor(ctx)){
-           return ctx.unauthorized(`You can't delete this entry`);
-         }*/
+         // check permission to delete content
+         const { id } = ctx.request.params
+         const permission = await verifyAuthor(ctx.state.user.id, id)
+         if (!permission) {
+            return ctx.unauthorized(`No permission to delete this content`);
+         }
+         // delete content
          const result = await super.delete(ctx)
          return result
       },
@@ -135,17 +180,29 @@ async function prepareCtx(ctx, images, files, data) {
          }
       }
    }
-   ctx.request.files['files.image'] = []
-   ctx.request.files['files.file'] = []
+   if (ctx.request.files) {
+      ctx.request.files['files.image'] = []
+      ctx.request.files['files.file'] = []
+   }
    data.author = ctx.state.user.id
-   ctx.request.body.data = JSON.stringify(data)
+   ctx.request.body.data.data = JSON.stringify(data)
    return ctx
 }
 
-async function prepareEvaluatives(ctx, images, evaluatives){
+async function verifyAuthor(authorId, contentId) {
+   const entity = await strapi.entityService.findOne(uid, contentId, {
+      populate: courseStructure,
+   })
+   if (entity.author != null && entity.author.id == authorId) {
+      return true
+   }
+   return false
+}
+
+async function prepareEvaluatives(ctx, images, evaluatives) {
    evaluatives = ((!typeof (evaluatives) == "object")) ? [evaluatives] : evaluatives
    const createEvaluatives = evaluatives.filter(e => typeof (e) == "object")
-   if (createEvaluatives != []) {
+   if (createEvaluatives.length > 0) {
       const ctx2 = prepareEvaluativeCtx(ctx, images, createEvaluatives)
       let resp = await strapi.controller("api::evaluative.evaluative").create(ctx2)
       resp = (!(resp instanceof Array)) ? [resp] : resp
@@ -155,10 +212,11 @@ async function prepareEvaluatives(ctx, images, evaluatives){
    return evaluatives
 }
 
-async function prepareExpositives(ctx, files, expositives){
+async function prepareExpositives(ctx, files, expositives) {
    expositives = ((!typeof (expositives) == "object")) ? [expositives] : expositives
+   console.log(expositives)
    const createExpositives = expositives.filter(e => typeof (e) == "object")
-   if (createExpositives != []) {
+   if (createExpositives.length > 0) {
       const ctx2 = prepareExpositiveCtx(ctx, files, createExpositives)
       let resp = await strapi.controller("api::expositive.expositive").create(ctx2)
       resp = (!(resp instanceof Array)) ? [resp] : resp
@@ -234,7 +292,7 @@ function checkImagesFiles(images, files, data) {
    }
 }
 
-function cloneCourse(courseData, cloneData){
+function cloneCourse(courseData, cloneData) {
    if ("modules" in courseData) {
       for (let m = courseData.modules.length - 1; m >= 0; m--) {
          const module = courseData.modules[m]
@@ -316,27 +374,27 @@ function createCloneBody(courseData) {
    return courseData
 }
 
-async function getStudentCourses(author,ctx){
+async function getStudentCourses(author, ctx) {
    const id = author.id
    const entity = await strapi.db.query('plugin::users-permissions.user').findOne({
-      populate: {student:true},
+      populate: { student: true },
       where: { id: id }
    })
    const studentId = entity.student.id
    const entity2 = await strapi.entityService.findOne("api::student.student", studentId, {
-      populate: {class:true, statuses:{populate:statusStructure}},
+      populate: { class: true, statuses: { populate: statusStructure } },
    })
    const classId = entity2.class.id
    const entity3 = await strapi.entityService.findOne("api::class.class", classId, {
-      populate: {occurrence:true,students:true},
+      populate: { occurrence: true, students: true },
    })
    const occId = entity3.occurrence.id
    const entity4 = await strapi.entityService.findOne("api::occurrence.occurrence", occId, {
-      populate: {courses:true},
+      populate: { courses: true },
    })
    const courses = entity4.courses
    let res = []
-   for (let i = 0; i < courses.length; i++){
+   for (let i = 0; i < courses.length; i++) {
       let r = await strapi.entityService.findOne(uid, courses[i].id, {
          populate: courseStructure,
       })
@@ -346,22 +404,22 @@ async function getStudentCourses(author,ctx){
    let statuses = entity2.statuses
    const evIds = statuses.map(s => s.evaluative.id)
 
-   for (let i = 0; i < res.length; i++){
+   for (let i = 0; i < res.length; i++) {
       let c = res[i]
-      for (let j = 0;j < c.modules.length;j++){
+      for (let j = 0; j < c.modules.length; j++) {
          let m = c.modules[j]
-         for (let k = 0; k<m.lessons.length;k++){
+         for (let k = 0; k < m.lessons.length; k++) {
             let l = m.lessons[k]
-            for (let n = 0; n< l.evaluatives.length;n++){
+            for (let n = 0; n < l.evaluatives.length; n++) {
                let evaluative = l.evaluatives[n]
-               if (evIds.includes(evaluative.id)){
-                  const s = statuses.find(s => s.evaluative.id==evaluative.id)
+               if (evIds.includes(evaluative.id)) {
+                  const s = statuses.find(s => s.evaluative.id == evaluative.id)
                   delete s.evaluative
                   statuses = statuses.filter(stat => stat != s)
                   evaluative.status = s
                } else {
-                  const ctx2 = prepareStatusCtx(ctx,evaluative,studentId)
-                  let resp = await strapi.entityService.create("api::status.status",{data:JSON.parse(ctx2.request.body.data)})
+                  const ctx2 = prepareStatusCtx(ctx, evaluative, studentId)
+                  let resp = await strapi.entityService.create("api::status.status", { data: JSON.parse(ctx2.request.body.data) })
                   let resp2 = await strapi.entityService.findOne("api::status.status", resp.id, {
                      populate: statusStructure,
                   })
@@ -376,108 +434,108 @@ async function getStudentCourses(author,ctx){
    const currentDate = new Date();
    const startDate = new Date(entity4.startDate)
 
-   for (let i = 0; i < res.length; i++){
+   for (let i = 0; i < res.length; i++) {
       let course = res[i]
-      for (let j = 0;j < course.modules.length;j++){
-         let module= course.modules[j]
-         if (module.condition){
+      for (let j = 0; j < course.modules.length; j++) {
+         let module = course.modules[j]
+         if (module.condition) {
             let locked = true
             let afterPercDone = false
             let afterWeek = false
 
-            if (module.condition.afterWeek){
-               const limit = new Date(startDate.setDate(startDate.getDate()+(module.condition.afterWeek*7)))
-               if (currentDate >= limit){
+            if (module.condition.afterWeek) {
+               const limit = new Date(startDate.setDate(startDate.getDate() + (module.condition.afterWeek * 7)))
+               if (currentDate >= limit) {
                   afterWeek = true
                }
             }
 
-            if (module.condition.afterPercDone){
+            if (module.condition.afterPercDone) {
                const limit = module.condition.afterPercDone
-               if (j != 0){
-                  let pastModule = course.modules[j-1]
+               if (j != 0) {
+                  let pastModule = course.modules[j - 1]
                   const locked = pastModule.lessons.map(l => l.locked)
-                  if (!(locked.includes(true))){
+                  if (!(locked.includes(true))) {
                      let grades = pastModule.lessons.flatMap(l => l.evaluatives.map(e => e.status.grade))
-                     let mean = grades.reduce((acc, curr) => acc + curr, 0)/grades.length
+                     let mean = grades.reduce((acc, curr) => acc + curr, 0) / grades.length
                      if (mean >= limit) {
-                        afterPercDone=true
+                        afterPercDone = true
                      }
                   }
                }
             }
 
-            if (module.condition.type=="AND"){
-               if (afterPercDone && afterWeek){
+            if (module.condition.type == "AND") {
+               if (afterPercDone && afterWeek) {
                   locked = false
-               } 
+               }
             } else {
-               if (afterPercDone | afterWeek){
+               if (afterPercDone | afterWeek) {
                   locked = false
                }
             }
-         
-            if (locked){
-               module.locked=true
-               module.lessons=[]
+
+            if (locked) {
+               module.locked = true
+               module.lessons = []
             }
          }
 
-         for (let k = 0; k<module.lessons.length;k++){
+         for (let k = 0; k < module.lessons.length; k++) {
             let lesson = module.lessons[k]
 
-            if (lesson.condition){
+            if (lesson.condition) {
                let locked = true
                let afterPercDone = false
                let afterWeek = false
-   
-               if (lesson.condition.afterWeek){
+
+               if (lesson.condition.afterWeek) {
                   let limit = new Date(startDate.getTime())
-                  limit = new Date(limit.setDate(limit.getDate()+(lesson.condition.afterWeek*7)))
-                  if (currentDate > limit){
+                  limit = new Date(limit.setDate(limit.getDate() + (lesson.condition.afterWeek * 7)))
+                  if (currentDate > limit) {
                      afterWeek = true
                   }
                }
-   
-               if (lesson.condition.afterPercDone){
+
+               if (lesson.condition.afterPercDone) {
                   const limit = lesson.condition.afterPercDone
-                  if (k != 0){
-                     let pastLesson = module.lessons[k-1]
-                     if (pastLesson.evaluatives.length>0){
+                  if (k != 0) {
+                     let pastLesson = module.lessons[k - 1]
+                     if (pastLesson.evaluatives.length > 0) {
                         const evaluatives = pastLesson.evaluatives.map(e => e.status.grade)
-                        const mean = evaluatives.reduce((acc, curr) => acc + curr, 0)/evaluatives.length
+                        const mean = evaluatives.reduce((acc, curr) => acc + curr, 0) / evaluatives.length
                         if (mean >= limit) {
-                           afterPercDone=true
+                           afterPercDone = true
                         }
                      }
                   } else {
-                     if (j!=0){
-                        let pastLesson = course.modules[j-1].lessons[course.modules[j-1].lessons.length-1]
-                        if (pastLesson.evaluatives.length>0){
+                     if (j != 0) {
+                        let pastLesson = course.modules[j - 1].lessons[course.modules[j - 1].lessons.length - 1]
+                        if (pastLesson.evaluatives.length > 0) {
                            const evaluatives = pastLesson.evaluatives.map(e => e.status.grade)
-                           const mean = evaluatives.reduce((acc, curr) => acc + curr, 0)/evaluatives.length
+                           const mean = evaluatives.reduce((acc, curr) => acc + curr, 0) / evaluatives.length
                            if (mean >= limit) {
-                              afterPercDone=true
+                              afterPercDone = true
                            }
                         }
                      }
                   }
                }
-   
-               if (lesson.condition.type=="AND"){
-                  if (afterPercDone && afterWeek){
+
+               if (lesson.condition.type == "AND") {
+                  if (afterPercDone && afterWeek) {
                      locked = false
-                  } 
+                  }
                } else {
-                  if (afterPercDone | afterWeek){
+                  if (afterPercDone | afterWeek) {
                      locked = false
                   }
                }
-            
-               if (locked){
-                  lesson.locked=true
-                  lesson.evaluatives=[]
-                  lesson.expositives=[]
+
+               if (locked) {
+                  lesson.locked = true
+                  lesson.evaluatives = []
+                  lesson.expositives = []
                }
             }
          }
@@ -486,19 +544,19 @@ async function getStudentCourses(author,ctx){
    return res
 }
 
-function prepareStatusCtx(ctx,evaluative,studentId) {
+function prepareStatusCtx(ctx, evaluative, studentId) {
    ctx.request.files = null
    const data = {
-      grade:0.0,
-      student:studentId,
-      evaluative:evaluative.id
+      grade: 0.0,
+      student: studentId,
+      evaluative: evaluative.id
    }
-   if (evaluative.content[0]["__component"]=="base.quiz"){
+   if (evaluative.content[0]["__component"] == "base.quiz") {
       let que = evaluative.content[0].questions.map(q => q.id)
-      que = que.map(q => {return {"question":q}})
-      data.answer = [{__component:"solution.quiz", questions: que}]
+      que = que.map(q => { return { "question": q } })
+      data.answer = [{ __component: "solution.quiz", questions: que }]
    } else {
-      data.answer = [{__component:"solution.code", code:""}]
+      data.answer = [{ __component: "solution.code", code: "" }]
    }
    ctx.request.body.data = JSON.stringify(data)
    return ctx

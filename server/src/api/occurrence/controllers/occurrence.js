@@ -58,6 +58,31 @@ const courseStructure = {
       }
    }
 };
+const occurrenceStructure = {
+   author : true,
+   year: true,
+   startDate:true,
+   endDate:true,
+   courses:{
+      populate:{
+         name:true,
+         type:true
+      }
+   },
+   classes:{
+      populate:{
+         name:true,
+         delay:true,
+         students:{
+            populate:{
+               name:true,
+               delay:true,
+               statuses:true
+            }
+         }
+      }
+   }
+};
 
 const uid = 'api::occurrence.occurrence'
 
@@ -75,9 +100,9 @@ module.exports = createCoreController(uid, () => {
          const author = ctx.state.user.id
          let entity = await strapi.entityService.findMany(uid, {
             ...ctx.query,
-            populate: { author: true },
+            populate: occurrenceStructure,
          })
-         entity = entity.filter(c => c.author.id == author)
+         entity = entity.filter(c => (c.author != null && c.author.id == author))
          const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
          return this.transformResponse(sanitizedEntity)
       },
@@ -86,7 +111,7 @@ module.exports = createCoreController(uid, () => {
          const { id } = ctx.request.params
          const entity = await strapi.entityService.findOne(uid, id, {
             ...ctx.query,
-            populate: { author: true },
+            populate: occurrenceStructure,
          });
          if (ctx.state.user.id != entity.author.id) {
             return ctx.badRequest("You are not allowed to see this occurrence")
