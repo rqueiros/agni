@@ -9,14 +9,17 @@
 
     <!--Main-->
     <v-main class="px-0 pt-6 pb-3">
+      <Menu />
+      <v-card style="padding-left:15%; padding-right:80px; background-color: white;" class="py-2 mb-4" elevation="1" tile>
+        <Header :resource="resource"/>
+      </v-card>
       <v-container fluid class="pa-0">
-        <v-row class="mt-3">
+        <v-row class="mt-0">
           <v-col cols="2">
-            <Menu />
           </v-col>
           <v-col cols="10">
-            <v-row class="pl-4 pr-4 mr-16">
-              <Header :resource="resource" />
+            <v-row class="">
+              
             </v-row>
             <v-row style="min-height: 75vh;" class="mb-3 pl-4 pr-4 mr-16" >
               <Resource :resource="resource" />

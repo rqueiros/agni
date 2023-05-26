@@ -1,22 +1,27 @@
 <template>
-  <div id="header" class="mb-2" style="width: 100%;">
-    <v-app-bar dense rounded elevation="0" class="mt-n1">
-      <v-btn rounded elevation="0">
+  <div id="header" style="width: 100%;">
+    <v-app-bar dense rounded elevation="0" height="auto" style="background-color: white;">
+      <v-btn rounded text elevation="0" class="mx-1" v-if="resource.includes('Course') || resource.includes('Occurrence') || resource.includes('Student')">
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
+      <v-divider vertical v-if="resource.includes('Course') || resource.includes('Occurrence') || resource.includes('Student')"></v-divider>
       <span class="mx-4">{{ getTitle }}</span>
       <v-spacer></v-spacer>
-      <v-btn class="mr-1" rounded color="primary">
+      <v-btn outlined class="mr-1" rounded color="primary" v-if="resource.includes('Course') && isAuthor">
         <v-icon>mdi-content-save</v-icon>
       </v-btn>
-      <v-btn class="mx-1" rounded color="primary">
+      <v-btn outlined class="mx-1" rounded color="primary" v-if="resource.includes('Course') && isAuthor">
         <v-icon>mdi-publish</v-icon>
       </v-btn>
-      <v-btn class="mx-1" rounded color="primary">
+      <v-btn outlined class="mx-1" rounded color="primary" v-if="resource.includes('Course')">
         <v-icon>mdi-content-copy</v-icon>
       </v-btn>
-      <v-btn class="ml-1" rounded color="error">
+      <v-btn outlined class="ml-1" rounded color="error" v-if="resource.includes('Course') && isAuthor">
         <v-icon>mdi-delete</v-icon>
+      </v-btn>
+
+      <v-btn outlined class="ml-1" rounded color="primary" v-if="resource.includes('Content') || resource.includes('Class')">
+        <v-icon>mdi-plus</v-icon>
       </v-btn>
     </v-app-bar>
     
@@ -39,6 +44,7 @@
 
 <script>
 //import Buttons from './Buttons.vue';
+import { mapGetters, mapState } from 'vuex';
 
 export default {
   name: "Header",
@@ -55,6 +61,17 @@ export default {
   },
 
   computed: {
+    ...mapState(['changed']),
+    ...mapGetters(["getRole", "getPublishedAt"]),
+    isAuthor() {
+      return this.getRole == "author"
+    },
+    isViewer() {
+      return this.getRole == "viewer"
+    },
+    isDraft() {
+      return this.getPublishedAt == null
+    },
     getTitle() {
       if (this.resource.includes("class")) {
         return "Class Managing";
@@ -86,12 +103,8 @@ export default {
 </script>
 
 <style scoped>
-#header {
-  text-align: center;
-}
-
-.header_title {
-  font-size: 1.5em;
+#header>>>.v-toolbar__content, .v-toolbar__extension{
+  padding:0 !important;
 }
 
 </style>
