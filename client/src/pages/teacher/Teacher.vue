@@ -8,20 +8,23 @@
     </v-system-bar>
 
     <!--Main-->
-    <v-main class="px-0 pt-6 pb-3">
+    <v-main class="px-0 pt-6">
       <Menu />
-      <v-card style="padding-left:15%; padding-right:80px; background-color: white;" class="py-2 mb-4" elevation="1" tile>
-        <Header :resource="resource"/>
+      <v-card
+        style="margin-right:4.7%; background-color: #F7F8F9;"
+        class="py-2 mb-4"
+        :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'"
+        tile
+        elevation="0"
+      >
+        <AppBar :resource="resource" />
       </v-card>
-      <v-container fluid class="pa-0">
+      <v-container fluid class="pa-0 mb-10">
         <v-row class="mt-0">
-          <v-col cols="2">
-          </v-col>
-          <v-col cols="10">
-            <v-row class="">
-              
-            </v-row>
-            <v-row style="min-height: 75vh;" class="mb-3 pl-4 pr-4 mr-16" >
+          <v-col :class="$vuetify.breakpoint.lgAndUp ? 'containerWidthBig' : 'containerWidthSmall'"></v-col>
+          <v-col class="px-0 mx-0">
+            <v-row class=""> </v-row>
+            <v-row style="min-height: 80vh; margin-right: 5%;" class="pl-4 pr-4">
               <Resource :resource="resource" />
             </v-row>
           </v-col>
@@ -39,17 +42,15 @@
 import { bus } from "@/main.js";
 import { mapActions } from "vuex";
 
-import Resource from "./components/Resource.vue";
+import AppBar from "./components/appBar/AppBar.vue";
+import Resource from "./components/resources/Resource.vue";
 import Menu from "./components/Menu.vue";
-import Header from "./components/Header.vue";
-//import Buttons from "./components/Buttons.vue";
 
 export default {
   components: {
     Resource,
     Menu,
-    Header,
-    //Buttons
+    AppBar
   },
   data: () => ({
     resource: "main,Main",
@@ -89,5 +90,19 @@ export default {
 .v-navigation-drawer,
 .v-navigation-drawer--fixed {
   position: none !important;
+}
+
+.containerWidthBig{
+  max-width: 210px;
+}
+.containerWidthSmall{
+  max-width: 100px;
+}
+
+.barMarginBig{
+  margin-left:202px; 
+}
+.barMarginSmall{
+  margin-left:92px; 
 }
 </style>

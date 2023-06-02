@@ -14,13 +14,13 @@
 </template>
 
 <script>
-import Course from "./Course.vue";
+import Course from '../../components/course/Course.vue';
 
 export default {
-  name:"Student",
+  name: "Student",
 
   components: {
     Course
-  },
+  }
 };
 </script>

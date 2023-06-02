@@ -18,6 +18,7 @@ const uid = 'api::expositive.expositive'
 
 module.exports = createCoreController(uid, () => {
    return {
+
       async find(ctx) {
          const entity = await strapi.entityService.findMany(uid, {
             ...ctx.query,
@@ -40,7 +41,10 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          const result = []
-         const files = ctx.request.files['files.file']
+         let files = []
+         if ("files" in ctx.request) {
+            files = ctx.request.files['files.file']
+         }
          let data = JSON.parse(ctx.request.body.data)
          if (!checkFiles(files, data)) {
             return ctx.badRequest(error.fileError.message, error.fileError.details)
@@ -55,34 +59,64 @@ module.exports = createCoreController(uid, () => {
       },
 
       async update(ctx) {
-         /*if (!verifyAuthor(ctx)){
-           return ctx.unauthorized(`You can't update this entry`);
-         }*/
-         const result = await super.update(ctx)
-         return result
+         const { id } = ctx.request.params
+         if (!(await verifyAuthor(ctx.state.user.id, id))) {
+            return ctx.unauthorized(`No permission to delete this content`);
+         }
+
+         let data;
+         try {
+            data = JSON.parse(ctx.request.body.data)
+         } catch (err) {
+            data = ctx.request.body.data
+         }
+
+         let files = []
+         if ("files" in ctx.request) {
+            files = ctx.request.files['files.file']
+            if (!checkFiles(files, data)) {
+               return ctx.badRequest(error.fileError.message, error.fileError.details)
+            }
+         }
+
+         const ctx2 = prepareCtx(ctx, files, data)
+         let resp = await super.update(ctx2)
+         return resp
       },
 
       async delete(ctx) {
-         /*if (!verifyAuthor(ctx)){
-           return ctx.unauthorized(`You can't delete this entry`);
-         }*/
+         const { id } = ctx.request.params
+         const permission = await verifyAuthor(ctx.state.user.id, id)
+         if (!permission) {
+            return ctx.unauthorized(`No permission to delete this content`);
+         }
          const result = await super.delete(ctx)
          return result
       },
    }
 })
 
+async function verifyAuthor(authorId, contentId) {
+   const entity = await strapi.entityService.findOne(uid, contentId, {
+      populate: expositiveStructure,
+   })
+   if (entity.author != null && entity.author.id == authorId) {
+      return true
+   }
+   return false
+}
+
 function prepareCtx(ctx, files, data) {
    if ("file" in data) {
       files = (!(files instanceof Array)) ? [files] : files
       files = files.filter(f => f.name == data.file)
       ctx.request.files['files.file'] = files
-   } else {
+   } else if ("files" in ctx.request) {
       ctx.request.files['files.file'] = []
    }
    delete data.file
    data.author = ctx.state.user.id
-   ctx.request.body.data = JSON.stringify(data)
+   ctx.request.body = { data: data }
    return ctx
 }
 

@@ -24,10 +24,6 @@
         "images"
       ]
     },
-    "correctAnswer": {
-      "type": "integer",
-      "required": true
-    },
     "answers": {
       "type": "component",
       "repeatable": true,
@@ -40,6 +36,10 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "questions"
+    },
+    "correctAnswer": {
+      "type": "string",
+      "required": true
     }
   }
 }

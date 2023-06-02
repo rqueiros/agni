@@ -17,11 +17,12 @@ const data = {
     expositives: [],
     evaluatives: [],
     statuses: [],
-    occurrences:[],
-    classes:[],
-    students:[],
+    occurrences: [],
+    classes: [],
+    students: [],
     maxId: 0,
-    changed:false,
+    changed: false,
+    screenSize: ""
   },
   getters: {
     //------------------------Authentication----------------------------------
@@ -30,31 +31,36 @@ const data = {
     getRole: state => state.role,
     getUsername: state => state.user.username,
 
+    isStudent: state => state.role == "student",
+    isTeacher: state => state.role == "author" || state.role == "viewer",
+    isAuthor: state => state.role == "author",
+    isViewer: state => state.role == "viewer",
+
     //--------------------------Student---------------------------------------
 
     //-------Course
     getCourse: state => state.courses,
     getPublishedAt: state => {
-      if (state.courses.length > 0){
-        return state.courses[0].publishedAt
+      if (state.courses.length > 0) {
+        return state.courses[0].publishedAt;
       }
-      return null
+      return null;
     },
 
     //-------Module
     getModuleByLesson: state => id => {
       return state.modules.find(m =>
-        m.children.map(l => l.strapiId).includes(id)
+        m.children.map(l => l.id).includes(id)
       );
     },
     getModuleByEvaluative: state => id => {
       return state.modules.find(m =>
-        m.children.flatMap(l => l.evaluatives.map(e => e.strapiId)).includes(id)
+        m.children.flatMap(l => l.evaluatives.map(e => e.id)).includes(id)
       );
     },
     getModuleByExpositive: state => id => {
       return state.modules.find(m =>
-        m.children.flatMap(l => l.expositives.map(e => e.strapiId)).includes(id)
+        m.children.flatMap(l => l.expositives.map(e => e.id)).includes(id)
       );
     },
     getModuleByResourceId: (state, getters) => {
@@ -73,26 +79,26 @@ const data = {
     getLessonByResourceId: state => id => {
       return state.lessons.find(l => {
         if (
-          l.expositives.map(e => e.strapiId).includes(id) ||
-          l.evaluatives.map(e => e.strapiId).includes(id)
+          l.expositives.map(e => e.id).includes(id) ||
+          l.evaluatives.map(e => e.id).includes(id)
         ) {
           return l;
         }
       });
     },
     getLessonsByCourse: state => id => {
-      const c = state.courses.find(c => c.strapiId == id);
+      const c = state.courses.find(c => c.id == id);
       return c.children.flatMap(m => m.children);
     },
     getLessonsByModule: state => id => {
-      return state.modules.find(m => m.strapiId == id).children;
+      return state.modules.find(m => m.id == id).children;
     },
 
     //-------Resource
     getResourceById: state => {
       return function (id, type) {
         if (type != "course" && type != "module") {
-          return state[type + "s"].find(r => r.strapiId == id);
+          return state[type + "s"].find(r => r.id == id);
         }
         return undefined;
       };
@@ -107,7 +113,7 @@ const data = {
       if (id == "0") {
         return null;
       }
-      const lesson = state.lessons.find(l => l.strapiId == id);
+      const lesson = state.lessons.find(l => l.id == id);
       let status =
         "evaluatives" in lesson
           ? lesson.evaluatives.map(e => e.status.grade)
@@ -117,70 +123,88 @@ const data = {
         : null;
     },
     getStatusTeacher: state => id => {
-      return state.statuses.filter(s => s.strapiId == id)
+      return state.statuses.filter(s => s.id == id);
     },
 
     //-------Evaluative
     getEvaluativeByStatus: state => payload => {
-      return state.evaluatives.find(e => e.strapiId == payload.id);
+      return state.evaluatives.find(e => e.id == payload.id);
     },
 
     //--------------------------Teacher---------------------------------------
     getOccurrence: state => state.occurrences,
 
-
-
     //--------------------------Sizes---------------------------------------
-    getIconSmallSize: () => size => {
-      if (size=="xs" || size=="sm") return "x-large"
-      else if (size=="md") return "medium"
-      else return "x-large"
+    getScreenSize: state => state.screenSize,
+    isSmallScreen: state =>
+      state.screenSize == "xs" || state.screenSize == "sm",
+    isXS: state => state.screenSize == "xs",
+    isSM: state => state.screenSize == "sm",
+    isMD: state => state.screenSize == "md",
+    isLG: state => state.screenSize == "lg",
+    isXL: state => state.screenSize == "xl",
+    isXSsmaler: state => state.screenSize == "xs",
+    isSMsmaler: state => state.screenSize == "sm" || state.screenSize == "sm",
+    isMDsmaler: state => state.screenSize == "md" || state.screenSize == "sm" || state.screenSize == "xs",
+    isLGsmaler: state => state.screenSize == "lg" || state.screenSize == "md" || state.screenSize == "sm" || state.screenSize == "xs",
+    isXLsmaler: state => state.screenSize == "xl" || state.screenSize == "lg" || state.screenSize == "md" || state.screenSize == "sm" || state.screenSize == "xs",
+    getIconSmallSize: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm")
+        return "x-large";
+      else if (state.screenSize == "md") return "medium";
+      else return "x-large";
     },
-    getIconMediumSize: () => size => {
-      if (size=="xs" || size=="sm") return "xx-large"
-      else if (size=="md") return "x-large"
-      else return "xx-large"
+    getIconMediumSize: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm")
+        return "xx-large";
+      else if (state.screenSize == "md") return "x-large";
+      else return "xx-large";
     },
-    getIconBigSize: () => size => {
-      if (size=="xs" || size=="sm") return "xx-large"
-      else if (size=="md") return "x-large"
-      else return "xx-large"
+    getIconBigSize: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm")
+        return "xx-large";
+      else if (state.screenSize == "md") return "x-large";
+      else return "xx-large";
     },
-    getAvatarSmallSize: () => size => {
-      if (size=="xs" || size=="sm") return "50"
-      else if (size=="md") return "40"
-      else return "50"
+    getAvatarSmallSize: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm") return "50";
+      else if (state.screenSize == "md") return "40";
+      else return "50";
     },
-    getAvatarMediumSize: () => size => {
-      if (size=="xs" || size=="sm") return "65"
-      else if (size=="md") return "55"
-      else return "65"
+    getAvatarMediumSize: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm") return "65";
+      else if (state.screenSize == "md") return "55";
+      else return "65";
     },
-    getSmallTextClass: () => size => {
-      if (size=="xs" || size=="sm") return "text-body-2";
-      else if (size=="md") return "text-caption";
+    getSmallTextClass: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm")
+        return "text-body-2";
+      else if (state.screenSize == "md") return "text-caption";
       else return "text-body-2";
     },
-    getTextClass: () => size => {
-      if (size=="xs" || size=="sm") return "text-body-1"
-      else if (size=="md") return "text-body-2"
-      else return "text-body-1"
+    getTextClass: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm")
+        return "text-body-1";
+      else if (state.screenSize == "md") return "text-body-2";
+      else return "text-body-1";
     },
-    getTitleClass: () => size => {
-      if (size=="xs" || size=="sm") return "text-h5"
-      else if (size=="md") return "text-h5"
-      else return "text-h5"
+    getTitleClass: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm")
+        return "text-h5";
+      else if (state.screenSize == "md") return "text-h5";
+      else return "text-h4";
     },
-    getSubtitleClass: () => size => {
-      if (size=="xs" || size=="sm") return "text-h6"
-      else if (size=="md") return "text-subtitle-1"
-      else return "text-h6"
+    getSubtitleClass: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm")
+        return "text-h6";
+      else if (state.screenSize == "md") return "text-subtitle-1";
+      else return "text-h6";
     },
-    getButtonSize: () => size => {
-      if (size=="xs" || size=="sm") return ""
-      else if (size=="md") return "small"
-      else return ""
-    },
+    getButtonSize: state => {
+      if (state.screenSize == "xs" || state.screenSize == "sm") return "";
+      else if (state.screenSize == "md") return "small";
+      else return "";
+    }
   },
   mutations: {
     //-----------------------Authentication-----------------------------------
@@ -197,6 +221,15 @@ const data = {
       state.role = role;
     },
 
+    //-----------------------Sizes---------------------------------------------
+    setScreenSize(state, size) {
+      if (size <= 480) state.screenSize = "xs";
+      else if (size <= 768) state.screenSize = "sm";
+      else if (size <= 1024) state.screenSize = "md";
+      else if (size <= 1280) state.screenSize = "lg";
+      else state.screenSize = "xl";
+    },
+
     //-----------------------Teacher------------------------------------------
 
     //-------Course
@@ -205,7 +238,7 @@ const data = {
       c.forEach(course => {
         course.children.forEach(module => {
           module.children.push({
-            strapiId: 0,
+            idMenu: 0,
             id: state.maxId,
             type: "add",
             contentType: "lesson",
@@ -213,107 +246,117 @@ const data = {
             evaluatives: [],
             expositives: [],
             locked: true,
-            parentId: module.strapiId
+            parentId: module.id
           });
-          state.maxId += 1
+          state.maxId += 1;
         });
         course.children.push({
-          strapiId: 0,
+          idMenu: 0,
           id: state.maxId,
           type: "add",
           contentType: "module",
           name: "add Module",
           children: [],
           locked: true,
-          parentId: course.strapiId
+          parentId: course.id
         });
-        state.maxId += 1
+        state.maxId += 1;
       });
       this.commit("updateStructure");
-      this.commit("setChanged",true)
+      this.commit("setChanged", true);
     },
     setCourseField(state, [id, field, value]) {
-      const course = state.courses.find(c => c.strapiId == id);
+      const course = state.courses.find(c => c.id == id);
       course[field] = value;
-      if (!(field in course.changed)) {
-        course.changed.push(field)
-      }
       this.commit("updateStructure");
     },
 
     //-------Goal
     setGoalField(state, [id, field, value]) {
-      const goal = state.courses.filter(c => "goals" in c).flatMap(c => c.goals).find(g => g.strapiId == id);
+      const goal = state.courses
+        .filter(c => "goals" in c)
+        .flatMap(c => c.goals)
+        .find(g => g.id == id);
       goal[field] = value;
       this.commit("updateStructure");
     },
     addGoalByCourseId(state, id) {
-      const course = state.courses.find(c => c.strapiId == id)
-      let n = Math.max(...state.courses.filter(c => "goals" in c).flatMap(c => c.goals).map(g => g.strapiId))
-      if (n < 0) {
+      const course = state.courses.find(c => c.id == id);
+      let n = Math.min(
+        ...state.courses
+          .filter(c => "goals" in c)
+          .flatMap(c => c.goals)
+          .map(g => g.id)
+      );
+      if (n > 0 || !isFinite(n)) {
         n = 0;
       }
       let goal = {
-        "new": true,
-        "goal": ""
-      }
-      goal.strapiId = n + 1
-      course.goals.push(goal)
+        id: n - 1,
+        new: true,
+        goal: ""
+      };
+      course.goals.push(goal);
       this.commit("updateStructure");
     },
     deleteGoal(state, id) {
-      const course = state.courses.filter(c => "goals" in c).find(c => c.goals.map(g => g.strapiId).includes(id));
-      const index = course.goals.findIndex(g => g.strapiId == id)
-      course.goals.splice(index, 1)
-      this.commit("updateStructure")
+      const course = state.courses
+        .filter(c => "goals" in c)
+        .find(c => c.goals.map(g => g.id).includes(id));
+      const index = course.goals.findIndex(g => g.id == id);
+      course.goals.splice(index, 1);
+      this.commit("updateStructure");
     },
 
     //-------Module
     addModuleByCourseId(state, id) {
-      const course = state.courses.find(c => c.strapiId == id);
-      const n = Math.max(...state.modules.map(m => m.strapiId));
+      const course = state.courses.find(c => c.id == id);
+      let n = Math.min(...state.modules.map(m => m.id));
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
+      }
       let module = {
-        "strapiId": n + 1,
-        "id": state.maxId,
-        "new": true,
-        "contentType": "module",
-        "name": "",
-        "children": [
+        id: n - 1,
+        idMenu: state.maxId,
+        new: true,
+        contentType: "module",
+        name: "",
+        children: [
           {
-            "strapiId": 0,
-            "id": state.maxId + 1,
-            "parentId": n + 1,
-            "type": "add",
-            "contentType": "lesson",
-            "name": "add Lesson",
-            "evaluatives": [],
-            "expositives": [],
-            "locked": true
+            id: 0,
+            idMenu: state.maxId + 1,
+            parentId: n + 1,
+            type: "add",
+            contentType: "lesson",
+            name: "add Lesson",
+            evaluatives: [],
+            expositives: [],
+            locked: true
           }
         ]
-      }
+      };
       course.children.splice(course.children.length - 1, 0, module);
       state.maxId += 2;
       this.commit("updateStructure");
     },
     deleteModule(state, id) {
       const course = state.courses.find(c =>
-        c.children.map(m => m.strapiId).includes(id)
+        c.children.map(m => m.id).includes(id)
       );
-      const index = course.children.findIndex(obj => obj.strapiId == id);
+      const index = course.children.findIndex(obj => obj.id == id);
       course.children.splice(index, 1);
       this.commit("updateStructure");
     },
     moveModule(state, [id, direction]) {
       const course = state.courses.find(c =>
-        c.children.map(m => m.strapiId).includes(id)
+        c.children.map(m => m.id).includes(id)
       );
-      const index = course.children.findIndex(obj => obj.strapiId == id);
+      const index = course.children.findIndex(obj => obj.id == id);
       const module = course.children[index];
-      if (index > 0 && direction == 'up') {
+      if (index > 0 && direction == "up") {
         course.children.splice(index, 1);
         course.children.splice(index - 1, 0, module);
-      } else if (index < course.children.length - 2 && direction == 'down') {
+      } else if (index < course.children.length - 2 && direction == "down") {
         course.children.splice(index, 1);
         course.children.splice(index + 1, 0, module);
       }
@@ -322,7 +365,7 @@ const data = {
     setModuleField(state, [id, field, value]) {
       const module = state.courses
         .flatMap(c => c.children)
-        .find(m => m.strapiId == id);
+        .find(m => m.id == id);
       module[field] = value;
       this.commit("updateStructure");
     },
@@ -331,18 +374,21 @@ const data = {
     addLessonByModuleId(state, id) {
       const module = state.courses
         .flatMap(c => c.children)
-        .find(m => m.strapiId == id);
-      const n = Math.max(...state.lessons.map(l => l.strapiId));
-      let lesson = {
-        "strapiId": n + 1,
-        "id": state.maxId,
-        "new": true,
-        "contentType": "lesson",
-        "name": "",
-        "description": "",
-        "evaluatives": [],
-        "expositives": []
+        .find(m => m.id == id);
+      let n = Math.min(...state.lessons.map(l => l.id));
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
       }
+      let lesson = {
+        id: n - 1,
+        idMenu: state.maxId,
+        new: true,
+        contentType: "lesson",
+        name: "",
+        description: "",
+        evaluatives: [],
+        expositives: []
+      };
       module.children.splice(module.children.length - 1, 0, lesson);
       state.maxId = state.maxId + 1;
       this.commit("updateStructure");
@@ -350,8 +396,8 @@ const data = {
     deleteLesson(state, id) {
       const module = state.courses
         .flatMap(c => c.children)
-        .find(m => m.children.map(l => l.strapiId).includes(id));
-      let index = module.children.findIndex(obj => obj.strapiId == id);
+        .find(m => m.children.map(l => l.id).includes(id));
+      let index = module.children.findIndex(obj => obj.id == id);
       module.children.splice(index, 1);
       this.commit("updateStructure");
     },
@@ -359,25 +405,29 @@ const data = {
       const course = state.courses[0];
       const module = state.courses
         .flatMap(c => c.children)
-        .find(m => m.children.map(l => l.strapiId).includes(id));
-      const indexLesson = module.children.findIndex(
-        obj => obj.strapiId == id
-      );
+        .find(m => m.children.map(l => l.id).includes(id));
+      const indexLesson = module.children.findIndex(obj => obj.id == id);
       const lesson = module.children[indexLesson];
-      const indexModule = state.courses.flatMap(c => c.children).findIndex(
-        obj => obj.strapiId == module.strapiId
-      );
-      if (indexLesson > 0 && direction == 'up') {
+      const indexModule = state.courses
+        .flatMap(c => c.children)
+        .findIndex(obj => obj.id == module.id);
+      if (indexLesson > 0 && direction == "up") {
         module.children.splice(indexLesson, 1);
         module.children.splice(indexLesson - 1, 0, lesson);
-      } else if (indexModule > 0 && direction == 'up') {
+      } else if (indexModule > 0 && direction == "up") {
         module.children.splice(indexLesson, 1);
         const newModule = course.children[indexModule - 1];
         newModule.children.splice(newModule.children.length - 1, 0, lesson);
-      } else if (indexLesson < module.children.length - 2 && direction == 'down') {
+      } else if (
+        indexLesson < module.children.length - 2 &&
+        direction == "down"
+      ) {
         module.children.splice(indexLesson, 1);
         module.children.splice(indexLesson + 1, 0, lesson);
-      } else if (indexModule < course.children.length - 2 && direction == 'down') {
+      } else if (
+        indexModule < course.children.length - 2 &&
+        direction == "down"
+      ) {
         module.children.splice(indexLesson, 1);
         const newModule = course.children[indexModule + 1];
         newModule.children.splice(0, 0, lesson);
@@ -388,7 +438,7 @@ const data = {
       const lesson = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
-        .find(l => l.strapiId == id);
+        .find(l => l.id == id);
       lesson[field] = value;
       this.commit("updateStructure");
     },
@@ -396,10 +446,20 @@ const data = {
     //-------Condition
     setConditionField(state, [id, field, value]) {
       let condition;
-      try{ //TODO find better solution
-        condition = state.courses.flatMap(c => c.children).flatMap(m => m.children).filter(l => "condition" in l).map(l => l.condition).find(c => c.strapiId == id)
-      }catch (err){
-        condition = state.courses.flatMap(c => c.children).filter(m => "condition" in m).map(m => m.condition).find(c => c.strapiId == id)
+      try {
+        //TODO find better solution
+        condition = state.courses
+          .flatMap(c => c.children)
+          .flatMap(m => m.children)
+          .filter(l => "condition" in l)
+          .map(l => l.condition)
+          .find(c => c.id == id);
+      } catch (err) {
+        condition = state.courses
+          .flatMap(c => c.children)
+          .filter(m => "condition" in m)
+          .map(m => m.condition)
+          .find(c => c.id == id);
       }
       condition[field] = value;
       this.commit("updateStructure");
@@ -407,23 +467,40 @@ const data = {
     addConditionByLMId(state, [id, type]) {
       let element;
       if (type == "lesson") {
-        element = state.courses.flatMap(c => c.children).flatMap(m => m.children).find(l => l.strapiId == id)
+        element = state.courses
+          .flatMap(c => c.children)
+          .flatMap(m => m.children)
+          .find(l => l.id == id);
       } else if (type == "module") {
-        element = state.courses.flatMap(c => c.children).find(m => m.strapiId == id)
+        element = state.courses
+          .flatMap(c => c.children)
+          .find(m => m.id == id);
       }
-      let n = Math.max(...[...state.courses.flatMap(c => c.children).filter(m => "condition" in m && m.condition!=null).map(m => m.condition.strapiId), ...state.courses.flatMap(c => c.children).flatMap(m => m.children).filter(l => "condition" in l && l.condition!=null).map(l => l.condition.strapiId)])
-      if (n < 0) {
+      let n = Math.min(
+        ...[
+          ...state.courses
+            .flatMap(c => c.children)
+            .filter(m => "condition" in m && m.condition != null)
+            .map(m => m.condition.id),
+          ...state.courses
+            .flatMap(c => c.children)
+            .flatMap(m => m.children)
+            .filter(l => "condition" in l && l.condition != null)
+            .map(l => l.condition.id)
+        ]
+      );
+      if (n > 0 || !isFinite(n)) {
         n = 0;
       }
       let condition = {
-        "new": true,
-        "afterPercDone": "",
-        "afterWeek": "",
-        "type": ""
-      }
-      condition.strapiId = n + 1
-      element.condition = condition
-      this.commit("updateStructure")
+        new: true,
+        afterPercDone: "",
+        afterWeek: "",
+        type: ""
+      };
+      condition.id = n - 1;
+      element.condition = condition;
+      this.commit("updateStructure");
     },
 
     //-------Expositive
@@ -431,18 +508,18 @@ const data = {
       const lesson = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
-        .find(l => l.strapiId == id);
-      let n = Math.max(...state.expositives.map(l => l.strapiId));
-      if (n < 0) {
+        .find(l => l.id == id);
+      let n = Math.min(...state.expositives.map(l => l.id));
+      if (n > 0 || !isFinite(n)) {
         n = 0;
       }
       let expositive = {
-        "new": true,
-        "strapiId": n + 1,
-        "name": "",
-        "type": "newExpo",
-        "milestones": []
-      }
+        new: true,
+        id: n - 1,
+        name: "",
+        type: "newExpo",
+        milestones: []
+      };
       lesson.expositives.push(expositive);
       this.commit("updateStructure");
     },
@@ -451,7 +528,7 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.expositives)
-        .find(e => e.strapiId == id);
+        .find(e => e.id == id);
       expositive[field] = value;
       this.commit("updateStructure");
     },
@@ -459,8 +536,8 @@ const data = {
       let lesson = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
-        .find(l => l.expositives.map(e => e.strapiId).includes(id));
-      let index = lesson.expositives.findIndex(obj => obj.strapiId == id);
+        .find(l => l.expositives.map(e => e.id).includes(id));
+      let index = lesson.expositives.findIndex(obj => obj.id == id);
       lesson.expositives.splice(index, 1);
       this.commit("updateStructure");
     },
@@ -471,7 +548,7 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.expositives)
-        .find(e => e.strapiId == id);
+        .find(e => e.id == id);
       expositive.file = file;
       if (file.type.includes("pdf")) {
         expositive.contentType = "pdf";
@@ -489,22 +566,22 @@ const data = {
       const lesson = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
-        .find(l => l.strapiId == id);
-      let n = Math.max(...state.evaluatives.map(l => l.strapiId));
-      if (n < 0) {
+        .find(l => l.id == id);
+      let n = Math.min(...state.evaluatives.map(l => l.id));
+      if (n > 0 || !isFinite(n)) {
         n = 0;
       }
       let evaluative = {
-        "strapiId": n + 1,
-        "new": true,
-        "type": "new",
-        "contentType": "",
-        "name": "",
-        "questions": [],
-        "tests": [],
-        "contexts": [],
-        "skeleton": ""
-      }
+        id: n - 1,
+        new: true,
+        type: "new",
+        contentType: "",
+        name: "",
+        questions: [],
+        tests: [],
+        contexts: [],
+        skeleton: ""
+      };
       lesson.evaluatives.push(evaluative);
       this.commit("updateStructure");
     },
@@ -515,14 +592,14 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
-        .find(e => e.strapiId == id);
+        .find(e => e.id == id);
       if (type == "quiz") {
         const questions = state.courses
           .flatMap(c => c.children)
           .flatMap(m => m.children)
           .flatMap(l => l.evaluatives)
           .filter(e => e.contentType == "quiz")
-          .flatMap(e => e.questions.map(q => q.strapiId));
+          .flatMap(e => e.questions.map(q => q.id));
         let i = Math.max(...questions);
         if (i < 0) {
           i = 0;
@@ -533,26 +610,26 @@ const data = {
           .flatMap(l => l.evaluatives)
           .filter(e => e.contentType == "quiz")
           .flatMap(e => e.questions)
-          .flatMap(q => q.answers.map(a => a.strapiId));
+          .flatMap(q => q.answers.map(a => a.id));
         let i2 = Math.max(...answers);
         if (i2 < 0) {
           i2 = 0;
         }
         evaluative.questions.push({
           question: "",
-          strapiId: i + 1,
+          id: i + 1,
           correctAnswer: [],
           answers: [
-            { answer: "", strapiId: i2 + 1 },
-            { answer: "", strapiId: i2 + 2 }
+            { answer: "", id: i2 + 1 },
+            { answer: "", id: i2 + 2 }
           ]
         });
       } else if (type == "code") {
-        evaluative.statement = ""
-        evaluative.solution = ""
-        evaluative.skeleton = ""
+        evaluative.statement = "";
+        evaluative.solution = "";
+        evaluative.skeleton = "";
       }
-      evaluative.type = ""
+      evaluative.type = "";
       evaluative.contentType = type;
       this.commit("updateStructure");
     },
@@ -560,8 +637,8 @@ const data = {
       let lesson = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
-        .find(l => l.evaluatives.map(e => e.strapiId).includes(id));
-      let index = lesson.evaluatives.findIndex(obj => obj.strapiId == id);
+        .find(l => l.evaluatives.map(e => e.id).includes(id));
+      let index = lesson.evaluatives.findIndex(obj => obj.id == id);
       lesson.evaluatives.splice(index, 1);
       this.commit("updateStructure");
     },
@@ -570,7 +647,7 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
-        .find(e => e.strapiId == id);
+        .find(e => e.id == id);
       evaluative[field] = value;
       this.commit("updateStructure");
     },
@@ -582,16 +659,16 @@ const data = {
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
-        .find(e => e.questions.map(q => q.strapiId).includes(id));
-      const index = evaluative.questions.findIndex(q => q.strapiId == id);
+        .find(e => e.questions.map(q => q.id).includes(id));
+      const index = evaluative.questions.findIndex(q => q.id == id);
       const questions = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
-        .flatMap(e => e.questions.map(q => q.strapiId));
-      let i = Math.max(...questions);
-      if (i < 0) {
+        .flatMap(e => e.questions.map(q => q.id));
+      let i = Math.min(...questions);
+      if (i > 0 || !isFinite(i)) {
         i = 0;
       }
       const answers = state.courses
@@ -600,18 +677,19 @@ const data = {
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
         .flatMap(e => e.questions)
-        .flatMap(q => q.answers.map(a => a.strapiId));
-      let i2 = Math.max(...answers);
-      if (i2 < 0) {
+        .flatMap(q => q.answers.map(a => a.id));
+      let i2 = Math.min(...answers);
+      if (i2 > 0 || !isFinite(i2)) {
         i2 = 0;
       }
       evaluative.questions.splice(index + 1, 0, {
+        new:true,
         question: "",
-        strapiId: i + 1,
+        id: i - 1,
         correctAnswer: [],
         answers: [
-          { answer: "", strapiId: i2 + 1 },
-          { answer: "", strapiId: i2 + 2 }
+          { answer: "", id: i2 - 1 },
+          { answer: "", id: i2 - 2 }
         ]
       });
       this.commit("updateStructure");
@@ -621,15 +699,15 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
-        .find(e => e.strapiId == id);
+        .find(e => e.id == id);
       const questions = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
-        .flatMap(e => e.questions.map(q => q.strapiId));
-      let i = Math.max(...questions);
-      if (i < 0) {
+        .flatMap(e => e.questions.map(q => q.id));
+      let i = Math.min(...questions);
+      if (i > 0 || !isFinite(i)) {
         i = 0;
       }
       const answers = state.courses
@@ -638,18 +716,19 @@ const data = {
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
         .flatMap(e => e.questions)
-        .flatMap(q => q.answers.map(a => a.strapiId));
-      let i2 = Math.max(...answers);
-      if (i2 < 0) {
+        .flatMap(q => q.answers.map(a => a.id));
+      let i2 = Math.min(...answers);
+      if (i2 > 0 || !isFinite(i2)) {
         i2 = 0;
       }
       evaluative.questions.push({
+        new:true,
         question: "",
-        strapiId: i + 1,
+        id: i - 1,
         correctAnswer: [],
         answers: [
-          { answer: "", strapiId: i2 + 1 },
-          { answer: "", strapiId: i2 + 2 }
+          { answer: "", id: i2 - 1 },
+          { answer: "", id: i2 - 2 }
         ]
       });
       this.commit("updateStructure");
@@ -660,8 +739,8 @@ const data = {
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
-        .find(e => e.questions.map(q => q.strapiId).includes(id));
-      const index = evaluative.questions.findIndex(q => q.strapiId == id);
+        .find(e => e.questions.map(q => q.id).includes(id));
+      const index = evaluative.questions.findIndex(q => q.id == id);
       evaluative.questions.splice(index, 1);
       this.commit("updateStructure");
     },
@@ -672,7 +751,7 @@ const data = {
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
         .flatMap(e => e.questions)
-        .find(q => q.strapiId == id);
+        .find(q => q.id == id);
       question[field] = value;
       this.commit("updateStructure");
     },
@@ -685,21 +764,22 @@ const data = {
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
         .flatMap(e => e.questions)
-        .find(q => q.strapiId == id);
+        .find(q => q.id == id);
       const answers = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
         .flatMap(e => e.questions)
-        .flatMap(q => q.answers.map(a => a.strapiId));
-      let i2 = Math.max(...answers);
-      if (i2 < 0) {
-        i2 = 0;
+        .flatMap(q => q.answers.map(a => a.id));
+      let n = Math.min(...answers);
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
       }
       question.answers.push({
+        new:true,
         answer: "",
-        strapiId: i2 + 1
+        id: n - 1
       });
       this.commit("updateStructure");
     },
@@ -711,7 +791,7 @@ const data = {
         .filter(e => e.contentType == "quiz")
         .flatMap(e => e.questions)
         .flatMap(q => q.answers)
-        .find(a => a.strapiId == id);
+        .find(a => a.id == id);
       a[field] = value;
       this.commit("updateStructure");
     },
@@ -722,12 +802,18 @@ const data = {
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "quiz")
         .flatMap(e => e.questions)
-        .find(q => q.answers.map(a => a.strapiId).includes(id));
-      const index = question.answers.findIndex(a => a.strapiId == id);
+        .find(q => q.answers.map(a => a.id).includes(id));
+      const index = question.answers.findIndex(a => a.id == id);
       if (index in question.correctAnswer) {
-        const ind2 = question.correctAnswer.findIndex(c => c == index)
-        question.correctAnswer = question.correctAnswer.map(c => { if (c > index) { return c - 1 } else { return c } })
-        question.correctAnswer.splice(ind2, 1)
+        const ind2 = question.correctAnswer.findIndex(c => c == index);
+        question.correctAnswer = question.correctAnswer.map(c => {
+          if (c > index) {
+            return c - 1;
+          } else {
+            return c;
+          }
+        });
+        question.correctAnswer.splice(ind2, 1);
       }
       question.answers.splice(index, 1);
       this.commit("updateStructure");
@@ -739,19 +825,20 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
-        .find(e => e.strapiId == id);
+        .find(e => e.id == id);
       const tests = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "code")
-        .flatMap(e => e.tests.map(t => t.strapiId));
-      let i = Math.max(...tests);
-      if (i < 0) {
-        i = 0;
+        .flatMap(e => e.tests.map(t => t.id));
+      let n = Math.min(...tests);
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
       }
       evaluative.tests.push({
-        strapiId: i + 1,
+        new:true,
+        id: n - 1,
         input: "",
         expected: "",
         type: "",
@@ -767,8 +854,8 @@ const data = {
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "code")
-        .find(e => e.tests.map(t => t.strapiId).includes(id));
-      const index = evaluative.tests.findIndex(t => t.strapiId == id);
+        .find(e => e.tests.map(t => t.id).includes(id));
+      const index = evaluative.tests.findIndex(t => t.id == id);
       evaluative.tests.splice(index, 1);
       this.commit("updateStructure");
     },
@@ -779,7 +866,7 @@ const data = {
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "code")
         .flatMap(e => e.tests)
-        .find(t => t.strapiId == id);
+        .find(t => t.id == id);
       test[field] = value;
       this.commit("updateStructure");
     },
@@ -790,18 +877,19 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.expositives)
-        .find(e => e.strapiId == id);
+        .find(e => e.id == id);
       const milestones = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.expositives)
-        .flatMap(e => e.milestones.map(t => t.strapiId));
-      let i = Math.max(...milestones);
-      if (i < 0) {
+        .flatMap(e => e.milestones.map(t => t.id));
+      let i = Math.min(...milestones);
+      if (i > 0 || !isFinite(i)) {
         i = 0;
       }
       evaluative.milestones.push({
-        strapiId: i + 1,
+        id: i - 1,
+        new:true,
         frame: "",
         label: ""
       });
@@ -812,8 +900,8 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.expositives)
-        .find(e => e.milestones.map(t => t.strapiId).includes(id));
-      const index = evaluative.milestones.findIndex(t => t.strapiId == id);
+        .find(e => e.milestones.map(t => t.id).includes(id));
+      const index = evaluative.milestones.findIndex(t => t.id == id);
       evaluative.milestones.splice(index, 1);
       this.commit("updateStructure");
     },
@@ -823,8 +911,12 @@ const data = {
         .flatMap(m => m.children)
         .flatMap(l => l.expositives)
         .flatMap(e => e.milestones)
-        .find(t => t.strapiId == id);
-      milestone[field] = value;
+        .find(t => t.id == id);
+      if (field == "frame" && typeof(value)=="string"){
+        milestone[field] = JSON.parse(value)
+      } else {
+        milestone[field] = value;
+      }
       this.commit("updateStructure");
     },
 
@@ -834,19 +926,20 @@ const data = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
-        .find(e => e.strapiId == id);
+        .find(e => e.id == id);
       const contexts = state.courses
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "code")
-        .flatMap(e => e.contexts.map(t => t.strapiId));
-      let i = Math.max(...contexts);
-      if (i < 0) {
+        .flatMap(e => e.contexts.map(t => t.id));
+      let i = Math.min(...contexts);
+      if (i > 0 || !isFinite(i)) {
         i = 0;
       }
       evaluative.contexts.push({
-        strapiId: i + 1,
+        new:true,
+        id: i - 1,
         format: "",
         name: "",
         text: "",
@@ -861,8 +954,8 @@ const data = {
         .flatMap(m => m.children)
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "code")
-        .find(e => e.contexts.map(t => t.strapiId).includes(id));
-      const index = evaluative.contexts.findIndex(t => t.strapiId == id);
+        .find(e => e.contexts.map(t => t.id).includes(id));
+      const index = evaluative.contexts.findIndex(t => t.id == id);
       evaluative.contexts.splice(index, 1);
       this.commit("updateStructure");
     },
@@ -873,14 +966,10 @@ const data = {
         .flatMap(l => l.evaluatives)
         .filter(e => e.contentType == "code")
         .flatMap(e => e.contexts)
-        .find(t => t.strapiId == id);
+        .find(t => t.id == id);
       context[field] = value;
       this.commit("updateStructure");
     },
-
-
-
-
 
     //-------Etc
     editableInput(state, obj) {
@@ -910,34 +999,38 @@ const data = {
         this.commit("setMilestoneField", [id, field, value]);
       } else if (type == "context") {
         this.commit("setContextField", [id, field, value]);
-      }else if (type == "goal") {
+      } else if (type == "goal") {
         this.commit("setGoalField", [id, field, value]);
       }
     },
     deleteStructure(state) {
-      this.commit("setChanged",true)
-      state.courses = []
-      state.modules = []
-      state.lessons = []
-      state.expositives = []
-      state.evaluatives = []
-      state.occurrences = []
-      state.statuses = []
-      state.classes = []
-      state.students = []
+      this.commit("setChanged", true);
+      state.courses = [];
+      state.modules = [];
+      state.lessons = [];
+      state.expositives = [];
+      state.evaluatives = [];
+      state.occurrences = [];
+      state.statuses = [];
+      state.classes = [];
+      state.students = [];
     },
     updateStructure(state) {
-      this.commit("setChanged",false)
+      this.commit("setChanged", false);
       state.modules = state.courses.flatMap(c => c.children);
       state.lessons = state.modules.flatMap(c => c.children);
-      state.evaluatives = []
+      state.evaluatives = [];
       state.lessons.forEach(l => {
-        if ("evaluatives" in l && l.evaluatives.length != undefined && l.evaluatives.length > 0) {
+        if (
+          "evaluatives" in l &&
+          l.evaluatives.length != undefined &&
+          l.evaluatives.length > 0
+        ) {
           l.evaluatives.forEach(e => {
-            state.evaluatives.push(e)
-          })
+            state.evaluatives.push(e);
+          });
         }
-      })
+      });
       //state.evaluatives = state.lessons.flatMap(c => c.evaluatives);
       state.expositives = state.lessons.flatMap(c => c.expositives);
       /*let count = 1
@@ -954,8 +1047,8 @@ const data = {
          })
       })*/
     },
-    setChanged(state, changed){
-      state.changed = changed
+    setChanged(state, changed) {
+      state.changed = changed;
     }
 
     //-------Statuses
@@ -963,11 +1056,11 @@ const data = {
     setTeacherProgress(state, obj){
       const code = obj.code
       const id = obj.id
-      if (state.statuses.map(s => s.strapiId).includes(id)){
-        const status = state.statuses.filter(s => s.strapiId = id)
+      if (state.statuses.map(s => s.id).includes(id)){
+        const status = state.statuses.filter(s => s.id = id)
         status.code = code
       } else {
-        state.statuses.push({strapiId:id, code:code})
+        state.statuses.push({id:id, code:code})
       }
     }*/
   },
@@ -1035,136 +1128,50 @@ const data = {
         .then(response => {
           resp = response.data.data;
         });
-      const allCourses = [];
-      const allModules = [];
-      const allLessons = [];
-      const allExpositives = [];
-      const allEvaluatives = [];
+      const course = externalFunctions.prepareCourse(resp);
 
-      let moduleCount = 1;
-      let lessonCount = 1;
-      let count = 1;
-
-      resp.forEach(course => {
-        course.strapiId = course.id;
-        course.id = count;
-        count++;
-        course.attributes.modules.forEach(module => {
-          module.strapiId = module.id;
-          module.id = count;
-          count++;
-          module.lessons.forEach(lesson => {
-            lesson.strapiId = lesson.id;
-            lesson.id = count;
-            count++;
-            lesson.expositives = lesson.expositives.data;
-            lesson.expositives.forEach(expositive => {
-              Object.keys(expositive.attributes).forEach(key => {
-                expositive[key] = expositive.attributes[key];
-              });
-              expositive.strapiId = expositive.id;
-              expositive.contentType = expositive.type;
-              delete expositive.id;
-              delete expositive.attributes;
-              allExpositives.push(expositive);
-            });
-            lesson.evaluatives = lesson.evaluatives.data;
-            lesson.evaluatives.forEach(evaluative => {
-              Object.keys(evaluative.attributes).forEach(key => {
-                evaluative[key] = evaluative.attributes[key];
-              });
-              Object.keys(evaluative.content[0]).forEach(key => {
-                if (key == "__component") {
-                  if (evaluative.content[0]["__component"] == "base.quiz") {
-                    evaluative.type = "quiz";
-                    evaluative.contentType = "quiz";
-                  } else {
-                    evaluative.contentType = "code";
-                  }
-                } else if (key == "questions") {
-                  evaluative.questions =
-                    evaluative.content[0]["questions"].data;
-                  evaluative.questions.forEach(question => {
-                    Object.keys(question.attributes).forEach(key2 => {
-                      question[key2] = question.attributes[key2];
-                    });
-                    delete question.attributes;
-                  });
-                } else if (key != "id") {
-                  evaluative[key] = evaluative.content[0][key];
-                }
-              });
-              evaluative.strapiId = evaluative.id;
-              delete evaluative.content;
-              delete evaluative.id;
-              delete evaluative.attributes;
-              allEvaluatives.push(evaluative);
-            });
-            lesson.contentType = "lesson";
-            lesson.internalId = "L" + lessonCount;
-            lessonCount++;
-            allLessons.push(lesson);
-          });
-          module.children = module.lessons;
-          module.contentType = "module";
-          module.internalId = "M" + moduleCount;
-          moduleCount++;
-          delete module.lessons;
-          allModules.push(module);
-        });
-        Object.keys(course.attributes).forEach(key => {
-          if (key == "modules") {
-            course.children = course.attributes[key];
-          } else {
-            course[key] = course.attributes[key];
-          }
-        });
-        course.contentType = "course";
-        delete course.attributes;
-        allCourses.push(course);
-      });
-      data.state.courses = [...allCourses];
-      data.state.lessons = [...allLessons];
-      data.state.expositives = [...allExpositives];
-      data.state.evaluatives = [...allEvaluatives];
-      data.state.modules = [...allModules];
-      data.state.maxId = count;
+      data.state.courses = [course];
+      data.state.modules = [...data.state.courses.flatMap(c => c.children)];
+      data.state.lessons = [...data.state.modules.flatMap(m => m.children)];
+      data.state.expositives = [
+        ...data.state.lessons.flatMap(l => l.expositives)
+      ];
+      data.state.evaluatives = [
+        ...data.state.lessons.flatMap(l => l.evaluatives)
+      ];
     },
 
     //--------------------------Teacher---------------------------------------
     async fetchEmptyCourse(state) {
-      state.commit("deleteStructure")
+      state.commit("deleteStructure");
       data.state.courses = [
         {
-          "new": true,
-          "changed": [],
-          "id": 1,
-          "strapiId": 1,
-          "contentType": "course",
-          "name": "",
-          "type": "",
-          "goals": [],
-          "children": [
+          new: true,
+          id: 1,
+          idMenu: 1,
+          contentType: "course",
+          name: "",
+          type: null,
+          goals: [],
+          children: [
             {
-              "new": true,
-              "changed": [],
-              "id": 2,
-              "strapiId": 2,
-              "contentType": "module",
-              "name": "",
-              "condition": { "strapiId": 1 },
-              "children": [
+              new: true,
+              id: 2,
+              idMenu: 2,
+              contentType: "module",
+              name: "",
+              condition: { id: 1 },
+              children: [
                 {
-                  "new": true,
-                  "changed": [],
-                  "id": 3,
-                  "strapiId": 3,
-                  "contentType": "lesson",
-                  "name": "",
-                  "description": "",
-                  "evaluatives": [],
-                  "expositives": [],
-                  "condition": { "strapiId": 2 },
+                  new: true,
+                  id: 3,
+                  idMenu: 3,
+                  contentType: "lesson",
+                  name: "",
+                  description: "",
+                  evaluatives: [],
+                  expositives: [],
+                  condition: { id: 2 }
                 }
               ]
             }
@@ -1172,10 +1179,11 @@ const data = {
         }
       ];
       data.state.maxId = 4;
-      state.commit("createEditableCourse")
+      state.commit("createEditableCourse");
+      state.commit("setRole","author");
     },
     async fetchCourseTeacher(state, id) {
-      state.commit("deleteStructure")
+      state.commit("deleteStructure");
       const auth = "Bearer " + state.getters.getJWT;
       let resp;
       const url = serverData.domain + serverData.courses + "/" + id;
@@ -1187,22 +1195,30 @@ const data = {
         })
         .then(response => {
           resp = response.data.data;
-        });
-      if (resp.attributes.author.data != null && resp.attributes.author.data.id == data.state.user.id) {
+        })
+
+      if (
+        resp.attributes.author.data != null &&
+        resp.attributes.author.data.id == data.state.user.id
+      ) {
         this.commit("setRole", "author");
       } else {
         this.commit("setRole", "viewer");
       }
-      const course = externalFunctions.prepareCourse(resp)
+      const course = externalFunctions.prepareCourse(resp);
 
       data.state.courses = [course];
       data.state.modules = [...data.state.courses.flatMap(c => c.children)];
       data.state.lessons = [...data.state.modules.flatMap(m => m.children)];
-      data.state.expositives = [...data.state.lessons.flatMap(l => l.expositives)];
-      data.state.evaluatives = [...data.state.lessons.flatMap(l => l.evaluatives)];
-      
-      if (data.state.role == "author"){
-        state.commit("createEditableCourse")
+      data.state.expositives = [
+        ...data.state.lessons.flatMap(l => l.expositives)
+      ];
+      data.state.evaluatives = [
+        ...data.state.lessons.flatMap(l => l.evaluatives)
+      ];
+
+      if (data.state.role == "author") {
+        state.commit("createEditableCourse");
       }
     },
     async fetchCollectionTypes(state, parameters) {
@@ -1211,29 +1227,29 @@ const data = {
       let url = serverData.domain;
       switch (parameters.collectionType) {
         case "course":
-          url += serverData.courses
+          url += serverData.courses;
           break;
         case "expositive":
-          url += serverData.expositives
+          url += serverData.expositives;
           break;
         case "evaluative":
-          url += serverData.evaluatives
+          url += serverData.evaluatives;
           break;
         case "question":
-          url += serverData.questions
+          url += serverData.questions;
           break;
         case "occurrence":
-          url += serverData.occurrences
+          url += serverData.occurrences;
           break;
         default:
-          return null
+          return null;
       }
-      let params = {}
+      let params = {};
       if (parameters.my) {
-        params["filters[author][id][$eq]"] = data.state.user.id
+        params["filters[author][id][$eq]"] = data.state.user.id;
       }
       if (parameters.draft) {
-        params["filters[publishedAt][$notNull]"] = ""
+        params["filters[publishedAt][$notNull]"] = "";
       }
       await axios
         .get(url, {
@@ -1247,108 +1263,107 @@ const data = {
         });
       switch (parameters.collectionType) {
         case "course":
-          resp = externalFunctions.cleanCourseData(resp)
+          resp = externalFunctions.cleanCourseData(resp);
           break;
         case "expositive":
-          resp = externalFunctions.cleanExpositiveData(resp)
+          resp = externalFunctions.cleanExpositiveData(resp);
           break;
         case "evaluative":
-          resp = externalFunctions.cleanEvaluativeData(resp)
+          resp = externalFunctions.cleanEvaluativeData(resp);
           break;
         case "question":
-          resp = externalFunctions.cleanQuestionData(resp)
+          resp = externalFunctions.cleanQuestionData(resp);
           break;
         case "occurrence":
-          resp = externalFunctions.cleanOccurrenceData(resp)
+          resp = externalFunctions.cleanOccurrenceData(resp);
           break;
       }
-      return resp
+      return resp;
     },
     async publishCourse(state) {
-      let publishedAt = data.state.courses[0].publishedAt
-      let id = data.state.courses[0].strapiId
-      if (publishedAt == null){
+      let publishedAt = data.state.courses[0].publishedAt;
+      let id = data.state.courses[0].id;
+      if (publishedAt == null) {
         const now = new Date();
         publishedAt = now.toISOString();
       } else {
-        publishedAt = null
+        publishedAt = null;
       }
-      //let resp;
       const auth = "Bearer " + state.getters.getJWT;
       let url = serverData.domain + serverData.courses + "/" + id;
       await axios.put(
         url,
-        { data: {"publishedAt":publishedAt} },
+        { data: { publishedAt: publishedAt } },
         {
           headers: {
             Authorization: auth
           }
         }
-      )/*.then(response => {
-        resp = response.data.data;
-        console.log(resp)
-      });*/
-      data.state.courses[0].publishedAt=publishedAt
+      )
+      data.state.courses[0].publishedAt = publishedAt;
+      if (publishedAt == null){
+        return "unpublished"
+      } else {
+        return "published"
+      }
     },
     async saveCourse(state) {
-      const isNew = data.state.courses[0].new ? true : false
-      const course = externalFunctions.prepareCourseForServer(data.state.courses[0])
+      const isNew = data.state.courses[0].new ? true : false;
+      const course = externalFunctions.prepareCourseForServer(
+        data.state.courses[0]
+      );
       let resp;
       let id;
       const auth = "Bearer " + state.getters.getJWT;
       let url = serverData.domain + serverData.courses;
       if (isNew) {
-        course.publishedAt = null
-        await axios.post(
+        delete course.new
+        course.publishedAt = null;
+        await axios
+          .post(
+            url,
+            { data: { publishedAt: null } },
+            {
+              headers: {
+                Authorization: auth
+              }
+            }
+          )
+          .then(response => {
+            resp = response.data;
+            id = resp.id;
+          })
+      } else {
+        id = course.id;
+      }
+      url += "/" + id;
+      await axios
+        .put(
           url,
-          { data: { publishedAt: null } },
+          { data: course },
           {
             headers: {
               Authorization: auth
             }
           }
-        ).then(response => {
-          resp = response.data;
-          id = resp.id
-        });
-      } else {
-        id = course.id
-      }
-      url += "/" + id
-      await axios.put(
-        url,
-        { data: course },
-        {
-          headers: {
-            Authorization: auth
-          }
-        }
-      ).then(response => {
-        resp = response.data.data;
-      });
-      state.commit("deleteStructure")
-      state.dispatch("fetchCourseTeacher",id)
+        )
+      state.commit("deleteStructure");
+      await state.dispatch("fetchCourseTeacher", id);
     },
     async deleteCourse(state, id) {
-      //let resp;
       const auth = "Bearer " + state.getters.getJWT;
       let url = serverData.domain + serverData.courses + "/" + id;
-      await axios.delete(
-        url,
-        {
-          headers: {
-            Authorization: auth
-          }
+      await axios.delete(url, {
+        headers: {
+          Authorization: auth
         }
-      )/*.then(response => {
-        resp = response.data;
-      });*/
-      state.commit("deleteStructure")
+      });
+      state.commit("deleteStructure");
     },
     async fetchCloneBody(state, id) {
       const auth = "Bearer " + state.getters.getJWT;
       let resp;
-      let params = { populate: "cloneBody" }
+      let params = { populate: "cloneBody" };
       const url = serverData.domain + serverData.courses + "/" + id;
       await axios
         .get(url, {
@@ -1360,12 +1375,12 @@ const data = {
         .then(response => {
           resp = response.data.data;
         });
-      return externalFunctions.prepareCloneCourse(resp)
+      return externalFunctions.prepareCloneCourse(resp);
     },
     async fetchClone(state, bodyData) {
       const auth = "Bearer " + state.getters.getJWT;
       let resp;
-      let params = { populate: "cloneData" + JSON.stringify(bodyData) }
+      let params = { populate: "cloneData" + JSON.stringify(bodyData) };
       const url = serverData.domain + serverData.courses + "/" + bodyData.id;
       await axios
         .get(url, {
@@ -1377,18 +1392,25 @@ const data = {
         .then(response => {
           resp = response.data.data;
         });
-      resp.new = true
-      const course = externalFunctions.prepareCourse(resp)
+      resp.new = true;
+      const course = externalFunctions.prepareCourse(resp);
+
+      this.commit("setChanged", true);
+      this.commit("setRole", "author");
 
       data.state.courses = [course];
       data.state.modules = [...data.state.courses.flatMap(c => c.children)];
       data.state.lessons = [...data.state.modules.flatMap(m => m.children)];
-      data.state.expositives = [...data.state.lessons.flatMap(l => l.expositives)];
-      data.state.evaluatives = [...data.state.lessons.flatMap(l => l.evaluatives)];
-      state.commit("createEditableCourse")
+      data.state.expositives = [
+        ...data.state.lessons.flatMap(l => l.expositives)
+      ];
+      data.state.evaluatives = [
+        ...data.state.lessons.flatMap(l => l.evaluatives)
+      ];
+      state.commit("createEditableCourse");
     },
-    async fetchOccurrence(state, id){
-      state.commit("deleteStructure")
+    async fetchOccurrence(state, id) {
+      state.commit("deleteStructure");
       const auth = "Bearer " + state.getters.getJWT;
       let resp;
       const url = serverData.domain + serverData.occurrences + "/" + id;
@@ -1400,21 +1422,95 @@ const data = {
         })
         .then(response => {
           resp = response.data.data;
-        });      
-      const occ = externalFunctions.prepareOccurrence(resp)
+        });
+      const occ = externalFunctions.prepareOccurrence(resp);
 
       data.state.occurrences = [occ];
       data.state.classes = [...data.state.occurrences.flatMap(o => o.classes)];
       data.state.students = [...data.state.classes.flatMap(c => c.students)];
       data.state.statuses = [...data.state.students.flatMap(s => s.statuses)];
+    },
+    async fetchExpositive(state, id){
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      const url = serverData.domain + serverData.expositives + "/" + id;
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          }
+        })
+        .then(response => {
+          resp = response.data.data;
+        });
+      return resp
+    },
+    async addExistingExpositives(state, [lessonId,expositveIds,currentId]){
+      this.commit("deleteExpositive", currentId)
+      for (let expositveId of expositveIds){
+        let expositive = await this.dispatch("fetchExpositive", expositveId);
+        expositive = externalFunctions.prepareExpositive(expositive)
+        let lesson = data.state.courses[0].children.flatMap(m => m.children).find(l => l.id == lessonId)
+        lesson.expositives.push((expositive))
+      }
+      this.commit("updateStructure");
+    },
+    async fetchEvaluative(state, id){
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      const url = serverData.domain + serverData.evaluatives + "/" + id;
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          }
+        })
+        .then(response => {
+          resp = response.data.data;
+        });
+      return resp
+    },
+    async addExistingEvaluatives(state, [lessonId,evalutaiveIds,currentId]){
+      this.commit("deleteEvaluative", currentId)
+      for (let evaluativeId of evalutaiveIds){
+        let evaluative = await this.dispatch("fetchEvaluative", evaluativeId);
+        evaluative = externalFunctions.prepareEvaluative(evaluative)
+        let lesson = data.state.courses[0].children.flatMap(m => m.children).find(l => l.id == lessonId)
+        lesson.evaluatives.push((evaluative))
+      }
+      this.commit("updateStructure");
+    },
+    async fetchQuestion(state, id){
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      const url = serverData.domain + serverData.questions + "/" + id;
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          }
+        })
+        .then(response => {
+          resp = response.data.data;
+        });
+      return resp
+    },
+    async addExistingQuestions(state, [evaluativeId,questionIds]){
+      for (let questionId of questionIds){
+        let question = await this.dispatch("fetchQuestion", questionId);
+        question = externalFunctions.prepareQuestion(question)
+        let evaluative = data.state.courses[0].children.flatMap(m => m.children).flatMap(l => l.evaluatives).find(e => e.id == evaluativeId)
+        evaluative.questions.push((question))
+      }
+      this.commit("updateStructure");
     }
   },
   modules: {}
 };
 
 const serverData = {
-  domain: "https://agni.dcc.fc.up.pt/strapi",
-  //domain: "http://localhost:1337",
+  //domain: "https://agni.dcc.fc.up.pt/strapi",
+  domain: "http://localhost:1337",
   authentication: "/api/auth/local",
   register: "/api/auth/local/register",
   me: "/api/users/me?populate=*",
@@ -1430,124 +1526,251 @@ const serverData = {
 
 const externalFunctions = {
   prepareCourseForServer(course) {
-    let newCourse = {}
-
-    //normal Course fields
-    if (course.new) {
-      newCourse.name = course.name
-      newCourse.type = (course.type == "") ? null : course.type
+    let newCourse = {};
+    if(course.new){
+      newCourse.new = course.new
     } else {
-      newCourse.id = course.strapiId
-      course.changed.forEach(field => {
-        newCourse[field] = course[field]
+      newCourse.id = course.id
+    }
+    if ("goals" in course) {
+      newCourse.goals = [];
+      course.goals.forEach(goal => {
+        if (goal.new) {
+          newCourse.goals.push({ goal: goal.goal });
+        } else {
+          newCourse.goals.push(goal);
+        }
       })
     }
-
-    //Course goals
-    newCourse.goals = []
-    course.goals.forEach(goal => {
-      if (goal.new) {
-        newCourse.push({ goal: goal.goal })
-      } else {
-        let newGoal = { id: goal.strapiId }
-        goal.changed.forEach(field => {
-          newGoal[field] = goal[field]
-        })
-        newCourse.push(newGoal)
-      }
-    })
-
-    //Course modules
-    newCourse.modules = []
-    course.children.forEach(module => {
-      if (module.type == "add") {
-        return
-      }
-      let newModule = {}
-      if (module.new) {
-        newModule.name = module.name/*
-        let condition = module.condition
-        delete condition.strapiId
-        newModule.condition = condition*/
-      } else {
-        newModule.id = module.strapiId
-        module.changed.forEach(field => {
-          newModule[field] = module[field]
-        })
-        //newModule.condition.id = module.condition.strapiId
-      }
-
-      //module lessons
-      newModule.lessons = []
-      module.children.forEach(lesson => {
-        if (lesson.type == "add") {
-          return
+    if ("name" in course) {
+      newCourse.name = course.name
+    }
+    if ("type" in course && course.type != null) {
+      newCourse.type = course.type
+    }
+    if ("children" in course) {
+      newCourse.modules = [];
+      course.children.forEach(module => {
+        if (module.type == "add") {
+          return;
         }
-        let newLesson = {}
-        if (lesson.new) {
-          newLesson.name = lesson.name
-          newLesson.description = lesson.description/*
-          let condition = lesson.condition
-          delete condition.strapiId
-          newLesson.condition = condition*/
-        } else {
-          newLesson.id = lesson.strapiId
-          lesson.changed.forEach(field => {
-            newLesson[field] = lesson[field]
+        let newModule = {};
+        if (!module.new) {
+          newModule.id = module.id
+        }
+        if ("name" in module) {
+          newModule.name = module.name
+        }
+        if ("condition" in module && module.condition != null) {
+          newModule.condition = {};
+          if (module.condition.new) {
+            newModule.condition = module.condition
+            delete newModule.condition.id
+          } else {
+            newModule.condition = module.condition
+          }
+        }
+        if ("children" in module) {
+          newModule.lessons = [];
+          module.children.forEach(lesson => {
+            if (lesson.type == "add") {
+              return;
+            }
+            let newLesson = {};
+            if (!lesson.new) {
+              newLesson.id = lesson.id
+            }
+            if ("name" in lesson) {
+              newLesson.name = lesson.name
+            }
+            if ("description" in lesson && lesson.description != null) {
+              newLesson.description = lesson.description
+            }
+            if ("condition" in lesson && lesson.condition != null) {
+              newLesson.condition = {};
+              if (lesson.condition.new) {
+                newLesson.condition = lesson.condition
+                delete newLesson.condition.id
+              } else {
+                newLesson.condition = lesson.condition
+              }
+            }
+
+            if("expositives" in lesson){
+              newLesson.expositives = [];
+              lesson.expositives.forEach(expositive => {
+                let newExpositive = {};
+                if (expositive.new){
+                  newExpositive.new = true
+                } else{
+                  newExpositive.id = expositive.id
+                }
+                if ("name" in expositive){
+                  newExpositive.name = expositive.name
+                }
+                if ("type" in expositive){
+                  newExpositive.type = expositive.type
+                }
+                if("file" in expositive){
+                  //TODO file upload
+                }
+                if("milestones" in expositive){
+                  newExpositive.milestones = [];
+                  expositive.milestones.forEach(milestone => {
+                    if (milestone.new){
+                      delete milestone.id
+                      delete milestone.new
+                      newExpositive.milestones.push(milestone)
+                    } else {
+                      newExpositive.milestones.push(milestone)
+                    }
+                  })
+                }
+
+                newLesson.expositives.push(newExpositive)
+              })
+            }
+
+            if("evaluatives" in lesson){
+              newLesson.evaluatives = [];
+              lesson.evaluatives.forEach(evaluative => {
+                let newEvaluative = {};
+                if (evaluative.new){
+                  newEvaluative.new = true;
+                } else {
+                  newEvaluative.id = evaluative.id
+                }
+                if("name" in evaluative){
+                  newEvaluative.name = evaluative.name
+                }
+                newEvaluative.content=[{}];
+                if(evaluative.contentType=="quiz"){
+                  newEvaluative.content[0].__component = "base.quiz";
+                  if("questions" in evaluative){
+                    newEvaluative.content[0].questions = [];
+                    evaluative.questions.forEach(question => {
+                      let newQuestion = {};
+                      if(question.new) {
+                        newQuestion.new = true;
+                      } else {
+                        newQuestion.id = question.id;
+                      }
+                      if("correctAnswer" in question){
+                        newQuestion.correctAnswer = question.correctAnswer;
+                      }
+                      if("question" in question) {
+                        newQuestion.question = question.question;
+                      }
+                      if("image" in question){
+                        //TODO image upload
+                      }
+                      if("answers" in question){
+                        newQuestion.answers = [];
+                        question.answers.forEach(answer => {
+                          if(answer.new){
+                            delete answer.id
+                            delete answer.new
+                            newQuestion.answers.push(answer)
+                          } else {
+                            newQuestion.answers.push(answer)
+                          }
+                        })
+                      }
+
+                      newEvaluative.content[0].questions.push(newQuestion)
+                    })
+                  }
+                } else {
+                  newEvaluative.content[0].__component = "base.programming-exercise";
+                  if("type" in evaluative){
+                    newEvaluative.content[0].type = evaluative.type
+                  }
+                  if("language" in evaluative){
+                    newEvaluative.content[0].language = evaluative.language
+                  }
+                  if("statement" in evaluative){
+                    newEvaluative.content[0].statement = evaluative.statement
+                  }
+                  if("skeleton" in evaluative){
+                    newEvaluative.content[0].skeleton = evaluative.skeleton
+                  }
+                  if("solution" in evaluative){
+                    newEvaluative.content[0].solution = evaluative.solution
+                  }
+                  if("context" in evaluative){
+                    newEvaluative.content[0].context = [];
+                    evaluative.context.forEach(context => {
+                      if(context.new){
+                        delete context.new
+                        delete context.id
+                        newEvaluative.content[0].context.push(context)
+                      } else {
+                        newEvaluative.content[0].context.push(context)
+                      }
+                    })
+                  }
+                  if("tests" in evaluative){
+                    newEvaluative.content[0].tests = [];
+                    evaluative.tests.forEach(test => {
+                      if(test.new){
+                        delete test.new
+                        delete test.id
+                        newEvaluative.content[0].tests.push(test)
+                      } else {
+                        newEvaluative.content[0].tests.push(test)
+                      }
+                    })
+                  }
+                }  
+
+                newLesson.evaluatives.push(newEvaluative)
+              })
+            }
+
+            newModule.lessons.push(newLesson);
           })
-          //newLesson.condition.id = lesson.condition.strapiId
         }
 
-        //TODO expositives and evalutaives prepare
-        //newLesson.expositives = []
-        //newLesson.evaluatives = []
-
-        newModule.lessons.push(newLesson)
-      })
-
-      newCourse.modules.push(newModule)
-    })
-
-    return newCourse
+        newCourse.modules.push(newModule);
+      });
+    }
+    return newCourse;
   },
   prepareCloneCourse(resp) {
     let course = resp;
     let count = 1;
 
-    course.strapiId = course.id;
-    course.id = count;
+    course.idMenu = count;
     count++;
     course.attributes.modules.forEach(module => {
-      module.name = "M. " + module.name
-      module.strapiId = module.id;
-      module.id = count;
+      module.name = "M. " + module.name;
+      module.idMenu = count;
       count++;
       module.lessons.forEach(lesson => {
-        lesson.name = "L. " + lesson.name
-        lesson.strapiId = lesson.id;
-        lesson.id = count;
+        lesson.name = "L. " + lesson.name;
+        lesson.idMenu = count;
         count++;
-        lesson.children = []
+        lesson.children = [];
         lesson.expositives = lesson.expositives.data;
         for (let i = 0; i < lesson.expositives.length; i++) {
-          const le = lesson.expositives[i].attributes
-          le.name = "Exp. " + le.name
-          le.strapiId = lesson.expositives[i].id
-          le.id = count
-          count++
-          lesson.children.push(le)
+          const le = lesson.expositives[i].attributes;
+          le.name = "Exp. " + le.name;
+          le.id = lesson.expositives[i].id;
+          le.idMenu = count;
+          count++;
+          lesson.children.push(le);
         }
         lesson.evaluatives = lesson.evaluatives.data;
         for (let i = 0; i < lesson.evaluatives.length; i++) {
-          const le = lesson.evaluatives[i].attributes
-          le.name = "Exe. " + le.name
-          le.strapiId = lesson.evaluatives[i].id
-          le.id = count
-          count++
-          lesson.children.push(le)
+          const le = lesson.evaluatives[i].attributes;
+          le.name = "Exe. " + le.name;
+          le.id = lesson.evaluatives[i].id;
+          le.idMenu = count;
+          count++;
+          lesson.children.push(le);
         }
-        delete lesson.expositives
-        delete lesson.evaluatives
+        delete lesson.expositives;
+        delete lesson.evaluatives;
       });
       module.children = module.lessons;
       delete module.lessons;
@@ -1560,7 +1783,7 @@ const externalFunctions = {
       }
     });
     delete course.attributes;
-    return course
+    return course;
   },
   prepareCourse(resp) {
     let course = resp;
@@ -1569,41 +1792,26 @@ const externalFunctions = {
     let lessonCount = 1;
     let count = 1;
 
-    course.strapiId = course.id;
-    course.id = count;
+    course.idMenu = count;
     count++;
-    course.changed = []
-
-    course.attributes.goals.forEach(goal => {
-      goal.strapiId = goal.id
-      delete goal.id
-    })
 
     course.attributes.modules.forEach(module => {
-      if("condition" in module && module.condition!=null){
-        module.condition.strapiId = module.condition.id
-        delete module.condition.id
-      }
-      module.strapiId = module.id;
-      module.id = count;
-      module.changed = []
+      module.idMenu = count;
       count++;
       module.lessons.forEach(lesson => {
-        if("condition" in lesson && lesson.condition!=null){
-          lesson.condition.strapiId = lesson.condition.id
-          delete lesson.condition.id
-        }
-        lesson.strapiId = lesson.id;
-        lesson.id = count;
-        lesson.changed = []
+        lesson.idMenu = count;
         count++;
         lesson.expositives = lesson.expositives.data;
         for (let i = 0; i < lesson.expositives.length; i++) {
-          lesson.expositives[i] = externalFunctions.prepareExpositive(lesson.expositives[i])
+          lesson.expositives[i] = externalFunctions.prepareExpositive(
+            lesson.expositives[i]
+          );
         }
         lesson.evaluatives = lesson.evaluatives.data;
         for (let i = 0; i < lesson.evaluatives.length; i++) {
-          lesson.evaluatives[i] = externalFunctions.prepareEvaluative(lesson.evaluatives[i])
+          lesson.evaluatives[i] = externalFunctions.prepareEvaluative(
+            lesson.evaluatives[i]
+          );
         }
         lesson.contentType = "lesson";
         lesson.internalId = "L" + lessonCount;
@@ -1625,21 +1833,19 @@ const externalFunctions = {
     course.contentType = "course";
     delete course.attributes;
     data.state.maxId = count;
-    return course
+    return course;
   },
   prepareExpositive(resp) {
-    const expositive = resp
+    const expositive = resp;
     Object.keys(expositive.attributes).forEach(key => {
       expositive[key] = expositive.attributes[key];
     });
-    expositive.strapiId = expositive.id;
     expositive.contentType = expositive.type;
-    delete expositive.id;
     delete expositive.attributes;
-    return expositive
+    return expositive;
   },
   prepareEvaluative(resp) {
-    const evaluative = resp
+    const evaluative = resp;
     Object.keys(evaluative.attributes).forEach(key => {
       evaluative[key] = evaluative.attributes[key];
     });
@@ -1655,144 +1861,169 @@ const externalFunctions = {
         } else if (key == "questions") {
           evaluative.questions = evaluative.content[0]["questions"].data;
           for (var i = 0; i < evaluative.questions.length; i++) {
-            evaluative.questions[i] = externalFunctions.prepareQuestion(evaluative.questions[i])
+            evaluative.questions[i] = externalFunctions.prepareQuestion(
+              evaluative.questions[i]
+            );
           }
         } else if (key != "id") {
           evaluative[key] = evaluative.content[0][key];
         }
       });
     }
-    evaluative.strapiId = evaluative.id;
     delete evaluative.content;
-    delete evaluative.id;
     delete evaluative.attributes;
-    return evaluative
+    return evaluative;
   },
   prepareQuestion(resp) {
-    const question = resp
+    const question = resp;
     Object.keys(question.attributes).forEach(key2 => {
       question[key2] = question.attributes[key2];
     });
     delete question.attributes;
-    return question
+    return question;
   },
   cleanCourseData(resp) {
-    let newResp = []
+    let newResp = [];
     resp.forEach(course => {
-      let newCourse = {}
-      newCourse.strapiId = course.id
-      newCourse.name = course.attributes.name
-      newCourse.type = course.attributes.type
-      newCourse.state = (course.attributes.publishedAt == null) ? "Draft" : "Published"
+      let newCourse = {};
+      newCourse.id = course.id;
+      newCourse.name = course.attributes.name;
+      newCourse.type = course.attributes.type;
+      newCourse.state =
+        course.attributes.publishedAt == null ? "Draft" : "Published";
       if (course.attributes.author.data != null) {
-        newCourse.my = data.state.user.email == course.attributes.author.data.attributes.email
+        newCourse.my =
+          data.state.user.email ==
+          course.attributes.author.data.attributes.email;
       } else {
-        newCourse.my = false
+        newCourse.my = false;
       }
-      newResp.push(newCourse)
-    })
-    return newResp
+      newResp.push(newCourse);
+    });
+    return newResp;
   },
   cleanExpositiveData(resp) {
-    let newResp = []
+    let newResp = [];
     resp.forEach(expositive => {
-      let newExpositive = {}
-      newExpositive.strapiId = expositive.id
-      newExpositive.name = expositive.attributes.name
-      newExpositive.type = expositive.attributes.type
-      newExpositive.my = data.state.user.email == expositive.attributes.author.data.attributes.email
-      newExpositive.state = (expositive.attributes.publishedAt == null) ? "Draft" : "Published"
-      newResp.push(newExpositive)
-    })
-    return newResp
+      let newExpositive = {};
+      newExpositive.id = expositive.id;
+      newExpositive.name = expositive.attributes.name;
+      newExpositive.type = expositive.attributes.type;
+      newExpositive.my =
+        data.state.user.email ==
+        expositive.attributes.author.data.attributes.email;
+      newExpositive.state =
+        expositive.attributes.publishedAt == null ? "Draft" : "Published";
+      newResp.push(newExpositive);
+    });
+    return newResp;
   },
   cleanEvaluativeData(resp) {
-    let newResp = []
+    let newResp = [];
     resp.forEach(evaluative => {
-      let newEvaluative = {}
-      newEvaluative.strapiId = evaluative.id
-      newEvaluative.name = evaluative.attributes.name
-      newEvaluative.type = evaluative.attributes.content[0].__component.split(".")[1]
-      newEvaluative.my = data.state.user.email == evaluative.attributes.author.data.attributes.email
-      newEvaluative.state = (evaluative.attributes.publishedAt == null) ? "Draft" : "Published"
-      newResp.push(newEvaluative)
-    })
-    return newResp
+      let newEvaluative = {};
+      newEvaluative.id = evaluative.id;
+      newEvaluative.name = evaluative.attributes.name;
+      newEvaluative.type = evaluative.attributes.content[0].__component.split(
+        "."
+      )[1];
+      newEvaluative.my =
+        data.state.user.email ==
+        evaluative.attributes.author.data.attributes.email;
+      newEvaluative.state =
+        evaluative.attributes.publishedAt == null ? "Draft" : "Published";
+      newResp.push(newEvaluative);
+    });
+    return newResp;
   },
   cleanQuestionData(resp) {
-    let newResp = []
+    let newResp = [];
+    console.log(resp)
     resp.forEach(question => {
-      let newQuestion = {}
-      newQuestion.strapiId = question.id
-      newQuestion.question = question.attributes.question
-      newQuestion.my = data.state.user.email == question.attributes.author.data.attributes.email
-      newQuestion.state = (question.attributes.publishedAt == null) ? "Draft" : "Published"
-      newResp.push(newQuestion)
-    })
-    return newResp
+      let newQuestion = {};
+      newQuestion.id = question.id;
+      newQuestion.question = question.attributes.question;
+      newQuestion.my =
+        data.state.user.email ==
+        question.attributes.author.data.attributes.email;
+      newQuestion.state =
+        question.attributes.publishedAt == null ? "Draft" : "Published";
+      newResp.push(newQuestion);
+    });
+    return newResp;
   },
   cleanOccurrenceData(resp) {
-    let occ = {currentOcc:[], draftOcc:[], pastOcc:[]}
-    let date = new Date()
+    let occ = { currentOcc: [], draftOcc: [], pastOcc: [] };
+    let date = new Date();
     resp.forEach(occurrence => {
-      let newOcc = {}
-      newOcc.id = occurrence.id
-      newOcc.year = occurrence.attributes.year
-      newOcc.startDate = occurrence.attributes.startDate
-      newOcc.endDate = occurrence.attributes.endDate
-      newOcc.course = {}
-      if (occurrence.attributes.courses.data.length >0){
-        newOcc.course.name = occurrence.attributes.courses.data[0].attributes.name
-        newOcc.course.type = occurrence.attributes.courses.data[0].attributes.type
-        newOcc.classes = occurrence.attributes.classes.data.map(c => c.attributes)
+      let newOcc = {};
+      newOcc.id = occurrence.id;
+      newOcc.year = occurrence.attributes.year;
+      newOcc.startDate = occurrence.attributes.startDate;
+      newOcc.endDate = occurrence.attributes.endDate;
+      newOcc.course = {};
+      if (occurrence.attributes.courses.data.length > 0) {
+        newOcc.course.name =
+          occurrence.attributes.courses.data[0].attributes.name;
+        newOcc.course.type =
+          occurrence.attributes.courses.data[0].attributes.type;
+        newOcc.classes = occurrence.attributes.classes.data.map(
+          c => c.attributes
+        );
       }
-      let startDate = (newOcc.startDate==null) ? null : new Date(newOcc.startDate)
-      let endDate = (newOcc.endDate==null) ? null : new Date(newOcc.endDate)
-      if (date > endDate && endDate!=null){
-        occ.pastOcc.push(newOcc)
-      } else if (startDate < date && date < endDate && startDate!=null && endDate!=null){
-        occ.currentOcc.push(newOcc)
+      let startDate =
+        newOcc.startDate == null ? null : new Date(newOcc.startDate);
+      let endDate = newOcc.endDate == null ? null : new Date(newOcc.endDate);
+      if (date > endDate && endDate != null) {
+        occ.pastOcc.push(newOcc);
+      } else if (
+        startDate < date &&
+        date < endDate &&
+        startDate != null &&
+        endDate != null
+      ) {
+        occ.currentOcc.push(newOcc);
       } else {
-        occ.draftOcc.push(newOcc)
+        occ.draftOcc.push(newOcc);
       }
-    })
-    return occ
+    });
+    return occ;
   },
   prepareOccurrence(resp) {
-    let occ = resp.attributes
-    occ.id = resp.id
+    let occ = resp.attributes;
+    occ.id = resp.id;
     occ.classes.data.forEach(c => {
       c.attributes.students.data.forEach(student => {
         student.attributes.statuses.data.forEach(status => {
           Object.keys(status.attributes).forEach(key => {
             status[key] = status.attributes[key];
           });
-          delete status.attributes
-        })
+          delete status.attributes;
+        });
         Object.keys(student.attributes).forEach(key => {
           student[key] = student.attributes[key];
         });
-        student.statuses = student.statuses.data
-        delete student.attributes
-      })
+        student.statuses = student.statuses.data;
+        delete student.attributes;
+      });
       Object.keys(c.attributes).forEach(key => {
         c[key] = c.attributes[key];
       });
-      c.students = c.students.data
-      delete c.attributes
-    })
-    occ.classes = occ.classes.data
-    delete occ.attributes
-    occ.courses.data.forEach(course =>{
+      c.students = c.students.data;
+      delete c.attributes;
+    });
+    occ.classes = occ.classes.data;
+    delete occ.attributes;
+    occ.courses.data.forEach(course => {
       Object.keys(course.attributes).forEach(key => {
         course[key] = course.attributes[key];
       });
-      delete course.attributes
-    })
-    occ.courses = occ.courses.data[0]
+      delete course.attributes;
+    });
+    occ.courses = occ.courses.data[0];
 
-    return occ
-  },/*
+    return occ;
+  } /*
   prepareClass(resp){
 
   },
@@ -1802,6 +2033,6 @@ const externalFunctions = {
   prepareStatuses(resp){
 
   }*/
-}
+};
 
 export default new Vuex.Store(data);

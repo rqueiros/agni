@@ -4,6 +4,9 @@
  * course controller
  */
 
+const _ = require('lodash');
+
+
 const { createCoreController } = require('@strapi/strapi').factories;
 const fs = require('fs');
 
@@ -101,7 +104,7 @@ module.exports = createCoreController(uid, () => {
          // create single/multiple content
          data = (Array.isArray(data) == false) ? [data] : data
          for (const key of Array(data.length).keys()) {
-            const ctx2 = await prepareCtx(ctx, images, files, data[key])
+            const ctx2 = await prepareCtx(ctx, images, files, data[key], "create")
             const r = await super.create(ctx2)
             result.push(r)
          }
@@ -143,7 +146,7 @@ module.exports = createCoreController(uid, () => {
          }
 
          // update content
-         const ctx2 = await prepareCtx(ctx, images, files, data)
+         const ctx2 = await prepareCtx(ctx, images, files, data, "update")
          const result = await super.update(ctx2)
          return result
       },
@@ -162,18 +165,19 @@ module.exports = createCoreController(uid, () => {
    }
 })
 
-async function prepareCtx(ctx, images, files, data) {
+async function prepareCtx(ctx, images, files, data, type) {
+   let parm = ctx.params
    if ("modules" in data) {
       for (const m of data.modules.keys()) {
          if ("lessons" in data.modules[m]) {
             for (const l of data.modules[m].lessons.keys()) {
                if ("expositives" in data.modules[m].lessons[l]) {
                   let expositives = data.modules[m].lessons[l].expositives
-                  data.modules[m].lessons[l].expositives = await prepareExpositives(ctx, files, expositives)
+                  data.modules[m].lessons[l].expositives = await prepareExpositives(ctx, files, expositives, type)
                }
                if ("evaluatives" in data.modules[m].lessons[l]) {
                   let evaluatives = data.modules[m].lessons[l].evaluatives
-                  data.modules[m].lessons[l].evaluatives = await prepareEvaluatives(ctx, images, evaluatives)
+                  data.modules[m].lessons[l].evaluatives = await prepareEvaluatives(ctx, images, evaluatives, type)
                }
                continue
             }
@@ -185,7 +189,8 @@ async function prepareCtx(ctx, images, files, data) {
       ctx.request.files['files.file'] = []
    }
    data.author = ctx.state.user.id
-   ctx.request.body.data.data = JSON.stringify(data)
+   ctx.params = parm
+   ctx.request.body = {data:data}
    return ctx
 }
 
@@ -199,31 +204,56 @@ async function verifyAuthor(authorId, contentId) {
    return false
 }
 
-async function prepareEvaluatives(ctx, images, evaluatives) {
+async function prepareEvaluatives(ctx, images, evaluatives, type) {
    evaluatives = ((!typeof (evaluatives) == "object")) ? [evaluatives] : evaluatives
-   const createEvaluatives = evaluatives.filter(e => typeof (e) == "object")
-   if (createEvaluatives.length > 0) {
-      const ctx2 = prepareEvaluativeCtx(ctx, images, createEvaluatives)
-      let resp = await strapi.controller("api::evaluative.evaluative").create(ctx2)
-      resp = (!(resp instanceof Array)) ? [resp] : resp
-      resp = resp.map(r => r.data.id)
-      evaluatives = myConcate(evaluatives, resp)
+   let newEvaluatives = []
+   for (let evaluative of evaluatives){
+      if(typeof(evaluative) != "object"){
+         newEvaluatives.push(evaluative)
+      } else {
+         let resp;
+         if(evaluative.new || type == "create"){
+            delete evaluative.new
+            let ctx2 = prepareEvaluativeCtx(ctx, images, evaluative)
+            resp = await strapi.controller("api::evaluative.evaluative").create(ctx2)
+         } else if (type == "update"){
+            let id = evaluative.id
+            delete evaluative.id
+            let ctx2 = prepareEvaluativeCtx(ctx, images, evaluative)
+            ctx2.request.params = {id:JSON.stringify(id)}
+            ctx2.params = {id:JSON.stringify(id)}
+            resp = await strapi.controller("api::evaluative.evaluative").update(ctx2)
+         }
+         newEvaluatives.push(resp.data.id)
+      }
    }
-   return evaluatives
+   return newEvaluatives
 }
 
-async function prepareExpositives(ctx, files, expositives) {
+async function prepareExpositives(ctx, files, expositives, type) {
    expositives = ((!typeof (expositives) == "object")) ? [expositives] : expositives
-   console.log(expositives)
-   const createExpositives = expositives.filter(e => typeof (e) == "object")
-   if (createExpositives.length > 0) {
-      const ctx2 = prepareExpositiveCtx(ctx, files, createExpositives)
-      let resp = await strapi.controller("api::expositive.expositive").create(ctx2)
-      resp = (!(resp instanceof Array)) ? [resp] : resp
-      resp = resp.map(r => r.data.id)
-      expositives = myConcate(expositives, resp)
+   let newExpositives = []
+   for (let expositive of expositives){
+      if (typeof(expositive) != "object"){
+         newExpositives.push(expositive)
+      } else {
+         let resp;
+         if (expositive.new || type=="create"){
+            delete expositive.new
+            const ctx2 = prepareExpositiveCtx(ctx, files, expositive)
+            resp = await strapi.controller("api::expositive.expositive").create(ctx2)
+         } else if (type=="update") {
+            let id = expositive.id
+            delete expositive.id
+            let ctx2 = prepareExpositiveCtx(ctx, files, expositive)
+            ctx2.request.params = {id:JSON.stringify(id)}
+            ctx2.params = {id:JSON.stringify(id)}
+            resp = await strapi.controller("api::expositive.expositive").update(ctx2)
+         }
+         newExpositives.push(resp.data.id)
+      }
    }
-   return expositives
+   return newExpositives
 }
 
 function prepareEvaluativeCtx(ctx, images, data) {
@@ -232,37 +262,31 @@ function prepareEvaluativeCtx(ctx, images, data) {
    } else if (!(images instanceof Array)) {
       images = [images]
    }
-   const imageNames = data.filter(ev => ev.content[0]["__component"] == "base.quiz").flatMap(ev => ev.content[0].questions.filter(q => typeof (q) == "object").filter(q => "image" in q).map(q => q.image))
+   const imageNames = !(data.content[0].__component == "base.quiz") ? [] : data.content[0].questions.filter(q => typeof (q) == "object").filter(q => "image" in q).map(q => q.image)
    images = images.filter(i => imageNames.includes(i.name))
-   ctx.request.files['files.image'] = images
-   ctx.request.files['files.file'] = []
-   ctx.request.body.data = JSON.stringify(data)
+   if ("files" in ctx.request){
+      ctx.request.files['files.image'] = images
+      ctx.request.files['files.file'] = []
+   }
+   ctx.request.body = {data:data}
    return ctx
 }
 
 function prepareExpositiveCtx(ctx, files, data) {
+   let ctx2 = ctx
    if (typeof (files) == "undefined") {
       files = []
    } else if (!(files instanceof Array)) {
       files = [files]
    }
-   const fileNames = data.filter(d => "file" in d).map(d => d.file)
-   files = files.filter(f => fileNames.includes(f.name))
-   ctx.request.files['files.file'] = files
-   ctx.request.files['files.image'] = []
-   ctx.request.body.data = JSON.stringify(data)
-   return ctx
-}
-
-function myConcate(l1, l2) {
-   let c = 0
-   for (const i of Array(l1.length).keys()) {
-      if (typeof (l1[i]) == "object") {
-         l1[i] = l2[c]
-         c = c + 1
-      }
+   const fileName = ("file" in data) ? data.file : ""
+   files = files.filter(f => fileName.includes(f.name))
+   if("files" in ctx2.request){
+      ctx2.request.files['files.file'] = files
+      ctx2.request.files['files.image'] = []
    }
-   return l1
+   ctx2.request.body = {data:data}
+   return ctx2
 }
 
 function checkImagesFiles(images, files, data) {
@@ -293,26 +317,45 @@ function checkImagesFiles(images, files, data) {
 }
 
 function cloneCourse(courseData, cloneData) {
+   if ("goals" in cloneData && courseData.goals != null){
+      for (let i = 0; i<cloneData.goals.length; i++){
+         delete cloneData.goals[i].id
+      }
+   }
    if ("modules" in courseData) {
       for (let m = courseData.modules.length - 1; m >= 0; m--) {
          const module = courseData.modules[m]
          if (!cloneData.modules[m].clone) {
             courseData.modules.splice(m, 1)
          } else {
+            delete courseData.modules[m].id
+            if("condition" in courseData.modules[m] && courseData.modules[m].condition != null){
+               delete courseData.modules[m].condition.id
+            }
             if ("lessons" in module) {
                for (let l = module.lessons.length - 1; l >= 0; l--) {
                   const lesson = module.lessons[l]
                   if (!cloneData.modules[m].lessons[l].clone) {
                      courseData.modules[m].lessons.splice(l, 1)
                   } else {
-                     if ("expositives" in lesson) {
+                     delete cloneData.modules[m].lessons[l].id
+                     if("condition" in cloneData.modules[m].lessons[l] && cloneData.modules[m].lessons[l].condition != null){
+                        delete cloneData.modules[m].lessons[l].condition.id
+                     }
+                     if ("expositives" in lesson && lesson.expositives.length>0) {
                         for (let ex = lesson.expositives.length - 1; ex >= 0; ex--) {
                            if (!cloneData.modules[m].lessons[l].expositives[ex].clone) {
                               courseData.modules[m].lessons[l].expositives.splice(ex, 1)
-                           }
+                           } /*else {
+                              if("milestones" in cloneData.modules[m].lessons[l].expositives[ex] && cloneData.modules[m].lessons[l].expositives[ex].milestones != null){
+                                 for (let i = 0; i<cloneData.modules[m].lessons[l].expositives[ex].milestones.length; i++){
+                                    delete cloneData.modules[m].lessons[l].expositives[ex].milestones[i].id
+                                 }
+                              }
+                           }*/
                         }
                      }
-                     if ("evaluatives" in lesson) {
+                     if ("evaluatives" in lesson && lesson.evaluatives.length>0) {
                         for (let ev = lesson.evaluatives.length - 1; ev >= 0; ev--) {
                            if (!cloneData.modules[m].lessons[l].evaluatives[ev].clone) {
                               courseData.modules[m].lessons[l].evaluatives.splice(ev, 1)

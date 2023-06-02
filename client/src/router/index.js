@@ -4,7 +4,7 @@ import Store from "../store/index";
 
 import Index from "../pages/index/Index.vue";
 import Login from "../pages/login/Login.vue";
-import Student from "../pages/student/Student.vue";
+import Student from "../pages/student/Student.vue"
 import Teacher from "../pages/teacher/Teacher.vue";
 
 Vue.use(VueRouter);
