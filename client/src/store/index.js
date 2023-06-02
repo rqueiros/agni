@@ -1509,8 +1509,8 @@ const data = {
 };
 
 const serverData = {
-  //domain: "https://agni.dcc.fc.up.pt/strapi",
-  domain: "http://localhost:1337",
+  domain: "https://agni.dcc.fc.up.pt/strapi",
+  //domain: "http://localhost:1337",
   authentication: "/api/auth/local",
   register: "/api/auth/local/register",
   me: "/api/users/me?populate=*",
