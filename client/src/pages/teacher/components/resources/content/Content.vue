@@ -1,18 +1,20 @@
 <template>
   <div id="content" style="width: 100%;">
     <v-container fluid class="pa-0 mb-4">
-      <v-row no-gutters>
-        <v-col cols="7" class="mb-4 pr-4">
+
+      <v-row dense>
+        <v-col style="max-width: 500px;" cols="12">
           <v-card outlined style="border-color: #C3C3C3;" class="pa-2">
             <v-radio-group v-model="collectionType" row hide-details inline class="ma-0 pa-0">
-              <v-radio label="Course" value="course"></v-radio>
-              <v-radio label="Expositive" value="expositive"></v-radio>
-              <v-radio label="Evaluative" value="evaluative"></v-radio>
-              <v-radio label="Question" value="question"></v-radio>
+              <v-radio label="Course" value="courses"></v-radio>
+              <v-radio label="Expositive" value="expositives"></v-radio>
+              <v-radio label="Evaluative" value="evaluatives"></v-radio>
+              <v-radio label="Question" value="questions"></v-radio>
             </v-radio-group>
           </v-card>
         </v-col>
-        <v-col cols="3">
+
+        <v-col style="max-width: 190px;" cols="12">
           <v-card width="100%" outlined style="border-color: #C3C3C3;" class="pa-2">
             <v-radio-group row hide-details inline class="ma-0 pa-0">
               <v-checkbox v-model="checkboxes" label="My" value="my" hide-details class="ma-0 pa-0 mr-4"></v-checkbox>
@@ -22,13 +24,15 @@
           </v-card>
         </v-col>
       </v-row>
-      <v-row no-gutters>
-        <v-col cols="5" class="mb-4">
+
+      <v-row dense>
+        <v-col cols="12" style="max-width: 400px;">
           <v-text-field v-model="search" style="background-color: white;" prepend-inner-icon="mdi-magnify" label="Search"
             single-line class="pa-0 ma-0" outlined dense hide-details></v-text-field>
         </v-col>
       </v-row>
-      <v-row no-gutters>
+
+      <v-row dense>
         <v-col>
           <v-card width="100%" outlined style="border-color: #C3C3C3;">
             <v-data-table class="" :itemsPerPage="itemsPerPage" :headers="headers[collectionType]" :items="items"
@@ -40,7 +44,7 @@
               </template>
               <template v-slot:item.type="{ item }">
                 <v-icon size="x-large">
-                  {{ icon[item.type] }}
+                  {{ getIcon(item.type) }}
                 </v-icon>
               </template>
               <template v-slot:item.state="{ item }">
@@ -49,7 +53,8 @@
                 </v-chip>
               </template>
               <template v-slot:item.actions="{ item }">
-                <v-menu offset-y auto :close-on-content-click="false">
+
+                <v-menu offset-y auto :close-on-content-click="false" v-if="collectionType=='courses'">
                   <template v-slot:activator="{ on, attrs }">
                     <v-icon size="large" v-bind="attrs" v-on="on" class="mr-2" @click="copyMenu(item)"
                       onclick="event.stopPropagation()">
@@ -68,6 +73,11 @@
                     </v-list-item>
                   </v-list>
                 </v-menu>
+
+                <v-icon v-else size="large" @click="copy2(item)" onclick="event.stopPropagation()" class="mr-2">
+                  mdi-content-copy
+                </v-icon>
+
                 <v-icon size="large" v-if="item.my" @click="remove(item)" onclick="event.stopPropagation()">
                   mdi-delete
                 </v-icon>
@@ -89,7 +99,7 @@
 <script>
 import { bus } from "@/main.js";
 
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import Snackbar from "../../../../../components/gerneral/Snackbar.vue";
 import DeleteDialog from "../../../../../components/gerneral/DeleteDialog.vue";
@@ -104,7 +114,7 @@ export default {
 
   data() {
     return {
-      collectionType: "course",
+      collectionType: "courses",
       search: "",
       loading: true,
       items: [],
@@ -119,38 +129,39 @@ export default {
       toDeleteItem: "",
 
       headers: {
-        course: [
+        courses: [
           { text: "", value: "type", align: "center", width: "15%" },
           { text: "Id", value: "id", cellClass: "text-body-1" },
           { text: "Name", value: "name", cellClass: "text-body-1" },
           { text: "Author", value: "my" },
           { text: "State", value: "state" },
-          { text: "", value: "actions", sortable: false, width: "15%" }
+          { text: "", value: "actions", sortable: false, width: "15%", align: "center" }
         ],
-        expositive: [
-          { text: "Id", value: "id", align: "start" },
+        expositives: [
+          { text: "", value: "type", align: "center", width:"15%"},
+          { text: "Id", value: "id" },
           { text: "Name", value: "name" },
-          { text: "Type", value: "type" },
           { text: "Author", value: "my" },
           { text: "State", value: "state" },
-          { text: "", value: "actions", sortable: false }
+          { text: "", value: "actions", sortable: false, width: "15%", align: "center" }
         ],
-        evaluative: [
-          { text: "Id", value: "id", align: "start" },
+        evaluatives: [
+          { text: "", value: "type", align: "center", width:"15%"},
+          { text: "Id", value: "id" },
           { text: "Name", value: "name" },
-          { text: "Type", value: "type" },
           { text: "Author", value: "my" },
           { text: "State", value: "state" },
-          { text: "", value: "actions", sortable: false }
+          { text: "", value: "actions", sortable: false, width:"15%", align: "center" }
         ],
-        question: [
-          { text: "Id", value: "id", align: "start" },
+        questions: [
+          { text: "Id", value: "id", align: "center", width:"15%"},
           { text: "Question", value: "question" },
           { text: "Author", value: "my" },
           { text: "State", value: "state" },
-          { text: "", value: "actions", sortable: false }
+          { text: "", value: "actions", sortable: false, width:"15%", align: "center" }
         ]
       },
+
       snackbar: {
         open: false,
         text: "",
@@ -158,15 +169,7 @@ export default {
         color: "",
         timeout: 2000,
       },
-      icon: {
-        "Contest": "mdi-trophy",
-        "Course": "mdi-school-outline",
-        "Test/Exam": "mdi-note-edit-outline",
-        "programming-exercise": "mdi-code-json",
-        "quiz": "mdi-head-question-outline",
-        "pdf": "mdi-file-pdf-box",
-        "video": "mdi-video",
-      },
+
       color: {
         Published: "green",
         Draft: "primary",
@@ -181,20 +184,21 @@ export default {
     });
     bus.$on("deleteDialogResult", async payload => {
       this.deleteDialog = false
-      try {
-        if (payload == "ok") {
-          await this.deleteCourse(this.toDeleteItem.id);
-          await this.setItems();
+      if (this.toDeleteItem != "") {
+        try {
+          if (payload == "ok") {
+            await this.deleteCollectionType([this.toDeleteItem.id, this.collectionType]);
+            await this.setItems();
+            this.toDeleteItem = "";
+            this.snackbar = this.getSuccessSnackbar(this.collectionType + " deleted")
+          }
+        } catch (error) {
+          console.log(error)
           this.toDeleteItem = "";
-          this.setSuccessSnackBar(this.collectionType + " deleted")
+          this.snackbar = this.getErrorSnackbar("Something went wrong deleting the "+this.collectionType)
         }
-      } catch (error) {
-        console.log(error)
-        this.setErrorSnackBar()
       }
-
     });
-
     this.setItems();
   },
 
@@ -222,30 +226,24 @@ export default {
     }
   },
 
-  computed: {},
+  computed: {
+    ...mapGetters("style", [
+      "getErrorSnackbar", 
+      "getSuccessSnackbar", 
+      "getIcon"
+    ]),
+  },
 
   methods: {
-    ...mapActions([
+    ...mapActions("main", [
       "fetchCollectionTypes",
-      "fetchCourseTeacher",
+      "fetchPrepareCollectionType",
       "fetchEmptyCourse",
-      "deleteCourse",
+      "deleteCollectionType",
       "fetchCloneBody",
-      "fetchClone"
+      "fetchClone",
+      "copyCollectionType",
     ]),
-    
-    setErrorSnackBar(text = "Error") {
-      this.snackbar.text = text
-      this.snackbar.color = "error"
-      this.snackbar.icon = "mdi-alpha-x-circle-outline"
-      this.snackbar.open = true
-    },
-    setSuccessSnackBar(text = "Success") {
-      this.snackbar.text = text
-      this.snackbar.color = "success"
-      this.snackbar.icon = "mdi-check-circle-outline"
-      this.snackbar.open = true
-    },
 
     async setItems() {
       const parameters = {
@@ -256,66 +254,34 @@ export default {
       this.loading = true;
       try {
         this.items = await this.fetchCollectionTypes(parameters);
+        this.loading = false;
       } catch (error) {
         console.log(error)
-        this.setErrorSnackBar()
+        this.loading = false;
+        this.snackbar = this.getErrorSnackbar("Something went wrong fetching the " + this.collectionType)
       }
-      this.loading = false;
     },
 
-    openCollectionType(item) {
-      switch (this.collectionType) {
-        case "course":
-          this.openCourse(item)
-          break;
-        case "expositive":
-          this.openExpositive(item)
-          break;
-        case "evaluative":
-          this.openEvaluative(item)
-          break;
-        case "question":
-          this.openQuestion(item)
-          break;
-      }
-    },
-    async openCourse(item) {
+    async openCollectionType(item) {
       try {
-        await this.fetchCourseTeacher(item.id);
-        bus.$emit("changePage", ["content,Course", "content"]);
+        await this.fetchPrepareCollectionType([item.id, this.collectionType]);
+        switch (this.collectionType) {
+          case "courses":
+            bus.$emit("changePage", ["content,Course", "content"]);
+            break;
+          case "expositives":
+            bus.$emit("changePage", ["content,Expositive", "content"]);
+            break;
+          case "evaluatives":
+            bus.$emit("changePage", ["content,Evaluative", "content"]);
+            break;
+          case "questions":
+            bus.$emit("changePage", ["content,Question", "content"]);
+            break;
+        }
       } catch (error) {
         console.log(error)
-        this.setErrorSnackBar()
-      }
-    },
-    async openExpositive(item) {
-      try {
-        console.log(item)
-        //await this.fetchExpositive(item.id);
-        //bus.$emit("changePage", ["content,Course", "content"]);
-      } catch (error) {
-        console.log(error)
-        this.setErrorSnackBar()
-      }
-    },
-    async openEvaluative(item) {
-      try {
-        console.log(item)
-        //await this.fetchCourseTeacher(item.id);
-        //bus.$emit("changePage", ["content,Course", "content"]);
-      } catch (error) {
-        console.log(error)
-        this.setErrorSnackBar()
-      }
-    },
-    async openQuestion(item) {
-      try {
-        console.log(item)
-        //await this.fetchCourseTeacher(item.id);
-        //bus.$emit("changePage", ["content,Course", "content"]);
-      } catch (error) {
-        console.log(error)
-        this.setErrorSnackBar()
+        this.snackbar = this.getErrorSnackbar("Something went wrong fetching the "+this.collectionType)
       }
     },
 
@@ -327,7 +293,7 @@ export default {
         cloneBody = await this.fetchCloneBody(item.id);
       } catch (error) {
         console.log(error)
-        this.setErrorSnackBar()
+        this.snackbar = this.getErrorSnackbar("Something went wrong fetching the Clone Menu")
       }
       this.cloneItems = cloneBody;
     },
@@ -383,11 +349,12 @@ export default {
       this.cloneOpen = []
       try {
         await this.fetchClone(cloneData);
+        this.snackbar = this.getSuccessSnackbar("Course copied")
+        bus.$emit("changePage", ["content,Course", "content"]);
       } catch (error) {
         console.log(error)
-        this.setErrorSnackBar()
+        this.snackbar = this.getErrorSnackbar("Something went wrong copying the course")
       }
-      bus.$emit("changePage", ["content,Course", "content"]);
     },
     findParentofCloneBody(idMenu) {
       const items = this.cloneItems.children;
@@ -414,6 +381,29 @@ export default {
         }
       }
       return null;
+    },
+
+    async copy2(item){
+      try {
+        await this.copyCollectionType([item.id,this.collectionType])
+        switch (this.collectionType) {
+          case "courses":
+            bus.$emit("changePage", ["content,Course", "content"]);
+            break;
+          case "expositives":
+            bus.$emit("changePage", ["content,Expositive", "content"]);
+            break;
+          case "evaluatives":
+            bus.$emit("changePage", ["content,Evaluative", "content"]);
+            break;
+          case "questions":
+            bus.$emit("changePage", ["content,Question", "content"]);
+            break;
+        }
+      } catch (error) {
+        console.log(error)
+        this.snackbar = this.getErrorSnackbar("Something went wrong copying the "+this.collectionType)
+      }
     },
 
     remove(item) {

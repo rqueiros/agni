@@ -35,8 +35,17 @@ module.exports = createCoreController(uid, () => {
       },
 
       async create(ctx) {
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
+
+         if (data.publishedAt == null && "publishedAt" in data) {
+            data.author = ctx.state.user.id
+            const course = await strapi.db.query("api::evaluative.evaluative").create({
+               data: data
+            });
+            return course;
+         }
+
          const result = []
-         let data = JSON.parse(ctx.request.body["data"])
          const images = ctx.request.files["files.image"]
          if (!checkImages(images, data)) {
             return ctx.badRequest(error.imageError.message, error.imageError.details)
@@ -59,12 +68,7 @@ module.exports = createCoreController(uid, () => {
             return ctx.unauthorized(`No permission to delete this content`);
          }
 
-         let data;
-         try {
-            data = JSON.parse(ctx.request.body.data)
-         } catch (err) {
-            data = ctx.request.body.data
-         }
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
 
          let images = []
          if ("files" in ctx.request) {
@@ -110,7 +114,7 @@ async function prepareCtx(ctx, images, data, type) {
    }
    data.author = ctx.state.user.id
    ctx.params = parm
-   ctx.request.body = { data: data }
+   ctx.request.body = { data: JSON.stringify(data) }
    return ctx
 }
 
@@ -145,18 +149,16 @@ async function prepareQuestions(ctx, images, questions, type){
 }
 
 function prepareQuestionCtx(ctx, images, data) {
-   /*
    if (typeof (images) == "undefined") {
       images = []
    } else if (!(images instanceof Array)) {
       images = [images]
    }
-   if("image" in data){
-      images = images.filter(i => imageNames.includes(i.name))
-   }
-   if("files" in ctx.request){
+   const imageNames = ("image" in data && typeof(data.image)=="string") ? [data.image] : []
+   images = images.filter(i => imageNames.includes(i.name))
+   if ("files" in ctx.request){
       ctx.request.files['files.image'] = images
-   }*/
+   }
    ctx.request.body = {data:data}
    return ctx
 }
@@ -170,7 +172,7 @@ function checkImages(images, data) {
    }
    data = (!(data instanceof Array)) ? [data] : data
    images = images.map(i => i.name)
-   data = Array.prototype.concat.apply([], data.filter(d => "content" in d).filter(d => d.content[0]["__component"] == "base.quiz").map(d => d.content[0].questions.filter(q => typeof (q) == "object").filter(q => "image" in q).map(q => q.image)))
+   data = Array.prototype.concat.apply([], data.filter(d => "content" in d).filter(d => d.content[0]["__component"] == "base.quiz").map(d => d.content[0].questions.filter(q => typeof (q) == "object").filter(q => "image" in q).map(q => q.image))).filter(n => typeof(n)=="string")
    const verifyList = [...images.map(i => data.includes(i)), ...data.map(d => images.includes(d))]
    return (verifyList.includes(false)) ? false : true
 }

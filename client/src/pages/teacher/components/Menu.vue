@@ -11,7 +11,7 @@
       @click="setPage('account,Account', 'account')"
     >
       <v-avatar color="primary" class="profile" :size="$vuetify.breakpoint.lgAndUp ? '45' : '35'">
-        <v-icon dark :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'large'"> mdi-card-account-details </v-icon>
+        <v-icon dark :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'large'">{{ getIcon("account") }} </v-icon>
       </v-avatar>
       <div class="mt-1" v-if="$vuetify.breakpoint.lgAndUp">{{ getUsername }}</div>
     </v-sheet>
@@ -21,20 +21,20 @@
         <v-divider></v-divider>
         <v-list-item
           class="menu_links mt-2"
-          title="Main"
-          value="main"
+          title="Home"
+          value="home"
           @click="setPage('home,Home', 'home')"
         >
-          <v-icon class="mr-1" :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'xx-large'">mdi-home-variant</v-icon>
+          <v-icon class="mr-1" :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'xx-large'">{{ getIcon("home") }}</v-icon>
           <span v-if="$vuetify.breakpoint.lgAndUp">Home</span>
         </v-list-item>
         <v-list-item
           class="menu_links"
           title="Class Managing"
           value="class"
-          @click="setPage('student,Class', 'class')"
+          @click="setPage('student,StudentDashboard', 'student')"
         >
-          <v-icon class="mr-1" :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'xx-large'">mdi-account-school</v-icon>
+          <v-icon class="mr-1" :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'xx-large'">{{ getIcon("student") }}</v-icon>
           <span v-if="$vuetify.breakpoint.lgAndUp">Student</span>
         </v-list-item>
         <v-list-item
@@ -43,7 +43,7 @@
           value="content"
           @click="setPage('content,Content', 'content')"
         >
-          <v-icon class="mr-1" :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'xx-large'">mdi-content-save-edit</v-icon>
+          <v-icon class="mr-1" :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'xx-large'">{{ getIcon("content") }}</v-icon>
           <span v-if="$vuetify.breakpoint.lgAndUp">Content</span>
         </v-list-item>
         <v-list-item
@@ -52,7 +52,7 @@
           value="settings"
           @click="setPage('settings,Settings', 'settings')"
         >
-          <v-icon class="mr-1" :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'xx-large'">mdi-cog</v-icon>
+          <v-icon class="mr-1" :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'xx-large'">{{ getIcon("settings") }}</v-icon>
           <span v-if="$vuetify.breakpoint.lgAndUp">Settings</span>
         </v-list-item>
         <v-divider></v-divider>
@@ -80,7 +80,8 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["getUsername"]),
+    ...mapGetters("main",["getUsername"]),
+    ...mapGetters("style",["getIcon"])
   },
 
   methods: {

@@ -180,7 +180,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "getLessonsByCourse",
       "getCompletationStatusByLesson",
       "getModuleByLesson",

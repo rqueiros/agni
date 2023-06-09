@@ -2,7 +2,7 @@
   <div id="lesson">
     <v-container fluid>
       <v-row class="mb-1 mt-0">
-        <v-col :cols="isSmallScreen && isStudent ? 12 : 7" class="py-0">
+        <v-col :cols="isSMsmaller && isStudent ? 12 : 7" class="py-0">
           <v-card outlined>
             <Header :resource="resource" />
 
@@ -36,7 +36,7 @@
         <v-col
           cols="5"
           class="py-0 pl-0"
-          :class="isSmallScreen && isStudent ? 'd-none' : 'd-block'"
+          :class="isSMsmaller && isStudent ? 'd-none' : 'd-block'"
         >
           <Timeline
             :resource="resource.expositives[index]"
@@ -44,7 +44,7 @@
           />
         </v-col>
       </v-row>
-      <v-row :class="isSmallScreen && isStudent ? 'd-block' : 'd-none'">
+      <v-row :class="isSMsmaller && isStudent ? 'd-block' : 'd-none'">
         <v-col cols="12">
           <Timeline
             :resource="resource.expositives[index]"
@@ -95,12 +95,14 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "isStudent",
       "isTeacher",
       "isAuthor",
       "isViewer",
-      "isSmallScreen"
+    ]),
+    ...mapGetters("style",[
+      "isSMsmaller"
     ])
   },
   methods: {

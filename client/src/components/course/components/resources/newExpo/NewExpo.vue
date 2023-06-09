@@ -67,28 +67,36 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getResourceById", "getProgressFromResourceId", "getLessonByResourceId"])
+    ...mapGetters("main",["getResourceById", "getProgressFromResourceId", "getLessonByResourceId"])
   },
   watch: {
     file: function (newFile, oldFile) {
+      console.log(newFile)
       if (newFile !== oldFile) {
         if (newFile != [] && newFile != undefined) {
           this.changeExpositiveTypeById([this.resource.id, newFile]);
         }
       }
+      /*const obj = {
+        id: this.resource.id,
+        value: newF,
+        field: "file",
+        type: "expositive"
+      };
+      this.editableInput(obj);*/
     },
     dialog(newV){
       if (!newV){
         this.checkboxes = [];
       }
-    }
+    },
   },
 
   created() { },
 
   methods: {
-    ...mapMutations(["changeExpositiveTypeById"]),
-    ...mapActions(["fetchCollectionTypes", "addExistingExpositives"]),
+    ...mapMutations("main",["changeExpositiveTypeById"]),
+    ...mapActions("main",["fetchCollectionTypes", "addExistingExpositives", "editableInput"]),
     async select() {
       const parameters = {
         collectionType: "expositive"

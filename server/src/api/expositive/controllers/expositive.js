@@ -40,12 +40,21 @@ module.exports = createCoreController(uid, () => {
       },
 
       async create(ctx) {
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
+
+         if (data.publishedAt == null && "publishedAt" in data) {
+            data.author = ctx.state.user.id
+            const course = await strapi.db.query("api::expositive.expositive").create({
+               data: data
+            });
+            return course;
+         }
+
          const result = []
          let files = []
          if ("files" in ctx.request) {
             files = ctx.request.files['files.file']
          }
-         let data = JSON.parse(ctx.request.body.data)
          if (!checkFiles(files, data)) {
             return ctx.badRequest(error.fileError.message, error.fileError.details)
          }
@@ -64,14 +73,10 @@ module.exports = createCoreController(uid, () => {
             return ctx.unauthorized(`No permission to delete this content`);
          }
 
-         let data;
-         try {
-            data = JSON.parse(ctx.request.body.data)
-         } catch (err) {
-            data = ctx.request.body.data
-         }
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
 
          let files = []
+         
          if ("files" in ctx.request) {
             files = ctx.request.files['files.file']
             if (!checkFiles(files, data)) {
@@ -107,16 +112,16 @@ async function verifyAuthor(authorId, contentId) {
 }
 
 function prepareCtx(ctx, files, data) {
-   if ("file" in data) {
+   if ("file" in data && typeof(data.file)=="string") {   
       files = (!(files instanceof Array)) ? [files] : files
       files = files.filter(f => f.name == data.file)
       ctx.request.files['files.file'] = files
+      delete data.file
    } else if ("files" in ctx.request) {
       ctx.request.files['files.file'] = []
    }
-   delete data.file
    data.author = ctx.state.user.id
-   ctx.request.body = { data: data }
+   ctx.request.body = { data: JSON.stringify(data) }
    return ctx
 }
 
@@ -128,7 +133,7 @@ function checkFiles(files, data) {
    }
    data = (!(data instanceof Array)) ? [data] : data
    files = files.map(i => i.name)
-   data = data.filter(d => "file" in d).map(d => d.file)
+   data = data.filter(d => "file" in d).map(d => d.file).filter(f => typeof(f)=="string")
    const verifyList = [...files.map(f => data.includes(f)), ...data.map(d => files.includes(d))]
    return (verifyList.includes(false)) ? false : true
 }

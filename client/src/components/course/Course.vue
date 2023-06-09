@@ -49,7 +49,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["getResourceById"]),
+    ...mapGetters("main",["getResourceById"]),
     getCourseClass() {
       if (this.courseWidth <= 480) {
         return "courseXS";
@@ -66,7 +66,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["setScreenSize"]),
+    ...mapMutations("style",["setScreenSize"]),
     setResource(resourceId, type) {
       if (
         this.resource &&
@@ -95,6 +95,13 @@ export default {
 <style>
 .v-dialog{
   overflow-y: visible !important;
+}
+
+.iconButton{
+  height: 20px !important;
+  width: 20px !important;
+  margin-bottom:1px;
+  margin-top:1px;
 }
 /* Course Size *//*
 .courseXS {

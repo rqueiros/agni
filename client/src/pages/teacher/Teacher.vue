@@ -10,30 +10,13 @@
     <!--Main-->
     <v-main class="px-0 pt-6">
       <Menu />
-      <v-card
-        style="margin-right:4.7%; background-color: #F7F8F9;"
-        class="py-2 mb-4"
-        :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'"
-        tile
-        elevation="0"
-      >
+      <v-card style="margin-right:5%; background-color: #F7F8F9;" class="mt-3 mb-5"
+        :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'" tile elevation="0">
         <AppBar :resource="resource" />
       </v-card>
-      <v-container fluid class="pa-0 mb-10">
-        <v-row class="mt-0">
-          <v-col :class="$vuetify.breakpoint.lgAndUp ? 'containerWidthBig' : 'containerWidthSmall'"></v-col>
-          <v-col class="px-0 mx-0">
-            <v-row class=""> </v-row>
-            <v-row style="min-height: 80vh; margin-right: 5%;" class="pl-4 pr-4">
-              <Resource :resource="resource" />
-            </v-row>
-          </v-col>
-          <!--
-          <v-col>
-            <Buttons :resource="resource"/>
-          </v-col>-->
-        </v-row>
-      </v-container>
+      <div style="margin-right: 5%;" class="mb-8 min_height" :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'">
+        <Resource :resource="resource" />
+      </div>
     </v-main>
   </v-app>
 </template>
@@ -53,11 +36,11 @@ export default {
     AppBar
   },
   data: () => ({
-    resource: "main,Main",
-    header: "main"
+    resource: "home,Home",
+    header: "home"
   }),
   methods: {
-    ...mapActions(["fetchEmptyCourse"]),
+    ...mapActions("main", ["fetchEmptyCourse"]),
     setPage(payload) {
       this.resource = payload[0];
     },
@@ -83,6 +66,10 @@ export default {
 </script>
 
 <style>
+.min_height{
+  min-height:calc(100vh - 150px);
+}
+
 #teacher_bar {
   background-color: #454444;
 }
@@ -92,17 +79,19 @@ export default {
   position: none !important;
 }
 
-.containerWidthBig{
-  max-width: 210px;
-}
-.containerWidthSmall{
-  max-width: 100px;
+.containerWidthBig {
+  max-width: 202px;
 }
 
-.barMarginBig{
-  margin-left:202px; 
+.containerWidthSmall {
+  max-width: 92px;
 }
-.barMarginSmall{
-  margin-left:92px; 
+
+.barMarginBig {
+  margin-left: 202px;
+}
+
+.barMarginSmall {
+  margin-left: 92px;
 }
 </style>

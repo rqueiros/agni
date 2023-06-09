@@ -39,11 +39,24 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          const result = []
-         const images = ctx.request.files['files.image']
-         let data = JSON.parse(ctx.request.body.data)
-         if (!checkImages(images, data)) {
-            return ctx.badRequest(error.imageError.message, error.imageError.details)
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
+
+         if (data.publishedAt == null && "publishedAt" in data) {
+            data.author = ctx.state.user.id
+            const course = await strapi.db.query("api::question.question").create({
+               data: data
+            });
+            return course;
          }
+
+         let images = []
+         if ("files" in ctx.request) {
+            images = ctx.request.files['files.image']
+            if (!checkImages(images, data)) {
+               return ctx.badRequest(error.imageError.message, error.imageError.details)
+            }
+         }
+
          data = (Array.isArray(data) == false) ? [data] : data
          for (const index of Array(data.length).keys()) {
             const ctx2 = prepareCtx(ctx, images, data[index])
@@ -58,18 +71,12 @@ module.exports = createCoreController(uid, () => {
          if (!(await verifyAuthor(ctx.state.user.id, id))) {
             return ctx.unauthorized(`No permission to delete this content`);
          }
-
-         let data;
-         try {
-            data = JSON.parse(ctx.request.body.data)
-         } catch (err) {
-            data = ctx.request.body.data
-         }
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
 
          let images = []
          if ("files" in ctx.request) {
             images = ctx.request.files['files.image']
-            if (!checkFiles(images, data)) {
+            if (!checkImages(images, data)) {
                return ctx.badRequest(error.fileError.message, error.fileError.details)
             }
          }
@@ -80,9 +87,11 @@ module.exports = createCoreController(uid, () => {
       },
 
       async delete(ctx) {
-         /*if (!verifyAuthor(ctx)){
-           return ctx.unauthorized(`You can't delete this entry`);
-         }*/
+         const { id } = ctx.request.params
+         if (!(await verifyAuthor(ctx.state.user.id, id))) {
+            return ctx.unauthorized(`No permission to delete this content`);
+         }
+
          const result = await super.delete(ctx)
          return result
       },
@@ -100,16 +109,16 @@ async function verifyAuthor(authorId, contentId) {
 }
 
 function prepareCtx(ctx, images, data) {
-   if ("image" in data) {
+   if ("image" in data && typeof(data.image)=="string") {
       images = (!(images instanceof Array)) ? [images] : images
       images = images.filter(i => i.name == data.image)
       ctx.request.files['files.image'] = images
+      delete data.image
    } else if ("files" in ctx.request) {
       ctx.request.files['files.image'] = []
    }
-   delete data.image
    data.author = ctx.state.user.id
-   ctx.request.body = {data:data}
+   ctx.request.body = {data:JSON.stringify(data)}
    return ctx
 }
 
@@ -121,7 +130,7 @@ function checkImages(images, data) {
    }
    data = (!(data instanceof Array)) ? [data] : data
    images = images.map(i => i.name)
-   data = data.filter(d => "image" in d).map(d => d.image)
+   data = data.filter(d => "image" in d).map(d => d.image).filter(n => typeof(n)=="string")
    const verifyList = [...images.map(i => data.includes(i)), ...data.map(d => images.includes(d))]
    return (verifyList.includes(false)) ? false : true
 }

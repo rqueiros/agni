@@ -303,18 +303,21 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "getResourceById",
       "getStatusByResourceId",
       "getRole",
-      "getSubtitleClass",
-      "getIconMediumSize",
-      "getIconSmallSize",
-      "getSmallTextClass",
       "isStudent",
       "isTeacher",
       "isAuthor",
       "isViewer",
+    ]),
+    ...mapGetters("style",[
+      "getSubtitleClass",
+      "getIconMediumSize",
+      "getIconSmallSize",
+      "getSmallTextClass",
+      "getIcon"
     ]),
     loadResource() {
       let ev = [];
@@ -360,13 +363,13 @@ export default {
   },
 
   methods: {
-    ...mapMutations([
+    ...mapMutations("main",[
       "addEvaluativeByLessonId",
       "changeEvaluativeTypeById",
       "deleteEvaluative",
       "editableInput"
     ]),
-    ...mapActions(["fetchCollectionTypes", "addExistingEvaluatives"]),
+    ...mapActions("main",["fetchCollectionTypes", "addExistingEvaluatives"]),
     async select(id) {
       this.thatEval = id
       const parameters = {
@@ -400,27 +403,6 @@ export default {
     },
     play(value) {
       bus.$emit("changeIt", [value.rid, "evaluative"]);
-    },
-    getIcon(type) {
-      let icon = "";
-      switch (type) {
-        case "blank":
-          icon = "mdi-text-box-outline";
-          break;
-        case "skeleton":
-          icon = "mdi-text-box-plus-outline";
-          break;
-        case "buggy":
-          icon = "mdi-bug";
-          break;
-        case "quiz":
-          icon = "mdi-head-question-outline";
-          break;
-        default:
-          icon = "mdi-code-json";
-          break;
-      }
-      return icon;
     },
     getColor(status) {
       status = +status;

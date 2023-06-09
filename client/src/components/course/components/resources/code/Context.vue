@@ -99,7 +99,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getResourceById", "getProgressFromResourceId"])
+    ...mapGetters("main",["getResourceById", "getProgressFromResourceId"])
   },
   watch: {
     file: function(newFile, oldFile) {
@@ -121,7 +121,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["editableInput"]),
+    ...mapMutations("main",["editableInput"]),
     testM() {
       this.dataSumit();
       clearInterval(this.saveHandler);

@@ -1,7 +1,7 @@
 <template>
   <div
     id="resource"
-    :class="isSmallScreen ? 'pt-sm-13 pl-sm-0' : 'resource'"
+    :class="isSMsmaller ? 'pt-sm-13 pl-sm-0' : 'resource'"
   >
     <component
       :is="getComponent"
@@ -25,7 +25,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["isSmallScreen"]),
+    ...mapGetters("style",["isSMsmaller"]),
     getComponent() {
       if (
         this.resource &&

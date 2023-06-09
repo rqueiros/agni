@@ -97,11 +97,13 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "isStudent",
       "isTeacher",
       "isViewer",
       "isAuthor",
+    ]),
+    ...mapGetters("style",[
       "getIconSmallSize",
       "getSmallTextClass",
       "getTitleClass"
@@ -109,7 +111,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations([
+    ...mapMutations("main",[
       "editableInput",
       "addGoalByCourseId",
       "deleteGoal",

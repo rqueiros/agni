@@ -1,7 +1,7 @@
 <template>
   <div id="DialogModuleLesson">
     <v-dialog v-model="dialog" max-width="500px">
-      <v-card>
+      <v-card v-if="dialog">
         <v-card-title class="pb-2" :class="getTitleClass">
           {{ dialogItem.contentType[0].toUpperCase() }}. {{ dialogItem.name }} - Condition:
         </v-card-title>
@@ -109,11 +109,13 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "isStudent",
       "isTeacher",
       "isViewer",
       "isAuthor",
+    ]),
+    ...mapGetters("style",[
       "getIconSmallSize",
       "getSmallTextClass",
       "getTitleClass"
@@ -121,7 +123,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations([
+    ...mapMutations("main",[
       "editableInput",
     ]),
     setType(id, value) {

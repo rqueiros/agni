@@ -172,7 +172,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations } from "vuex";
 
 export default {
   computed: {
@@ -181,16 +181,17 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["login"]),
+    ...mapActions("main",["login"]),
+    ...mapMutations("main", ["setLogin"]),
     async studentLogin() {
-      this.login(["student", "123456"]);
+      await this.login(["student", "123456"]);
     },
     async teacherlogin() {
-      this.login(["teacher", "123456"]);
+      await this.login(["teacher", "123456"]);
     },
     validate() {
       if (this.$refs.loginForm.validate()) {
-        this.$store.commit("setLogin");
+        this.setLogin()
         this.$router.push({ name: "Student" });
       }
     },

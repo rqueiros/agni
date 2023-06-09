@@ -10,7 +10,7 @@
       :color="isStudent ? 'grey lighten-2' : ''"
       :elevation="isTeacher ? '0' : '1'"
       :style="isTeacher ? 'border-top:0;border-right:0;border-left:0' : ''"
-      :class="isSmallScreen ? 'd-block' : 'd-none'"
+      :class="isSMsmaller ? 'd-block' : 'd-none'"
       :rounded="isTeacher"
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
@@ -25,9 +25,9 @@
       app
       v-model="drawer"
       class="m-navigation_drawer"
-      :width="isSmallScreen ? '50%' : '25%'"
-      :permanent="!isSmallScreen"
-      :temporary="isSmallScreen"
+      :width="isSMsmaller ? '50%' : '25%'"
+      :permanent="!isSMsmaller"
+      :temporary="isSMsmaller"
     >
       <v-sheet color="grey lighten-4" class="px-4 py-3">
         <!--Student-->
@@ -120,8 +120,8 @@
         <!--Teacher-->
         <template v-if="isTeacher" v-slot:append="{ item }">
           <!--Author-->
-          <div v-if="isAuthor" class="d-flex align-center">
-            <span class="d-flex flex-column">
+          <div v-if="isAuthor" class="d-flex align-center py-1">
+            <span class="d-flex flex-column elevation-1 rounded mr-1">
               <v-btn
                 v-if="item.contentType != 'course' && item.type != 'add'"
                 icon
@@ -136,6 +136,7 @@
               <v-btn
                 v-if="item.contentType != 'course' && item.type != 'add'"
                 icon
+                
                 x-small
                 @click="moveButton(item.contentType, item.id, 'down')"
                 onclick="event.stopPropagation()"
@@ -147,7 +148,7 @@
             </span>
             <v-btn
               v-if="item.type != 'add'"
-              icon
+              icon elevation="2" class="mr-1"
               x-small
               @click="openDialog(item)"
               onclick="event.stopPropagation()"
@@ -158,7 +159,7 @@
             </v-btn>
             <v-btn
               v-if="item.contentType != 'course' && item.type != 'add'"
-              icon
+              icon elevation="2" 
               x-small
               @click="deleteButton(item.contentType, item.id)"
               onclick="event.stopPropagation()"
@@ -193,7 +194,7 @@
 
 <script>
 import { bus } from "@/main.js";
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapMutations, mapState } from "vuex";
 
 import Editable from "../../../gerneral/Editable.vue";
 import DialogCourse from "./DialogCourse.vue";
@@ -225,35 +226,37 @@ export default {
     bus.$on("dialogModuleLessonChange", payload => {
       this.dialogModuleLesson = payload;
     });
+    this.setCourse()
+  },
 
-    this.$store.watch(
-      state => state.courses,
-      () => {
-        this.setCourse();
-      }
-    );
-    this.setCourse();
+  watch: {
+    courses() {
+      this.setCourse();
+    },
   },
 
   computed: {
-    ...mapGetters([
+    ...mapState("main", { courses: state => state.courses }),
+    ...mapGetters("main",[
       "isStudent",
       "isTeacher",
       "isAuthor",
       "isViewer",
+      "getCourses",
+      "getCompletationStatusBySheetId",
+      "getUsername",
+    ]),
+    ...mapGetters("style",[
       "getIconSmallSize",
       "getSmallTextClass",
       "getButtonSize",
       "getAvatarSmallSize",
-      "getCourse",
-      "getCompletationStatusBySheetId",
-      "getUsername",
-      "isSmallScreen"
+      "isSMsmaller"
     ])
   },
 
   methods: {
-    ...mapMutations([
+    ...mapMutations("main",[
       "addLessonByModuleId",
       "deleteLesson",
       "moveLesson",
@@ -266,7 +269,8 @@ export default {
 
     //--------------------------Student-----------------------------------------
     setCourse() {
-      this.items = this.getCourse;
+      this.items = this.getCourses;
+      console.log(this.items)
     },
     getCompletationStatus(item) {
       //TODO reimplemet it

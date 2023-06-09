@@ -122,12 +122,21 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          const result = []
-         let data = JSON.parse(ctx.request.body["data"])
+         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
+
+         if (data.publishedAt == null) {
+            data.author = ctx.state.user.id
+            const occ = await strapi.db.query("api::occurrence.occurrence").create({
+               data: data
+            });
+            return occ;
+         }
+
          if (Array.isArray(data) == false) {
             data = [data]
          }
          for (const index of Array(data.length).keys()) {
-            const ctx2 = await prepareCtx(ctx, data[index])
+            const ctx2 = await prepareCtx(ctx, data[index], "create")
             const r = await super.create(ctx2)
             result.push(r)
          }
@@ -139,15 +148,14 @@ module.exports = createCoreController(uid, () => {
 
       async update(ctx) {
          const { id } = ctx.request.params
-         const entity = await strapi.entityService.findOne(uid, id, {
-            ...ctx.query,
-            populate: { author: true },
-         });
-         if (ctx.state.user.id != entity.author.id) {
+         const permission = await verifyAuthor(ctx.state.user.id, id)
+         if (!permission) {
             return ctx.badRequest("You are not allowed to update this occurrence")
          }
+         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
 
-         const result = await super.update(ctx)
+         const ctx2 = await prepareCtx(ctx, data, "update")
+         const result = await super.update(ctx2)
          return result
       },
 
@@ -167,54 +175,52 @@ module.exports = createCoreController(uid, () => {
    }
 })
 
-async function prepareCtx(ctx, data) {
-   if ("classes" in data && data.classes != []) {
-      const classes = await prepareClasses(ctx, data)
-      data.classes = classes
+async function prepareCtx(ctx, data, type) {
+   let parm = ctx.params
+   if ("classes" in data && data.classes != null) {
+      data.classes = await prepareClasses(ctx, data.classes, type)
    }
+   ctx.params = parm
    data.author = ctx.state.user.id
-   ctx.request.body.data = [JSON.stringify(data)]
+   ctx.request.body = {data:data}
    return ctx
 }
 
-async function prepareClasses(ctx, data) {
-   let classes = data.classes
-   const createClasses = classes.filter(c => typeof (c) == "object")
-   if (createClasses.length > 0) {
-      const ctx2 = ctx
-      ctx2.request.body.data = JSON.stringify(createClasses)
-      let resp = await strapi.controller("api::class.class").create(ctx2)
-      if (!(resp instanceof Array)) {
-         resp = [resp]
+async function prepareClasses(ctx, classes, type) {
+   classes = ((!typeof (classes) == "object")) ? [classes] : classes
+   let newClasses = []
+   for (let classe of classes) {
+      if (typeof(classe) != "object"){
+         newClasses.push(classe)
+      } else {
+         let resp;
+         if (classe.new || type == "create") {
+            delete classe.new
+            let ctx2 = ctx
+            ctx2.request.body = {data:classe}
+            resp = await strapi.controller("api::class.class").create(ctx2)
+         } else if (type=="update"){
+            let id = classe.id
+            delete classe.id
+            let ctx2 = ctx
+            ctx2.request.body = {data:classe}
+            ctx2.request.params = {id:JSON.stringify(id)}
+            ctx2.params = {id:JSON.stringify(id)}
+            resp = await strapi.controller("api::class.class").update(ctx2)
+         }
+         newClasses.push(resp.data.id)
       }
-      resp = resp.map(r => r.data.id)
-      classes = myConcate(classes, resp)
-      return classes
    }
-   return classes
+   console.log(newClasses)
+   return newClasses
 }
 
-function myConcate(l1, l2) {
-   let c = 0
-   for (const i of Array(l1.length).keys()) {
-      if (typeof (l1[i]) == "object") {
-         l1[i] = l2[c]
-         c = c + 1
-      }
-   }
-   return l1
-}
-
-async function verifyAuthor(ctx) {
-   const author = ctx.state.user.id
-   const { id } = ctx.request.params
-   const entity = await strapi.entityService.findOne(uid, id, {
-      ...ctx.query,
+async function verifyAuthor(authorId, contentId) {
+   const entity = await strapi.entityService.findOne(uid, contentId, {
       populate: { author: true },
-   });
-   if (author == entity.id) {
+   })
+   if (entity.author != null && entity.author.id == authorId) {
       return true
-   } else {
-      return false
    }
+   return false
 }

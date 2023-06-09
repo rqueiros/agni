@@ -207,9 +207,9 @@
                       selected => setTypes(item.id, selected.value)
                     "
                     :value="
-                      'subtype' in item && item.subtype != ''
+                      'subtype' in item && item.subtype != '' && item.subtype != null
                         ? item.subtype
-                        : item.type
+                        : item.type != null ? item.type : ''
                     "
                   />
                 </td>
@@ -440,18 +440,20 @@ export default {
   }),
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "getStatusByResourceId",
       "getRole",
       "getStatusTeacher",
-      "getTitleClass",
-      "getSmallTextClass",
-      "getAvatarMediumSize",
-      "getIconBigSize",
       "isStudent",
       "isTeacher",
       "isViewer",
       "isAuthor",
+    ]),
+    ...mapGetters("style",[
+      "getTitleClass",
+      "getSmallTextClass",
+      "getAvatarMediumSize",
+      "getIconBigSize",
       "getSmallTextClass"
     ]),
     formTitle() {
@@ -478,8 +480,8 @@ export default {
   },
 
   methods: {
-    ...mapActions(["setProgress"]),
-    ...mapMutations(["addTestByEvaluativeId", "deleteTest", "editableInput"]),
+    ...mapActions("main",["setProgress"]),
+    ...mapMutations("main",["addTestByEvaluativeId", "deleteTest", "editableInput"]),
     changeTestVisibility(id, value) {
       const obj = {
         id: id,

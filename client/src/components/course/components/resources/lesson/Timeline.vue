@@ -136,24 +136,26 @@ export default {
   }),
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "getRole",
+      "isStudent",
+      "isTeacher",
+      "isViewer",
+      "isAuthor"
+    ]),
+    ...mapGetters("style",[
       "getTitleClass",
       "getSmallTextClass",
       "getAvatarMediumSize",
       "getIconBigSize",
       "getIconSmallSize",
-      "isStudent",
-      "isTeacher",
-      "isViewer",
-      "isAuthor"
     ]),
     resExist() {
       return this.resource.type != "newExpo";
     },
   },
   methods: {
-    ...mapMutations([
+    ...mapMutations("main",[
       "editableInput",
       "addMilestoneByExpositiveId",
       "deleteMilestone"

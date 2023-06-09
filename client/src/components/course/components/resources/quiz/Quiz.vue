@@ -1,23 +1,25 @@
 <template>
   <div id="quiz">
     <v-container fluid>
-      <v-row>
-        <v-col
+      <v-row class="mb-1 mt-0">
+        <v-col class="py-0"
           :cols="
-            (this.screenSize == 'xs' || this.screenSize == 'sm') && isStudent
+            isSMsmaller && isStudent
               ? 12
               : 7
           "
         >
+
           <v-card class="mx-auto" max-width="100%" outlined>
             <!--STATEMENT-->
-            <Header :resource="resource" />
+            <Header :resource="resource" v-if="!single && !onlyQuestion"/>
             <!--PLAYER-->
 
             <Quizzer
               :resource="resource"
-              :screenSize="screenSize"
               ref="quizzer"
+              :single="single"
+              :onlyQuestion="onlyQuestion"
             />
 
             <!--
@@ -46,22 +48,38 @@
             </v-expansion-panels>
           </v-card>
         </v-col>
+        <v-col
+          cols="5"
+          class="py-0 pl-0"
+          :class="isSMsmaller && isStudent ? 'd-none' : 'd-block'"
+        >
+          <Img :question="getQuestion"/>
+        </v-col>
+      </v-row>
+      <v-row :class="isSMsmaller && isStudent ? 'd-block' : 'd-none'">
+        <v-col cols="12">
+          <Img :question="getQuestion"/>
+        </v-col>
       </v-row>
     </v-container>
   </div>
 </template>
 
 <script>
+import { bus } from "@/main.js";
 import { mapGetters } from "vuex";
+
 import Header from "../Header.vue";
 import Quizzer from "./Quizzer.vue";
+import Img from "./Img.vue";
 
 export default {
   name: "Quiz",
 
   components: {
     Header,
-    Quizzer
+    Quizzer,
+    Img,
   },
 
   props: {
@@ -69,36 +87,36 @@ export default {
       type: Object,
       default: () => {}
     },
-    screenSize: {
-      type: String,
-      default: () => ""
+    single:{
+      type:Boolean,
+      default: () => false
+    },
+    onlyQuestion:{
+      type:Boolean,
+      default: () => false
     }
   },
 
   data() {
-    return {};
+    return {
+      index:0,
+    };
+  },
+
+  created(){
+    bus.$on("setIndex", payload => {
+      this.index = payload;
+    });
   },
 
   computed: {
-    ...mapGetters(["getRole"]),
+    ...mapGetters("main",["getRole", "isStudent", "isTeacher", "isViewer", "isAuthor"]),
+    ...mapGetters("style", ["isSMsmaller"]),
     getR() {
       return this.resource;
     },
-    isStudent() {
-      return this.getRole == "student";
-    },
-    isTeacher() {
-      return (
-        this.getRole == "teacher" ||
-        this.getRole == "author" ||
-        this.getRole == "viewer"
-      );
-    },
-    isViewer() {
-      return this.getRole == "viewer";
-    },
-    isAuthor() {
-      return this.getRole == "author";
+    getQuestion(){
+      return this.resource.questions[this.index]
     }
   }
 };

@@ -1,12 +1,26 @@
 <template>
   <div>
     <!--{{ getResourceById(resource.id,"evaluative") }}-->
+    <div v-if="single && !onlyQuestion" class="pa-2 pb-0">
+
+      <Editable
+        :type="'evaluative'"
+        :value="resource.name"
+        :id="resource.id"
+        placeholder="Evaluative name"
+        :field="'name'"
+        @input="editableInput"
+        onclick="event.stopPropagation()"
+      >
+      </Editable>
+    </div>
+
     <v-stepper
       v-model="e1"
       v-if="this.resource.questions.length > 0"
       id="stepper"
     >
-      <v-stepper-header>
+      <v-stepper-header v-if="!onlyQuestion">
         <template v-for="n in resource.questions.length">
           <v-stepper-step
             :complete="e1 > n"
@@ -86,7 +100,7 @@
                   :value="resource.questions[n - 1].question"
                   :id="resource.questions[n - 1].id"
                   :field="'question'"
-                  @input="editableChange"
+                  @input="editableInput"
                   placeholder="Question"
                 />
                 <v-container fluid>
@@ -115,7 +129,7 @@
                           :value="answer.answer"
                           :id="answer.id"
                           :field="'answer'"
-                          @input="editableChange"
+                          @input="editableInput"
                           placeholder="Answer"
                         />
                       </td>
@@ -167,7 +181,7 @@
           </v-btn>
 
           <v-btn
-            v-if="isAuthor"
+            v-if="isAuthor && !onlyQuestion"
             class="course_button course_text"
             width="100%"
             @click="addQuestionByQuestionId(resource.questions[n - 1].id)"
@@ -189,6 +203,7 @@
     </v-btn>
 
     <v-btn
+      v-if="!onlyQuestion"
       class="course_button course_text"
       width="100%"
       @click="select"
@@ -234,19 +249,26 @@ import Editable from "../../../../gerneral/Editable.vue";
 
 export default {
   name: "Quizzer",
+
   props: {
     resource: {
       type: Object,
       default: () => {}
     },
-    screenSize: {
-      type: String,
-      default: () => ""
+    single:{
+      type:Boolean,
+      default: () => false
+    },
+    onlyQuestion:{
+      type:Boolean,
+      default: () => false
     }
   },
+
   components: {
     Editable
   },
+
   data() {
     return {
       myAnswers: [],
@@ -262,15 +284,17 @@ export default {
       loading:false,
     };
   },
+
   created() {
     //this.quiz = this.getQuizByResourceId(this.resource.quizId);
-    this.selected = typeof(this.resource.questions[this.e1 - 1].correctAnswer) == "string" ? JSON.parse(this.resource.questions[this.e1 - 1].correctAnswer) : this.resource.questions[this.e1 - 1].correctAnswer
+    this.selected = this.resource.questions[this.e1 - 1].correctAnswer.map(v=>v-1)
     if ("questions" in this.resource) {
       this.steps = this.resource.questions.length;
     } else {
       this.steps = 1;
     }
   },
+  
   watch: {
     steps(val) {
       if (this.e1 > val) {
@@ -278,11 +302,12 @@ export default {
       }
     },
     e1(newE1) {
-      this.selected = typeof(this.resource.questions[newE1 - 1].correctAnswer) == "string" ? JSON.parse(this.resource.questions[newE1 - 1].correctAnswer) : this.resource.questions[newE1 - 1].correctAnswer
+      this.selected = this.resource.questions[newE1 - 1].correctAnswer.map(v => v-1)
+      bus.$emit("setIndex", newE1-1);
     },
     selected(newS) {
       const obj = {
-        value: JSON.stringify(newS),
+        value: newS.map(v => v+1),
         type: "question",
         field: "correctAnswer",
         id: this.resource.questions[this.e1 - 1].id
@@ -297,7 +322,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "getLessonByResourceId",
       "getQuizByResourceId",
       "getRole",
@@ -323,22 +348,18 @@ export default {
   },
 
   methods: {
-    ...mapMutations([
+    ...mapMutations("main",[
       "editableInput",
       "addAnswerByQuestionId",
       "addQuestionByQuestionId",
       "deleteAnswer",
       "deleteQuestion",
-      "editableInput",
       "addQuestionByResourceId",
     ]),
-    ...mapActions(["setProgress", "fetchCollectionTypes", "addExistingQuestions"]),
-    editableChange(obj) {
-      this.editableInput(obj);
-    },
+    ...mapActions("main",["setProgress", "fetchCollectionTypes", "addExistingQuestions"]),
     del(id) {
       this.deleteAnswer(id);
-      this.selected = this.resource.questions[this.e1 - 1].correctAnswer;
+      this.selected = this.resource.questions[this.e1 - 1].correctAnswer.map(v => v-1);
     },
     delQ(id) {
       this.deleteQuestion(id);

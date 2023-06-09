@@ -3,14 +3,14 @@
     <v-container fluid>
       <v-row>
         <v-col
-          :cols="isSmallScreen ? 12 : 7"
+          :cols="isSMsmaller ? 12 : 7"
         >
           <v-card max-width="100%" outlined>
             <!--STATEMENT-->
-            <Header :resource="resource" />
+            <Header :resource="resource" v-if="!single" />
             <!--PLAYER-->
             <Editor
-              :resource="resource"
+              :resource="resource" :single="single"
               @onErrors="setErrors"
               @onLogs="setLogs"
               ref="editor"
@@ -117,13 +117,13 @@
             :errors="errors"
             :logs="logs"
             @onSaveCode="saveCode"
-            :class="isSmallScreen ? 'd-none' : 'd-block'"
+            :class="isSMsmaller ? 'd-none' : 'd-block'"
           />
         </v-col>
       </v-row>
 
       <v-row
-        :class="isSmallScreen ? 'd-block' : 'd-none'"
+        :class="isSMsmaller ? 'd-block' : 'd-none'"
       >
         <v-col cols="12">
           <Tests
@@ -157,6 +157,10 @@ export default {
     resource: {
       type: Object,
       default: () => null
+    },
+    single: {
+      type: Boolean,
+      default: () => false
     },
   },
 
@@ -201,12 +205,14 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "isStudent", 
       "isTeacher", 
       "isViewer", 
       "isAuthor", 
-      "isSmallScreen"
+    ]),
+    ...mapGetters("style",[
+      "isSMsmaller"
     ]),
   },
 };

@@ -1,0 +1,257 @@
+<template>
+  <div>
+    <v-app-bar rounded elevation="1" height="auto" outlined style="background-color: #F7F8F9;" class="pa-2">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn rounded text elevation="0" class="mr-1 ml-n1" @click="exit" v-bind="attrs" v-on="on">
+            <v-icon>mdi-arrow-left</v-icon>
+          </v-btn>
+        </template>
+        <span>back</span>
+      </v-tooltip>
+
+      <v-divider vertical />
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <span class="mx-4" v-bind="attrs" v-on="on"> {{ title }}
+          </span>
+        </template>
+        <span>{{ description }}</span>
+      </v-tooltip>
+
+      <v-spacer></v-spacer>
+
+      <v-text-field label="Search" outlined dense hide-details disabled></v-text-field>
+      <!--TODO implement Search-->
+
+      <v-spacer></v-spacer>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn elevation="1" class="mr-1" rounded color="primary" :disabled="saveButton" @click="save"
+            v-bind="attrs" v-on="on">
+            <v-icon>mdi-content-save</v-icon>
+          </v-btn>
+        </template>
+        <span>save</span>
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn elevation="1" class="mx-1" rounded color="primary" @click="publish" v-bind="attrs"
+            v-on="on">
+            <v-icon v-if="isDraft">mdi-publish</v-icon>
+            <v-icon v-if="!isDraft">mdi-publish-off</v-icon>
+          </v-btn>
+        </template>
+        <span v-if="isDraft">publish</span>
+        <span v-if="!isDraft">unpublish</span>
+      </v-tooltip>
+
+      <v-btn elevation="1" class="mx-1" rounded color="primary" @click="copyMenu()">
+        <v-icon>mdi-content-copy</v-icon>
+      </v-btn>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn elevation="1" class="ml-1" rounded color="error" v-bind="attrs" v-on="on"
+            @click="remove()">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
+        <span>delete</span>
+      </v-tooltip>
+
+    </v-app-bar>
+
+    <DeleteDialog :dialog="deleteDialog" :collectionType="collectionType" />
+
+    <YesNoDialog :dialog="yesNoDialog.open" :question="yesNoDialog.question" :buttons="yesNoDialog.buttons" />
+
+    <Snackbar :snackbar="snackbar.open" :timeout="snackbar.timeout" :color="snackbar.color" :icon="snackbar.icon"
+      :text="snackbar.text" />
+
+  </div>
+</template>
+  
+<script>
+import { bus } from "@/main.js";
+
+import { mapGetters, mapState, mapMutations, mapActions } from "vuex";
+
+import DeleteDialog from "../../../../../components/gerneral/DeleteDialog.vue";
+import Snackbar from "../../../../../components/gerneral/Snackbar.vue"
+import YesNoDialog from "../../../../../components/gerneral/YesNoDialog.vue";
+
+export default {
+  name: "AppBarOccurrence",
+
+  components: {
+    DeleteDialog,
+    Snackbar,
+    YesNoDialog,
+  },
+
+  props: {
+    title: {
+      type: String,
+      default: () => ""
+    },
+    description: {
+      type: String,
+      default: () => ""
+    }
+  },
+
+  data: () => ({
+    collectionType: "Course",
+    saveButton: true,
+
+    cloneItems: [],
+    cloneSelection: [],
+    cloneOpen: [],
+
+    deleteDialog: false,
+    toDeleteItem: 0,
+
+    snackbar: {
+      open: false,
+      text: "",
+      icon: "",
+      color: "",
+      timeout: 2000,
+    },
+
+    yesNoDialog:{
+      open: false,
+      question: "",
+      buttons: [],
+    },
+  }),
+
+  watch: {
+    changed(newV) {
+      this.saveButton = !newV;
+    },
+    cloneSelection(newV, oldV) {
+      if (newV.length > oldV.length) {
+        const newItem = newV.find(v => !oldV.includes(v));
+        const parent = this.findParentofCloneBody(newItem);
+        let addIds = [];
+        if (parent != null) {
+          parent.forEach(v => {
+            if (!newV.includes(v)) {
+              addIds.push(v);
+            }
+          });
+          this.cloneSelection.push(...addIds);
+        }
+      }
+    }
+  },
+
+  created() {
+    bus.$on("deleteDialog", payload => {
+      this.deleteDialog = payload;
+    });
+    bus.$on("yesNoDialog", payload => {
+      this.yesNoDialog.open = payload;
+    });
+    bus.$on("deleteDialogResult", async payload => {
+      this.deleteDialog = false
+      if (this.toDeleteItem != 0) {
+        try {
+          if (payload == "ok") {
+            await this.deleteCollectionType([this.toDeleteItem, "occurrences"]);
+            this.snackbar = this.getSuccessSnackbar("Occurrence saved")
+            this.toDeleteItem = 0;
+            bus.$emit("changePage", ["student,StudentDashboard", "student"]);
+          }
+        } catch (error) {
+          this.toDeleteItem = 0;
+          this.snackbar = this.getErrorSnackbar("Something went wrong saving the occurrence")
+        }
+      }
+    });
+    bus.$on("snackbarChange", payload => {
+      this.snackbar.open = payload;
+    });
+    bus.$on("yesNoDialogResult", async payload => {
+      if (payload == "saveOcc"){
+        this.yesNoDialog.open = false;
+        await this.save()
+        this.deleteStructure();
+        bus.$emit("changePage", ["student,StudentDashboard", "student"]);
+      } else if (payload == "dontSaveOcc"){
+        this.yesNoDialog.open = false;
+        this.deleteStructure();
+        bus.$emit("changePage", ["student,StudentDashboard", "student"]);
+      } else if (payload == "cancelOcc"){
+        this.yesNoDialog.open = false;
+      }
+    })
+  },
+
+  computed: {
+    ...mapState("main", {changed:state => state.changed}),
+    ...mapGetters("main", ["getPublishedAt", "isAuthor", "isViewer", "getCourse"]),
+    ...mapGetters("style", ["getErrorSnackbar", "getSuccessSnackbar"]),
+    isDraft() {
+      return this.getPublishedAt("occurrences") == null;
+    },
+  },
+
+  methods: {
+    ...mapMutations("main", ["deleteStructure"]),
+    ...mapActions("main", ["publishCollectionType", "saveCollectionType", "deleteCollectionType"]),
+
+    exit() {
+      if (this.title == "STUDENT"){
+        bus.$emit("changePage", ["student,Occurrence", "occurrence"]);
+      } else {
+        if (this.saveButton) {
+          this.deleteStructure();
+          bus.$emit("changePage", ["student,StudentDashboard", "student"]);
+        } else {
+          this.yesNoDialog = {
+            open:true,
+            question: "Do you want to save your changes before exiting?",
+            buttons:[{name:"DON`T SAVE", msg:"dontSaveOcc"},{name:"SAVE", msg:"saveOcc"}]
+          }
+        }
+      }
+    },
+
+    async publish() {
+      try {
+        let res = await this.publishCollectionType("occurrences");
+        this.snackbar = this.getSuccessSnackbar("Occurrence "+res.charAt(0).toUpperCase() + res.slice(1))
+      } catch (error) {
+        console.log(error)
+        const pub = this.isDraft ? "publishing" : "unpublishing"
+        this.snackbar = this.getErrorSnackbar("Somthing went wrong " + pub + " the occurrence")
+      }
+    },
+
+    remove() {
+      this.deleteDialog = true;
+      this.toDeleteItem = this.getOccurrence.id
+    },
+
+    async save() {
+      //TODO check if all fields are declared
+      try {
+        await this.saveCollectionType("occurrences")
+        this.snackbar = this.getSuccessSnackbar("Occurrence saved")
+      } catch (error) {
+        console.log(error)
+        this.snackbar = this.getErrorSnackbar("Something went wrong saving the occurrence")
+      }
+    },
+
+  }
+}
+</script>
+  
+<style scoped></style>

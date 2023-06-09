@@ -80,7 +80,7 @@ export default {
     const file = this.resource.file;
     if ("data" in file) {
       this.pdfData =
-        "https://agni.dcc.fc.up.pt/strapi/" +
+        this.getDomain + 
         this.resource.file.data.attributes.url;
     } else {
       const reader = new FileReader();
@@ -93,7 +93,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["getRole"]),
+    ...mapGetters("main",["getRole", "getDomain"]),
     isStudent() {
       return this.role == "student";
     },

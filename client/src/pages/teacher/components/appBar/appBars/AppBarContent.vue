@@ -37,7 +37,7 @@
 <script>
 import { bus } from "@/main.js";
 
-import { mapActions } from "vuex";
+import { mapActions, mapMutations } from "vuex";
 
 export default {
   name: "ContentButtons",
@@ -69,7 +69,8 @@ export default {
   computed: {},
 
   methods: {
-    ...mapActions(["fetchEmptyCourse"]),
+    ...mapActions("main",["fetchEmptyCourse"]),
+    ...mapMutations("main", ["createNewQuestion", "createNewExpositive", "createNewEvaluative"]),
     addCollectionType(item) {
       switch (item) {
         case "Course":
@@ -77,13 +78,16 @@ export default {
           bus.$emit("changePage", ["content,Course", "content"]);
           break;
         case "Expositive":
-          console.log("todo"); // TODO create Expositive
+          this.createNewExpositive();
+          bus.$emit("changePage", ["content,Expositive", "content"]);
           break;
         case "Evaluative":
-          console.log("todo"); // TODO create Evaluative
+          this.createNewEvaluative();
+          bus.$emit("changePage", ["content,Evaluative", "content"]);
           break;
         case "Question":
-          console.log("todo"); // TODO create Question
+          this.createNewQuestion();
+          bus.$emit("changePage", ["content,Question", "content"]);
           break;
       }
     },

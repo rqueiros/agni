@@ -1,10 +1,22 @@
 <template>
   <div id="editor" :class="getSmallTextClass">
+    <div v-if="single" class="pa-2 pb-0">
+      <Editable
+        :type="'evaluative'"
+        :value="resource.name"
+        :id="resource.id"
+        placeholder="Evaluative name"
+        :field="'name'"
+        @input="editableChange"
+        onclick="event.stopPropagation()"
+      >
+      </Editable>
+    </div>
     <vue-cascader-select
       :options="options"
       @select="selected => setType(resource.id, selected.value)"
       class="ml-2 mt-2"
-      :value="resource.type"
+      :value="resource.type != null ? resource.type : ''"
       v-if="isAuthor"
       style="width: fit-content"
     />
@@ -155,7 +167,7 @@
       >(autosave each 10 seconds)</span
     >
     <v-card-actions>
-      <v-btn color="error" class="mb-2" @click="backToSheet">
+      <v-btn color="error" class="mb-2" @click="backToSheet" v-if="!single">
         BACK TO SHEET<v-icon right dark> mdi-autorenew </v-icon>
       </v-btn>
       <v-btn
@@ -205,7 +217,14 @@ Vue.use(VueCascaderSelect);
 export default {
   name: "Editor",
   props: {
-    resource: Object
+    resource: {
+      type: Object,
+      default: () => null
+    },
+    single: {
+      type: Boolean,
+      default: () => false
+    },
   },
   components: {
     AceEditor,
@@ -303,17 +322,19 @@ export default {
       this.code = this.resource.solution;
       this.code1 = this.resource.skeleton;
     }
-    if (this.resource.skeleton.length > 0) {
+    if ("skeleton" in this.resource && this.resource.skeleton != null && this.resource.skeleton.length > 0) {
       this.hasSkeleton = true;
     } else {
       this.hasSkeleton = false;
     }
   },
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "getLessonByResourceId",
       "getStatusByResourceId",
       "isStudent", "isTeacher", "isViewer", "isAuthor",
+    ]),
+    ...mapGetters("style",[
       "getSmallTextClass", "getIconBigSize"
     ]),
     getContext() {
@@ -333,8 +354,8 @@ export default {
     }*/
   },
   methods: {
-    ...mapActions(["setProgress"]),
-    ...mapMutations([
+    ...mapActions("main",["setProgress"]),
+    ...mapMutations("main",[
       "editableInput",
       "setTeacherProgress",
       "addContextByEvaluativeId",

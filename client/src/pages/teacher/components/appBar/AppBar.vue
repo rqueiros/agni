@@ -1,9 +1,15 @@
 <template>
   <div id="header">
 
-    <AppBarCourse v-if="resource.includes('Course')" :title="getTitle" :description="getDescription"/>
+    <AppBarHomeVue v-if="resource.includes('Home')" :title="getTitle" :description="getDescription"/>
+
+    <AppBarCourse v-if="resource.includes('Course') || resource.includes('Expositive') || resource.includes('Evaluative') || resource.includes('Question')" :title="getTitle" :description="getDescription"/>
 
     <AppBarContent v-if="resource.includes('Content')" :title="getTitle" :description="getDescription"/>
+
+    <AppBarStudentDashboard v-if="resource.includes('StudentDashboard')" :title="getTitle" :description="getDescription"/>
+
+    <AppBarOccurrence v-if="resource.includes('Occurrence') || (resource.includes('Student') && !resource.includes('StudentDashboard'))" :title="getTitle" :description="getDescription"/>
 
     <!--
     <v-row>
@@ -23,12 +29,11 @@
 </template>
 
 <script>
-import { bus } from "@/main.js";
-
-import {mapMutations, mapActions } from "vuex";
-
 import AppBarContent from "./appBars/AppBarContent.vue";
 import AppBarCourse from "./appBars/AppBarCourse.vue";
+import AppBarStudentDashboard from "./appBars/AppBarStudentDashboard.vue";
+import AppBarOccurrence from "./appBars/AppBarOccurrence.vue";
+import AppBarHomeVue from "./appBars/AppBarHome.vue";
 
 export default {
   name: "Header",
@@ -42,7 +47,10 @@ export default {
 
   components:{
     AppBarContent,
-    AppBarCourse
+    AppBarCourse,
+    AppBarStudentDashboard,
+    AppBarOccurrence,
+    AppBarHomeVue,
   },
 
   data() {
@@ -51,22 +59,24 @@ export default {
 
   computed: {
     getTitle() {
-      if (this.resource.includes("class")) {
-        return "Class Managing";
+      if (this.resource.includes("StudentDashboard")) {
+        return "COURSE SESSIONS";
       } else if (this.resource.includes("Course")) {
-        return "COURSE CREATION";
+        return "COURSE";
+      }  else if (this.resource.includes("Expositive")) {
+        return "EXPOSITIVE";
+      } else if (this.resource.includes("Evaluative")) {
+        return "EVALUATIVE";
+      } else if (this.resource.includes("Question")) {
+        return "QUESTION";
       } else if (this.resource.includes("content")) {
-        return "MANAGE CONTENT";
-      } else if (this.resource.includes("content")) {
-        return "Content Managing";
-      } else if (this.resource.includes("content")) {
-        return "Content Managing";
-      } else if (this.resource.includes("content")) {
-        return "Content Managing";
-      } else if (this.resource.includes("main")) {
-        return "Welcome to the Agni Teacher side";
-      } else if (this.resource.includes("settings")) {
-        return "Settings";
+        return "CONTENT";
+      } else if (this.resource.includes("Occurrence")) {
+        return "COURSE SESSION";
+      } else if (this.resource.includes("Student")) {
+        return "STUDENT";
+      } else if (this.resource.includes("Home")) {
+        return "WELCOME";
       } else if (this.resource.includes("account")) {
         return "Account";
       } else {
@@ -74,49 +84,21 @@ export default {
       }
     },
     getDescription() {
-      if (this.resource.includes("class")) {
-        return "Here you can create and manage the occurrences of your classes";
+      if (this.resource.includes("StudentDashboard")) {
+        return "Create, edit or view your current, draft/past and past course sessions";
       } else if (this.resource.includes("Course")) {
         return "Create, edit or view courses";
       } else if (this.resource.includes("content")) {
         return "Create and manage courses, expositives (pdf,.. content), evaluative (progEx, Quiz) and questions";
-      } else if (this.resource.includes("main")) {
-        return "Here can teachers manage classes and courses for their students";
+      } else if (this.resource.includes("Occurrence")) {
+        return "Create edit or view this course session";
       } else {
         return "Create and manage a course, expositives (pdf,.. content), evaluative (progEx, Quiz) and questions";
       }
     }
   },
 
-  methods: {
-    ...mapMutations(["deleteStructure"]),
-    ...mapActions(["publishCourse", "saveCourse", "fetchEmptyCourse"]),
-    exitOcc() {
-      this.deleteStructure();
-      bus.$emit("changePage", ["class,Class", "class"]);
-    },
-    addCollectionType(item) {
-      switch (item) {
-        case "Course":
-          this.fetchEmptyCourse();
-          bus.$emit("changePage", ["content,Course", "content"]);
-          break;
-        case "Expositive":
-          console.log("todo"); // TODO create Expositive
-          break;
-        case "Evaluative":
-          console.log("todo"); // TODO create Evaluative
-          break;
-        case "Question":
-          console.log("todo"); // TODO create Question
-          break;
-        case "Occurrence":
-          console.log("todo"); // TODO empty occurrence
-          bus.$emit("changePage", ["class,Occurrence", "occurrence"]);
-          break;
-      }
-    }
-  }
+  methods: {}
 };
 </script>
 

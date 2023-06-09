@@ -49,7 +49,7 @@
                   onclick="event.stopPropagation()"
                 />
                 <v-icon
-                  v-if="isAuthor"
+                  v-if="isAuthor && !single"
                   :size="getIconSmallSize"
                   @click="deleteExpo(item.id)"
                 >
@@ -57,13 +57,13 @@
                 </v-icon>
               </div>
             </v-btn>
-            <v-divider :key="i+'b'" vertical></v-divider>
+            <v-divider :key="i+'b'" vertical v-if="!single"></v-divider>
           </template>
         </v-bottom-navigation>
 
         <!--Author-->
         <div
-          v-if="(showExpositives || expositivesNotNull) && isAuthor"
+          v-if="(showExpositives || expositivesNotNull) && isAuthor && !single"
           style="height: 2rem;"
           class="d-flex align-center px-1"
         >
@@ -104,6 +104,10 @@ export default {
     resource: {
       type: Object,
       default: () => {}
+    },
+    single: {
+      type: Boolean,
+      default: () => false
     }
   },
 
@@ -144,15 +148,18 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
-      "getButtonSize",
-      "getIconSmallSize",
-      "getIconMediumSize",
-      "getSmallTextClass",
+    ...mapGetters("main",[
       "isStudent",
       "isTeacher",
       "isAuthor",
       "isViewer"
+    ]),
+    ...mapGetters("style",[
+      "getButtonSize",
+      "getIconSmallSize",
+      "getIconMediumSize",
+      "getSmallTextClass",
+      "getIcon"
     ]),
     getComponent() {
       if (this.resource.expositives.length == 0) {
@@ -160,6 +167,9 @@ export default {
       }
       if (this.index == undefined) {
         this.setIndex(0);
+      }
+      if(!("file" in this.resource.expositives[this.index]) || (this.resource.expositives[this.index].file.data == null && !("name" in this.resource.expositives[this.index].file))){
+        return () => import("../newExpo/NewExpo")
       }
       const componentName =
         this.resource.expositives[this.index].type.charAt(0).toUpperCase() +
@@ -175,7 +185,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations([
+    ...mapMutations("main",[
       "addExpositiveByLessonId",
       "deleteExpositive",
       "editableInput"
@@ -202,21 +212,6 @@ export default {
     setMilestone(index) {
       this.$refs.expo.setMilestone(index);
     },
-    getIcon(type) {
-      let icon = "";
-      switch (type) {
-        case "video":
-          icon = "mdi-video";
-          break;
-        case "pdf":
-          icon = "mdi-file-pdf-box";
-          break;
-        default:
-          icon = "";
-          break;
-      }
-      return icon;
-    }
   }
 };
 </script>

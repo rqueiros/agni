@@ -94,7 +94,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <v-btn elevation="1" class="ml-1" rounded color="error" v-if="isAuthor" v-bind="attrs" v-on="on"
-            @click="deleteDialog = true">
+            @click="remove()">
             <v-icon>mdi-delete</v-icon>
           </v-btn>
         </template>
@@ -104,6 +104,8 @@
     </v-app-bar>
 
     <DeleteDialog :dialog="deleteDialog" :collectionType="collectionType" />
+
+    <YesNoDialog :dialog="yesNoDialog.open" :question="yesNoDialog.question" :buttons="yesNoDialog.buttons" />
 
     <Snackbar :snackbar="snackbar.open" :timeout="snackbar.timeout" :color="snackbar.color" :icon="snackbar.icon"
       :text="snackbar.text" />
@@ -118,13 +120,15 @@ import { mapGetters, mapState, mapMutations, mapActions } from "vuex";
 
 import DeleteDialog from "../../../../../components/gerneral/DeleteDialog.vue";
 import Snackbar from "../../../../../components/gerneral/Snackbar.vue"
+import YesNoDialog from "../../../../../components/gerneral/YesNoDialog.vue";
 
 export default {
-  name: "CourseButtons",
+  name: "AppBarCourse",
 
   components: {
     DeleteDialog,
-    Snackbar
+    Snackbar,
+    YesNoDialog,
   },
 
   props: {
@@ -147,6 +151,7 @@ export default {
     cloneOpen: [],
 
     deleteDialog: false,
+    toDeleteItem: 0,
 
     snackbar: {
       open: false,
@@ -155,11 +160,17 @@ export default {
       color: "",
       timeout: 2000,
     },
+
+    yesNoDialog: {
+      open: false,
+      question: "",
+      buttons: [],
+    },
   }),
 
   watch: {
     changed(newV) {
-      this.saveButton = newV;
+      this.saveButton = !newV;
     },
     cloneSelection(newV, oldV) {
       if (newV.length > oldV.length) {
@@ -179,73 +190,151 @@ export default {
   },
 
   created() {
+    this.saveButton = !this.changed
+
     bus.$on("deleteDialog", payload => {
       this.deleteDialog = payload;
     });
+    bus.$on("yesNoDialog", payload => {
+      this.yesNoDialog.open = payload;
+    });
     bus.$on("deleteDialogResult", async payload => {
       this.deleteDialog = false
-      try {
-        if (payload == "ok") {
-          await this.deleteCourse(this.getCourse[0].id);
-          bus.$emit("changePage", ["content,Content", "content"]);
+      if (this.toDeleteItem != 0) {
+        try {
+          if (payload == "ok") {
+            await this.deleteCourse(this.toDeleteItem);
+            this.toDeleteItem = 0;
+            this.snackbar = this.getErrorSnackbar(this.collectionType + " deleted")
+            bus.$emit("changePage", ["content,Content", "content"]);
+          }
+        } catch (error) {
+          this.toDeleteItem = 0;
+          this.snackbar = this.getErrorSnackbar("Something went wrong deleting the " + this.collectionType)
         }
-      } catch (error) {
-        this.setErrorSnackBar()
       }
     });
     bus.$on("snackbarChange", payload => {
       this.snackbar.open = payload;
     });
+    bus.$on("yesNoDialogResult", async payload => {
+      if (payload == "save") {
+        this.yesNoDialog.open = false;
+        await this.save()
+        if (!this.snackbar.color == "error") {
+          this.deleteStructure();
+          bus.$emit("changePage", ["content,Content", "content"]);
+        }
+      } else if (payload == "dontSave") {
+        this.yesNoDialog.open = false;
+        this.deleteStructure();
+        bus.$emit("changePage", ["content,Content", "content"]);
+      } else if (payload == "cancel") {
+        this.yesNoDialog.open = false;
+      }
+    })
   },
 
   computed: {
-    ...mapState(["changed"]),
-    ...mapGetters(["getPublishedAt", "isAuthor", "isViewer", "getCourse"]),
+    ...mapState("main", { changed: state => state.changed }),
+    ...mapGetters("main", ["getPublishedAt", "isAuthor", "isViewer", "getCourse"]),
+    ...mapGetters("style", ["getErrorSnackbar", "getSuccessSnackbar"]),
     isDraft() {
-      return this.getPublishedAt == null;
+      switch (this.title) {
+        case "COURSE": return this.getPublishedAt("courses") == null;
+        case "EXPOSITIVE": return this.getPublishedAt("expositives") == null;
+        case "EVALUATIVE": return this.getPublishedAt("evaluatives") == null;
+        case "QUESTION": return this.getPublishedAt("questions") == null;
+        default: return false
+      }
     },
   },
 
   methods: {
-    ...mapMutations(["deleteStructure"]),
-    ...mapActions(["publishCourse", "saveCourse", "deleteCourse", "fetchCloneBody", "fetchClone"]),
-
-    setErrorSnackBar(text = "Error") {
-      this.snackbar.text = text
-      this.snackbar.color = "error"
-      this.snackbar.icon = "mdi-alpha-x-circle-outline"
-      this.snackbar.open = true
-    },
-    setSuccessSnackBar(text = "Success") {
-      this.snackbar.text = text
-      this.snackbar.color = "success"
-      this.snackbar.icon = "mdi-check-circle-outline"
-      this.snackbar.open = true
-    },
+    ...mapMutations("main", ["deleteStructure"]),
+    ...mapActions("main", [
+      "saveCourse",
+      "deleteCourse",
+      "fetchCloneBody",
+      "fetchClone",
+      "saveCollectionType",
+      "publishCollectionType",
+    ]),
 
     exit() {
-      this.deleteStructure();
-      bus.$emit("changePage", ["content,Content", "content"]);
+      if (this.saveButton) {
+        this.deleteStructure();
+        bus.$emit("changePage", ["content,Content", "content"]);
+      } else {
+        this.yesNoDialog = {
+          open: true,
+          question: "Do you want to save your changes before exiting?",
+          buttons: [{ name: "DON`T SAVE", msg: "dontSave" }, { name: "SAVE", msg: "save" }]
+        }
+      }
     },
 
     async publish() {
-      try {
-        let res = await this.publishCourse();
-        this.setSuccessSnackBar(res.charAt(0).toUpperCase() + res.slice(1))
-      } catch (error) {
-        console.log(error)
-        this.setErrorSnackBar()
+      if (this.title == "COURSE") {
+        try {
+          let res = await this.publishCollectionType(this.title.toLowerCase() + "s");
+          this.snackbar = this.getSuccessSnackbar(this.collectionType + " " + res.charAt(0).toUpperCase() + res.slice(1))
+        } catch (error) {
+          console.log(error)
+          const pub = this.isDraft ? "publishing" : "unpublishing"
+          this.snackbar = this.getErrorSnackbar("Something went wrong " + pub + " the " + this.collectionType)
+        }
+      } else {
+        try {
+          let res = await this.publishCollectionType(this.title.toLowerCase() + "s");
+          this.snackbar = this.getSuccessSnackbar(this.title.toLowerCase() + " " + res.charAt(0).toUpperCase() + res.slice(1))
+        } catch (error) {
+          console.log(error)
+          const pub = this.isDraft ? "publishing" : "unpublishing"
+          this.snackbar = this.getErrorSnackbar("Something went wrong " + pub + " the " + this.title.toLowerCase())
+        }
       }
+    },
+
+    remove() {
+      this.deleteDialog = true;
+      this.toDeleteItem = this.getCourse[0].id
     },
 
     async save() {
       //TODO check if all fields are declared
-      try {
-        await this.saveCourse()
-        this.setSuccessSnackBar("Saved")
-      } catch (error) {
-        console.log(error)
-        this.setErrorSnackBar()
+      if (this.title == "COURSE") {
+        try {
+          await this.saveCollectionType("courses")
+          this.snackbar = this.getSuccessSnackbar(this.collectionType + " saved")
+        } catch (error) {
+          console.log(error)
+          this.snackbar = this.getErrorSnackbar("Something went wrong saving the " + this.collectionType)
+        }
+      } else if (this.title == "EXPOSITIVE") {
+        try {
+          await this.saveCollectionType("expositives")
+          this.snackbar = this.getSuccessSnackbar("Expositive saved")
+        } catch (error) {
+          console.log(error)
+          this.snackbar = this.getErrorSnackbar("Something went wrong saving the expositive")
+        }
+      } else if (this.title == "EVALUATIVE") {
+        try {
+          await this.saveCollectionType("evaluatives")
+          this.snackbar = this.getSuccessSnackbar("Evaluative saved")
+        } catch (error) {
+          console.log(error)
+          this.snackbar = this.getErrorSnackbar("Something went wrong saving the evaluative")
+        }
+      } else if (this.title == "QUESTION") {
+        try {
+          await this.saveCollectionType("questions")
+          this.snackbar = this.getSuccessSnackbar("Question saved")
+        } catch (error) {
+          console.log(error)
+          this.snackbar = this.getErrorSnackbar("Something went wrong saving the question")
+        }
       }
     },
 
@@ -256,9 +345,9 @@ export default {
       let cloneBody = [];
       try {
         cloneBody = await this.fetchCloneBody(this.getCourse[0].id);
-      } catch (error){
+      } catch (error) {
         console.log(error)
-        this.setErrorSnackBar()
+        this.snackbar = this.getErrorSnackbar("Something went wrong fetching the Clone Menu")
       }
       this.cloneItems = cloneBody;
     },
@@ -310,10 +399,11 @@ export default {
       }
       try {
         await this.fetchClone(cloneData);
+        this.snackbar = this.getSuccessSnackbar(this.collectionType + " copied")
         bus.$emit("changePage", ["content,Course", "content"]);
-      } catch(error){
+      } catch (error) {
         console.log(error)
-        this.setErrorSnackBar("Error copying")
+        this.snackbar = this.getErrorSnackbar("Something went wrong copying the " + this.collectionType)
       }
     },
     findParentofCloneBody(idMenu) {

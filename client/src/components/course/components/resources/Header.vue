@@ -1,6 +1,6 @@
 <template>
   <div id="header" class="text-left">
-    <v-list-item :class="!isMDsmaler ? 'px-4' : isMD ? 'px-2' : 'px-4'" class="align-start">
+    <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" class="align-start">
       <v-list-item-content class="py-2">
         <v-list-item-title :class="getTitleClass">
           <!--Student + Viewer-->
@@ -80,7 +80,7 @@
       </v-list-item-content>
       <v-list-item-avatar tile :size="getAvatarMediumSize" color="red" class="align-self-start">
         <v-icon color="white" :size="getIconBigSize">
-          {{ getIcon(resource) }}
+          {{ resource.contentType=="code" ? getIcon(resource.type) : getIcon(resource.contentType) }}
         </v-icon>
       </v-list-item-avatar>
     </v-list-item>
@@ -158,55 +158,28 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
+    ...mapGetters("main",[
       "getModuleByResourceId",
       "getLessonByResourceId",
+      "isStudent",
+      "isTeacher",
+      "isAuthor",
+      "isViewer",
+    ]),
+    ...mapGetters("style",[
       "getTitleClass",
       "getSubtitleClass",
       "getIconBigSize",
       "getAvatarMediumSize",
       "getSmallTextClass",
-      "isStudent",
-      "isTeacher",
-      "isAuthor",
-      "isViewer",
-      "isMDsmaler",
-      "isMD"
+      "isMDsmaller",
+      "isMD",
+      "getIcon"
     ])
   },
 
   methods: {
-    ...mapMutations(["editableInput"]),
-    getIcon(resource) {
-      let icon;
-      switch (resource.contentType) {
-        case "code":
-          switch (resource.type) {
-            case "blank":
-              icon = "mdi-text-box-outline";
-              break;
-            case "skeleton":
-              icon = "mdi-text-box-plus-outline";
-              break;
-            case "buggy":
-              icon = "mdi-bug";
-              break;
-            default:
-              icon = "mdi-code-json";
-              break;
-          }
-          break;
-        case "quiz":
-          icon = "mdi-head-question-outline";
-          break;
-        case "lesson":
-          icon = "mdi-nodejs";
-          break;
-        default:
-          break;
-      }
-      return icon;
-    }
+    ...mapMutations("main",["editableInput"]),
     /*html_escape(html_str) {
       const lines = html_str.split("\n");
       return lines;

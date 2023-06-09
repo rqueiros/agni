@@ -36,10 +36,11 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          const result = []
-         let data = JSON.parse(ctx.request.body["data"])
+         let data = JSON.parse(JSON.stringify(ctx.request.body.data))
+         console.log(data)
          data = (Array.isArray(data) == false) ? [data] : data
          for (const index of Array(data.length).keys()) {
-            const ctx2 = await prepareCtx(ctx, data[index])
+            const ctx2 = await prepareCtx(ctx, data[index], "create")
             const r = await super.create(ctx2)
             result.push(r)
          }
@@ -51,15 +52,14 @@ module.exports = createCoreController(uid, () => {
 
       async update(ctx) {
          const { id } = ctx.request.params
-         const entity = await strapi.entityService.findOne(uid, id, {
-            ...ctx.query,
-            populate: { author: true },
-         });
-         if (ctx.state.user.id != entity.author.id) {
-            return ctx.badRequest("You are not allowed to update this class")
+         const permission = await verifyAuthor(ctx.state.user.id, id)
+         if (!permission) {
+            return ctx.badRequest("You are not allowed to update this occurrence")
          }
+         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
 
-         const result = await super.update(ctx)
+         const ctx2 = await prepareCtx(ctx, data, "update")
+         const result = await super.update(ctx2)
          return result
       },
 
@@ -79,40 +79,54 @@ module.exports = createCoreController(uid, () => {
    }
 })
 
-async function prepareCtx(ctx, data) {
-   if ("students" in data && data.students != []) {
-      const students = await prepareStudents(ctx, data)
-      data.students = students
+async function prepareCtx(ctx, data, type) {
+   let parm = ctx.params
+   if ("students" in data && data.students != null) {
+      data.students = await prepareStudents(ctx, data.students, type)
    }
+   ctx.params = parm
    data.author = ctx.state.user.id
-   ctx.request.body.data = [JSON.stringify(data)]
+   ctx.request.body = {data:data}
    return ctx
 }
 
-async function prepareStudents(ctx, data) {
-   let students = data.students
-   const createStudents = students.filter(s => typeof (s) == "object")
-   if (createStudents.length > 0) {
-      const ctx2 = ctx
-      ctx2.request.body.data = JSON.stringify(createStudents)
-      let resp = await strapi.controller("api::student.student").create(ctx2)
-      if (!(resp instanceof Array)) {
-         resp = [resp]
+async function prepareStudents(ctx, students, type) {
+   students = ((!typeof (students) == "object")) ? [students] : students
+   let newStudents = []
+   for (let student of students) {
+      if (typeof(student) != "object"){
+         newStudents.push(student)
+      } else {
+         let resp;
+         if (student.new || type == "create") {
+            delete student.new
+            let ctx2 = ctx
+            ctx2.request.body = {data:student}
+            resp = await strapi.controller("api::student.student").create(ctx2)
+         } else if (type=="update"){
+            let id = student.id
+            delete student.id
+            let ctx2 = ctx
+            ctx2.request.body = {data:student}
+            ctx2.request.params = {id:JSON.stringify(id)}
+            ctx2.params = {id:JSON.stringify(id)}
+            resp = await strapi.controller("api::student.student").update(ctx2)
+         }
+         newStudents.push(resp.data.id)
       }
-      resp = resp.map(r => r.data.id)
-      students = myConcate(students, resp)
-      return students
    }
-   return students
+   console.log(newStudents)
+   return newStudents
 }
 
-function myConcate(l1, l2) {
-   let c = 0
-   for (const i of Array(l1.length).keys()) {
-      if (typeof (l1[i]) == "object") {
-         l1[i] = l2[c]
-         c = c + 1
-      }
+
+
+async function verifyAuthor(authorId, contentId) {
+   const entity = await strapi.entityService.findOne(uid, contentId, {
+      populate: { author: true },
+   })
+   if (entity.author != null && entity.author.id == authorId) {
+      return true
    }
-   return l1
+   return false
 }

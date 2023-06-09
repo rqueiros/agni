@@ -14,8 +14,6 @@ export default {
   computed: {
     getComponent() {
       const component = this.resource.split(",");
-      console.log(`./${component[0]}/${component[1]}`)
-
       return () => import(`./${component[0]}/${component[1]}`);
     }
   }

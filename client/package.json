@@ -17,6 +17,7 @@
     "sweetalert2": "^10.14.0",
     "vue": "^2.6.11",
     "vue-cascader-select": "^1.2.0",
+    "vue-core-video-player": "^0.2.0",
     "vue-drag-tree": "^1.1.9",
     "vue-draggable-nested-tree": "^3.0.0-beta3",
     "vue-multi-select": "^4.6.0",

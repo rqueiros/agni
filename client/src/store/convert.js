@@ -1,0 +1,584 @@
+
+const convert = {
+  namespaced: true,
+  state: {},
+  getters: {},
+  mutations: {},
+  actions: {
+    prepareCourseForServer(state, course) {
+      let newCourse = {};
+      let files = [];
+      if (course.new) {
+        newCourse.new = course.new
+      } else {
+        newCourse.id = course.id
+      }
+      if ("goals" in course) {
+        newCourse.goals = [];
+        course.goals.forEach(goal => {
+          if (goal.new) {
+            newCourse.goals.push({ goal: goal.goal });
+          } else {
+            newCourse.goals.push(goal);
+          }
+        })
+      }
+      if ("name" in course) {
+        newCourse.name = course.name
+      }
+      if ("type" in course && course.type != null) {
+        newCourse.type = course.type
+      }
+      if ("children" in course) {
+        newCourse.modules = [];
+        course.children.forEach(module => {
+          if (module.type == "add") {
+            return;
+          }
+          let newModule = {};
+          if (!module.new) {
+            newModule.id = module.id
+          }
+          if ("name" in module) {
+            newModule.name = module.name
+          }
+          if ("condition" in module && module.condition != null) {
+            newModule.condition = {};
+            if (module.condition.new) {
+              newModule.condition = module.condition
+              delete newModule.condition.id
+            } else {
+              newModule.condition = module.condition
+            }
+          }
+          if ("children" in module) {
+            newModule.lessons = [];
+            module.children.forEach(lesson => {
+              if (lesson.type == "add") {
+                return;
+              }
+              let newLesson = {};
+              if (!lesson.new) {
+                newLesson.id = lesson.id
+              }
+              if ("name" in lesson) {
+                newLesson.name = lesson.name
+              }
+              if ("description" in lesson && lesson.description != null) {
+                newLesson.description = lesson.description
+              }
+              if ("condition" in lesson && lesson.condition != null) {
+                newLesson.condition = {};
+                if (lesson.condition.new) {
+                  newLesson.condition = lesson.condition
+                  delete newLesson.condition.id
+                } else {
+                  newLesson.condition = lesson.condition
+                }
+              }
+              if ("expositives" in lesson) {
+                newLesson.expositives = [];
+                lesson.expositives.forEach(async expositive => {
+                  let files2;
+                  let newExpositive;
+                  [newExpositive, files2] = await this.dispatch("convert/prepareExpositiveForServer", expositive)
+                  for (const element of files2) {
+                    files.push(element);
+                  }
+                  newLesson.expositives.push(newExpositive)
+                })
+              }
+              if ("evaluatives" in lesson) {
+                newLesson.evaluatives = [];
+                lesson.evaluatives.forEach(async evaluative => {
+                  let files2;
+                  let newEvaluative;
+                  [newEvaluative, files2] = await this.dispatch("convert/prepareEvaluativeForServer", evaluative)
+                  for (const element of files2) {
+                    files.push(element);
+                  }
+                  newLesson.evaluatives.push(newEvaluative)
+                })
+              }
+              newModule.lessons.push(newLesson);
+            })
+          }
+          newCourse.modules.push(newModule);
+        });
+      }
+      return [newCourse, files];
+    },
+    prepareExpositiveForServer(state, expositive) {
+      let files = []
+      let newExpositive = {};
+      if (expositive.new) {
+        newExpositive.new = true
+      } else {
+        newExpositive.id = expositive.id
+      }
+      if ("name" in expositive) {
+        newExpositive.name = expositive.name
+      }
+      if ("type" in expositive) {
+        if (expositive.type == ""){
+          newExpositive.type = null
+        } else {
+          newExpositive.type = expositive.type
+        }
+      }
+      if ("file" in expositive && "name" in expositive.file) {
+        newExpositive.file = expositive.file.name
+        files.push({type:"file",file:expositive.file})
+      } else if ("file" in expositive && "id" in expositive.file.data){
+        newExpositive.file = expositive.file.data.id
+      }
+      if ("milestones" in expositive) {
+        newExpositive.milestones = [];
+        expositive.milestones.forEach(milestone => {
+          if (milestone.new) {
+            delete milestone.id
+            delete milestone.new
+            newExpositive.milestones.push(milestone)
+          } else {
+            newExpositive.milestones.push(milestone)
+          }
+        })
+      }
+      return [newExpositive, files]
+    },
+    prepareEvaluativeForServer(state, evaluative) {
+      let files = [];
+      let newEvaluative = {};
+      if (evaluative.new) {
+        newEvaluative.new = true;
+      } else {
+        newEvaluative.id = evaluative.id
+      }
+      if ("name" in evaluative) {
+        newEvaluative.name = evaluative.name
+      }
+      newEvaluative.content = [{}];
+      if (evaluative.contentType == "quiz") {
+        newEvaluative.content[0].__component = "base.quiz";
+        if ("questions" in evaluative) {
+          newEvaluative.content[0].questions = [];
+          evaluative.questions.forEach(async question => {
+            let newQuestion;
+            let files2;
+            [newQuestion, files2] = await this.dispatch("convert/prepareQuestionForServer", question)
+            for (const element of files2) {
+              files.push(element);
+            }
+            newEvaluative.content[0].questions.push(newQuestion)
+          })
+        }
+      } else {
+        newEvaluative.content[0].__component = "base.programming-exercise";
+        if ("type" in evaluative) {
+          newEvaluative.content[0].type = evaluative.type
+        }
+        if ("language" in evaluative) {
+          newEvaluative.content[0].language = evaluative.language
+        }
+        if ("statement" in evaluative) {
+          newEvaluative.content[0].statement = evaluative.statement
+        }
+        if ("skeleton" in evaluative) {
+          newEvaluative.content[0].skeleton = evaluative.skeleton
+        }
+        if ("solution" in evaluative) {
+          newEvaluative.content[0].solution = evaluative.solution
+        }
+        if ("context" in evaluative) {
+          newEvaluative.content[0].context = [];
+          evaluative.context.forEach(context => {
+            if (context.new) {
+              delete context.new
+              delete context.id
+              newEvaluative.content[0].context.push(context)
+            } else {
+              newEvaluative.content[0].context.push(context)
+            }
+          })
+        }
+        if ("tests" in evaluative) {
+          newEvaluative.content[0].tests = [];
+          evaluative.tests.forEach(test => {
+            if(test.subtype ==""){
+              test.subtype = null
+            }
+            if(test.type == ""){
+              test.type = null
+            }
+            if (test.new) {
+              delete test.new
+              delete test.id
+              newEvaluative.content[0].tests.push(test)
+            } else {
+              newEvaluative.content[0].tests.push(test)
+            }
+          })
+        }
+      }
+      return [newEvaluative, files]
+    },
+    prepareQuestionForServer(state, question) {
+      let newQuestion = {};
+      let files = [];
+      if (question.new) {
+        newQuestion.new = true;
+      } else {
+        newQuestion.id = question.id;
+      }
+      if ("correctAnswer" in question) {
+        newQuestion.correctAnswer = JSON.stringify(question.correctAnswer);
+      }
+      if ("question" in question) {
+        newQuestion.question = question.question;
+      }
+      if ("image" in question && "name" in question.image) {
+        newQuestion.image = question.image.name
+        files.push({type:"image",file:question.image})
+      } else if ("image" in question && "id" in question.image.data){
+        newQuestion.image = question.image.data.id
+      }
+      if ("answers" in question) {
+        newQuestion.answers = [];
+        question.answers.forEach(answer => {
+          if (answer.new) {
+            delete answer.id
+            delete answer.new
+            newQuestion.answers.push(answer)
+          } else {
+            newQuestion.answers.push(answer)
+          }
+        })
+      }
+      return [newQuestion, files]
+    },
+    prepareOccForServer(state, occ) {
+      if (occ.new) {
+        delete occ.id
+      }
+      occ.classes.forEach(classe => {
+        if (classe.new) {
+          delete classe.id
+        }
+        classe.students.forEach(student => {
+          if (student.new) {
+            delete student.id
+          }
+        })
+      })
+      return [occ, []]
+    },
+
+    prepareCloneCourse(state, resp) {
+      let course = resp;
+      let count = 1;
+
+      course.idMenu = count;
+      count++;
+      course.attributes.modules.forEach(module => {
+        module.name = "M. " + module.name;
+        module.idMenu = count;
+        count++;
+        module.lessons.forEach(lesson => {
+          lesson.name = "L. " + lesson.name;
+          lesson.idMenu = count;
+          count++;
+          lesson.children = [];
+          lesson.expositives = lesson.expositives.data;
+          for (let i = 0; i < lesson.expositives.length; i++) {
+            const le = lesson.expositives[i].attributes;
+            le.name = "Exp. " + le.name;
+            le.id = lesson.expositives[i].id;
+            le.idMenu = count;
+            count++;
+            lesson.children.push(le);
+          }
+          lesson.evaluatives = lesson.evaluatives.data;
+          for (let i = 0; i < lesson.evaluatives.length; i++) {
+            const le = lesson.evaluatives[i].attributes;
+            le.name = "Exe. " + le.name;
+            le.id = lesson.evaluatives[i].id;
+            le.idMenu = count;
+            count++;
+            lesson.children.push(le);
+          }
+          delete lesson.expositives;
+          delete lesson.evaluatives;
+        });
+        module.children = module.lessons;
+        delete module.lessons;
+      });
+      Object.keys(course.attributes).forEach(key => {
+        if (key == "modules") {
+          course.children = course.attributes[key];
+        } else {
+          course[key] = course.attributes[key];
+        }
+      });
+      delete course.attributes;
+      return course;
+    },
+    async prepareCourse(state, resp) {
+      let course = resp;
+
+      let moduleCount = 1;
+      let lessonCount = 1;
+      let count = 1;
+
+      course.idMenu = count;
+      count++;
+
+      course.attributes.modules.forEach(module => {
+        module.idMenu = count;
+        count++;
+        module.lessons.forEach(async lesson => {
+          lesson.idMenu = count;
+          count++;
+          lesson.expositives = lesson.expositives.data;
+          for (let i = 0; i < lesson.expositives.length; i++) {
+            lesson.expositives[i] = await this.dispatch("convert/prepareExpositive", [lesson.expositives[i], false])
+          }
+          lesson.evaluatives = lesson.evaluatives.data;
+          for (let i = 0; i < lesson.evaluatives.length; i++) {
+            lesson.evaluatives[i] = await this.dispatch("convert/prepareEvaluative", lesson.evaluatives[i])
+          }
+          lesson.contentType = "lesson";
+          lesson.internalId = "L" + lessonCount;
+          lessonCount++;
+        });
+        module.children = module.lessons;
+        module.contentType = "module";
+        module.internalId = "M" + moduleCount;
+        moduleCount++;
+        delete module.lessons;
+      });
+      Object.keys(course.attributes).forEach(key => {
+        if (key == "modules") {
+          course.children = course.attributes[key];
+        } else {
+          course[key] = course.attributes[key];
+        }
+      });
+      course.contentType = "course";
+      delete course.attributes;
+      this.commit("main/setMaxId", count)
+      return course;
+    },
+    prepareExpositive(state, [resp, isCopy]) {
+      const expositive = resp;
+      Object.keys(expositive.attributes).forEach(key => {
+        expositive[key] = expositive.attributes[key];
+      });
+      expositive.contentType = expositive.type;
+      delete expositive.attributes;
+      if(isCopy && "milestones" in expositive){
+        expositive.milestones.forEach(milestone => {
+          delete milestone.id
+        })
+      }
+      return expositive;
+    },
+    prepareEvaluative(state, resp) {
+      const evaluative = resp;
+      Object.keys(evaluative.attributes).forEach(key => {
+        evaluative[key] = evaluative.attributes[key];
+      });
+      if (evaluative.content) {
+        Object.keys(evaluative.content[0]).forEach(async key => {
+          if (key == "__component") {
+            if (evaluative.content[0]["__component"] == "base.quiz") {
+              evaluative.type = "quiz";
+              evaluative.contentType = "quiz";
+            } else {
+              evaluative.contentType = "code";
+            }
+          } else if (key == "questions") {
+            evaluative.questions = evaluative.content[0]["questions"].data;
+            for (var i = 0; i < evaluative.questions.length; i++) {
+              evaluative.questions[i] = await this.dispatch("convert/prepareQuestion", [evaluative.questions[i],false])
+            }
+          } else if (key != "id") {
+            evaluative[key] = evaluative.content[0][key];
+          }
+        });
+      }
+      delete evaluative.content;
+      delete evaluative.attributes;
+      return evaluative;
+    },
+    prepareQuestion(state, [resp, isCopy]) {
+      const question = resp;
+      Object.keys(question.attributes).forEach(key2 => {
+        question[key2] = question.attributes[key2];
+      });
+      delete question.attributes;
+      question.correctAnswer = JSON.parse(question.correctAnswer)
+      if(isCopy && "answers" in question){
+        question.answers.forEach(answer => {
+          delete answer.id
+        })
+      }
+      return question;
+    },
+
+    cleanCourseData({ rootGetters }, resp) {
+      let newResp = [];
+      resp.forEach(course => {
+        let newCourse = {};
+        newCourse.id = course.id;
+        newCourse.name = course.attributes.name;
+        newCourse.type = course.attributes.type;
+        newCourse.state =
+          course.attributes.publishedAt == null ? "Draft" : "Published";
+        if (course.attributes.author.data != null) {
+          newCourse.my = rootGetters["main/getUserEmail"] ==
+            course.attributes.author.data.attributes.email;
+        } else {
+          newCourse.my = false;
+        }
+        newResp.push(newCourse);
+      });
+      return newResp;
+    },
+    cleanExpositiveData({ rootGetters }, resp) {
+      let newResp = [];
+      resp.forEach(expositive => {
+        let newExpositive = {};
+        newExpositive.id = expositive.id;
+        newExpositive.name = expositive.attributes.name;
+        newExpositive.type = expositive.attributes.type;
+        newExpositive.my =
+          rootGetters["main/getUserEmail"] ==
+          expositive.attributes.author.data.attributes.email;
+        newExpositive.state =
+          expositive.attributes.publishedAt == null ? "Draft" : "Published";
+        newResp.push(newExpositive);
+      });
+      return newResp;
+    },
+    cleanEvaluativeData({ rootGetters }, resp) {
+      let newResp = [];
+      resp.forEach(evaluative => {
+        let newEvaluative = {};
+        newEvaluative.id = evaluative.id;
+        newEvaluative.name = evaluative.attributes.name;
+        newEvaluative.type = evaluative.attributes.content[0].__component.split(
+          "."
+        )[1];
+        newEvaluative.my =
+          rootGetters["main/getUserEmail"] ==
+          evaluative.attributes.author.data.attributes.email;
+        newEvaluative.state =
+          evaluative.attributes.publishedAt == null ? "Draft" : "Published";
+        newResp.push(newEvaluative);
+      });
+      return newResp;
+    },
+    cleanQuestionData({ rootGetters }, resp) {
+      let newResp = [];
+      resp.forEach(question => {
+        let newQuestion = {};
+        newQuestion.id = question.id;
+        newQuestion.question = question.attributes.question;
+        newQuestion.my =
+          rootGetters["main/getUserEmail"] ==
+          question.attributes.author.data.attributes.email;
+        newQuestion.state =
+          question.attributes.publishedAt == null ? "Draft" : "Published";
+        newResp.push(newQuestion);
+      });
+      return newResp;
+    },
+    cleanOccurrenceData(state, resp) {
+      let occ = { currentOcc: [], draftOcc: [], pastOcc: [] };
+      let date = new Date();
+      resp.forEach(occurrence => {
+        let newOcc = {};
+        newOcc.id = occurrence.id;
+        newOcc.year = occurrence.attributes.year;
+        newOcc.startDate = occurrence.attributes.startDate;
+        newOcc.endDate = occurrence.attributes.endDate;
+        newOcc.course = {};
+        if (occurrence.attributes.courses.data.length > 0) {
+          newOcc.course.name =
+            occurrence.attributes.courses.data[0].attributes.name;
+          newOcc.course.type =
+            occurrence.attributes.courses.data[0].attributes.type;
+          newOcc.classes = occurrence.attributes.classes.data.map(
+            c => c.attributes
+          );
+        }
+        let startDate =
+          newOcc.startDate == null ? null : new Date(newOcc.startDate);
+        let endDate = newOcc.endDate == null ? null : new Date(newOcc.endDate);
+        if (date > endDate && endDate != null) {
+          occ.pastOcc.push(newOcc);
+        } else if (
+          startDate < date &&
+          date < endDate &&
+          startDate != null &&
+          endDate != null
+        ) {
+          occ.currentOcc.push(newOcc);
+        } else {
+          occ.draftOcc.push(newOcc);
+        }
+      });
+      return occ;
+    },
+
+    prepareOccurrence(state, resp) {
+      let occ = resp.attributes;
+      occ.id = resp.id;
+
+      occ.classes.data.forEach(c => {
+        c.attributes.students.data.forEach(student => {
+          student.attributes.statuses.data.forEach(status => {
+            Object.keys(status.attributes).forEach(key => {
+              status[key] = status.attributes[key];
+            });
+            delete status.attributes;
+          });
+          Object.keys(student.attributes).forEach(key => {
+            student[key] = student.attributes[key];
+          });
+          student.statuses = student.statuses.data;
+          delete student.attributes;
+        });
+        Object.keys(c.attributes).forEach(key => {
+          c[key] = c.attributes[key];
+        });
+        c.students = c.students.data;
+        delete c.attributes;
+      });
+
+      occ.classes = occ.classes.data;
+      delete occ.attributes;
+
+      occ.courses.data.forEach(course => {
+        Object.keys(course.attributes).forEach(key => {
+          course[key] = course.attributes[key];
+        });
+        delete course.attributes;
+      });
+      occ.courses = occ.courses.data[0];
+      return occ;
+    } /*
+      prepareClass(resp){
+    
+      },
+      prepareStudent(resp){
+    
+      },
+      prepareStatuses(resp){
+    
+      }*/
+  },
+}
+
+
+export default convert

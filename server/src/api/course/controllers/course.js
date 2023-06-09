@@ -79,7 +79,9 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          let result = []
-         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
+
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
+
          // create draft
          if (data.publishedAt == null) {
             data.author = ctx.state.user.id
@@ -119,7 +121,8 @@ module.exports = createCoreController(uid, () => {
          if (!permission) {
             return ctx.unauthorized(`No permission to update this content`);
          }
-         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
+
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
 
          // check for wrong files
          let images = []
@@ -133,16 +136,6 @@ module.exports = createCoreController(uid, () => {
             } else if (check == "file") {
                return ctx.badRequest(error.fileError.message, error.fileError.details)
             }
-         }
-
-         if(data.publishedAt && data.publishedAt != null){
-            //const ctx2 = ctx
-            //ctx2.request.body.data.data = JSON.stringify({publishedAt:data.publishedAt})
-            await super.update(ctx)
-            delete data.publishedAt
-            ctx.request.body.data.data = JSON.stringify(data)
-            const result2 = await super.update(ctx)
-            return result2
          }
 
          // update content
@@ -190,7 +183,7 @@ async function prepareCtx(ctx, images, files, data, type) {
    }
    data.author = ctx.state.user.id
    ctx.params = parm
-   ctx.request.body = {data:data}
+   ctx.request.body = {data:JSON.stringify(data)}
    return ctx
 }
 
@@ -262,13 +255,13 @@ function prepareEvaluativeCtx(ctx, images, data) {
    } else if (!(images instanceof Array)) {
       images = [images]
    }
-   const imageNames = !(data.content[0].__component == "base.quiz") ? [] : data.content[0].questions.filter(q => typeof (q) == "object").filter(q => "image" in q).map(q => q.image)
+   const imageNames = !(data.content[0].__component == "base.quiz") ? [] : data.content[0].questions.filter(q => typeof (q) == "object").filter(q => "image" in q).map(q => q.image).filter(n=> typeof(n)=="string")
    images = images.filter(i => imageNames.includes(i.name))
    if ("files" in ctx.request){
       ctx.request.files['files.image'] = images
       ctx.request.files['files.file'] = []
    }
-   ctx.request.body = {data:data}
+   ctx.request.body = {data:JSON.stringify(data)}
    return ctx
 }
 
@@ -279,13 +272,13 @@ function prepareExpositiveCtx(ctx, files, data) {
    } else if (!(files instanceof Array)) {
       files = [files]
    }
-   const fileName = ("file" in data) ? data.file : ""
+   const fileName = ("file" in data && typeof(data.file)=="string") ? data.file : ""
    files = files.filter(f => fileName.includes(f.name))
    if("files" in ctx2.request){
       ctx2.request.files['files.file'] = files
       ctx2.request.files['files.image'] = []
    }
-   ctx2.request.body = {data:data}
+   ctx2.request.body = {data:JSON.stringify(data)}
    return ctx2
 }
 
@@ -303,8 +296,8 @@ function checkImagesFiles(images, files, data) {
    data = (!(data instanceof Array)) ? [data] : data
    files = files.map(f => f.name)
    images = images.map(i => i.name)
-   const dataFiles = data.filter(d => "modules" in d).flatMap(d => d.modules.filter(m => "lessons" in m).flatMap(m => m.lessons.filter(l => "expositives" in l).flatMap(l => l.expositives.filter(e => typeof (e) == "object").filter(e => "file" in e).map(e => e.file))))
-   const dataImages = data.filter(d => "modules" in d).flatMap(d => d.modules.filter(m => "lessons" in m).flatMap(m => m.lessons.filter(l => "evaluatives" in l).flatMap(l => l.evaluatives.filter(e => typeof (e) == "object").filter(ev => ev.content[0]["__component"] == "base.quiz").flatMap(ev => ev.content[0].questions.filter(q => typeof (q) == "object").filter(q => "image" in q).map(q => q.image)))))
+   const dataFiles = data.filter(d => "modules" in d).flatMap(d => d.modules.filter(m => "lessons" in m).flatMap(m => m.lessons.filter(l => "expositives" in l).flatMap(l => l.expositives.filter(e => typeof (e) == "object").filter(e => "file" in e).map(e => e.file)))).filter(n => typeof(n)=="string")
+   const dataImages = data.filter(d => "modules" in d).flatMap(d => d.modules.filter(m => "lessons" in m).flatMap(m => m.lessons.filter(l => "evaluatives" in l).flatMap(l => l.evaluatives.filter(e => typeof (e) == "object").filter(ev => ev.content[0]["__component"] == "base.quiz").flatMap(ev => ev.content[0].questions.filter(q => typeof (q) == "object").filter(q => "image" in q).map(q => q.image))))).filter(n => typeof(n)=="string")
    const verifyListIm = [...images.map(i => dataImages.includes(i)), ...dataImages.map(d => images.includes(d))]
    const verifyListFi = [...files.map(i => dataFiles.includes(i)), ...dataFiles.map(d => files.includes(d))]
    if (verifyListIm.includes(false)) {
