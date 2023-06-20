@@ -222,13 +222,13 @@ export default {
         this.yesNoDialog.open = false;
         await this.save()
         if (!this.snackbar.color == "error") {
+          await bus.$emit("changePage", ["content,Content", "content"]);
           this.deleteStructure();
-          bus.$emit("changePage", ["content,Content", "content"]);
         }
       } else if (payload == "dontSave") {
         this.yesNoDialog.open = false;
+        await bus.$emit("changePage", ["content,Content", "content"]);
         this.deleteStructure();
-        bus.$emit("changePage", ["content,Content", "content"]);
       } else if (payload == "cancel") {
         this.yesNoDialog.open = false;
       }
@@ -261,10 +261,10 @@ export default {
       "publishCollectionType",
     ]),
 
-    exit() {
+    async exit() {
       if (this.saveButton) {
+        await bus.$emit("changePage", ["content,Content", "content"]);
         this.deleteStructure();
-        bus.$emit("changePage", ["content,Content", "content"]);
       } else {
         this.yesNoDialog = {
           open: true,

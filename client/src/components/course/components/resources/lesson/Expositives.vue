@@ -1,109 +1,181 @@
 <template>
   <div id="expositives" v-if="expositivesNotNull || isAuthor">
-    <v-card
-      outlined
-      class="d-flex rounded-0"
+    <v-card 
+      :flat="!expositivesNotNull && isAuthor"
+      class="d-flex rounded-0 align-center" 
       style="border-left: 0; border-right: 0;"
     >
       <!--Author-->
-      <v-btn
-        v-if="!expositivesNotNull && isAuthor && !showExpositives"
-        small
-        width="100%"
-        class="course_button"
-        @click="showExpositives = true"
+      <v-menu 
+        offset-y 
+        v-if="!expositivesNotNull && isAuthor"
       >
-        <v-icon>mdi-plus</v-icon>Expositives
-      </v-btn>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn 
+            v-bind="attrs" 
+            v-on="on" 
+            :small="getButtonMediumSize=='small'" 
+            :medium="getButtonMediumSize=='medium'"
+            height="36px"
+            width="100%" 
+          >
+            <v-icon>mdi-plus</v-icon>Add Expositive
+          </v-btn>
+        </template>
+        <v-list dense>
+          <v-list-item
+            v-for="(item, index) in addExpositiveMenu" 
+            :key="index" 
+            class="text-center"
+            :class="getSmallTextClass"
+            @click="addExpositive(item.title)"
+          >
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
 
-      <div class="d-flex" style="width:100%">
-        <v-bottom-navigation
-          v-if="showExpositives || expositivesNotNull"
-          grow
-          id="navBar"
-          v-model="index"
-          class="elevation-0"
-          height="2rem"
-        >
-          <template v-for="(item, i) in resource.expositives">
-            <v-btn :key="i" :class="getSmallTextClass + ' px-2'">
-              <div class="d-flex align-center">
-                <!--Student + Viewer-->
-                <v-icon v-if="isStudent || isViewer" :size="getIconMediumSize">
-                  {{ getIcon(item.type) }}
-                </v-icon>
-                <span v-if="isStudent || isViewer" class="pl-1">
-                  {{ item.name }}
+        <v-layout column>
+          <v-app-bar flat color="white" class="pa-0" height="40">
+            <v-tabs
+              style="width:calc(100% - 44px)"
+              center-active
+              v-model="tab"
+              color="error"
+              grow
+              show-arrows
+              hide-slider
+            >
+              <v-tab 
+                v-for="(item, i) in resource.expositives" 
+                :key="i" 
+                style="width:100px"
+                :class="getSmallTextClass"
+              >
+                <!--Student & Viewer-->
+                <span v-if="isStudent || isViewer">
+                  <v-icon 
+                    v-if="isStudent || isViewer" 
+                    :size="getIconMediumSize"
+                  >
+                    {{ getIcon(item.type) }}
+                  </v-icon>
+                  {{item.name}}
                 </span>
 
                 <!--Author-->
-                <Editable
-                  v-if="isAuthor"
-                  :type="'expositive'"
-                  :value="item.name"
-                  :id="item.id"
-                  class="pr-1"
-                  placeholder="Expositive name"
-                  :field="'name'"
-                  @input="editableInput"
-                  onclick="event.stopPropagation()"
-                />
-                <v-icon
-                  v-if="isAuthor && !single"
-                  :size="getIconSmallSize"
-                  @click="deleteExpo(item.id)"
-                >
-                  mdi-delete
-                </v-icon>
-              </div>
-            </v-btn>
-            <v-divider :key="i+'b'" vertical v-if="!single"></v-divider>
-          </template>
-        </v-bottom-navigation>
+                <span v-if="isAuthor" class="d-flex align-center">
+                  <Editable 
+                    v-if="isAuthor" 
+                    :type="'expositive'" 
+                    :value="item.name" 
+                    :id="item.id" 
+                    class="pr-1"
+                    placeholder="Expositive name" 
+                    :field="'name'" 
+                    @input="editableInput"
+                    onclick="event.stopPropagation()" />
+                  <v-btn 
+                    icon 
+                    :x-small="getButtonSmallSize=='x-small'"
+                    :small="getButtonSmallSize=='small'"
+                  >
+                    <v-icon 
+                    v-if="isAuthor && !single" 
+                    :size="getIconSmallSize" 
+                    @click="deleteExpositive(item.id)">
+                      mdi-delete
+                    </v-icon>
+                  </v-btn>
+                </span>
+              </v-tab>
+            </v-tabs>
 
-        <!--Author-->
-        <div
-          v-if="(showExpositives || expositivesNotNull) && isAuthor && !single"
-          style="height: 2rem;"
-          class="d-flex align-center px-1"
-        >
-          <v-btn icon @click="addExpositiveByLessonId(resource.id)" small>
-            <v-icon :size="getIconMediumSize"> mdi-plus </v-icon>
-          </v-btn>
-          <v-btn icon @click="removeExpositives" small>
-            <v-icon :size="getIconMediumSize"> mdi-delete </v-icon>
-          </v-btn>
-        </div>
-      </div>
+            <!--Author-->
+            <v-menu 
+              offset-y 
+              auto 
+              v-if="(expositivesNotNull) && isAuthor && !single"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn 
+                  min-width="0"
+                  width="36px"
+                  height="36px"
+                  class="ma-1"
+                  v-bind="attrs" 
+                  v-on="on" 
+                  :small="getButtonMediumSize=='small'" 
+                  :medium="getButtonMediumSize=='medium'"
+                >
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </template>
+              <v-list dense>
+                <v-list-item 
+                  class="text-center"
+                  :class="getSmallTextClass"
+                  v-for="(item, index) in addExpositiveMenu" 
+                  :key="index" 
+                  @click="addExpositive(item.title)"
+                >
+                  <v-list-item-title>
+                    {{ item.title }}
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </v-app-bar>
+
+          <v-tabs-items v-model="tab">
+            <v-tab-item
+              v-for="(item, i) in resource.expositives"
+              :key="i"
+            >
+              <Pdf v-if="item.type=='pdf'" :resource="item" :ref="'expo'+i"/>
+              <Video v-else-if="item.type=='video'" :resource="item" :ref="'expo'+i" />
+              <NewExpo v-else :resource="item" />
+            </v-tab-item>
+          </v-tabs-items>
+        </v-layout>      
     </v-card>
 
-    <component
-      v-if="expositivesNotNull"
-      :is="getComponent"
-      :resource="resource.expositives[this.index]"
-      ref="expo"
-    />
+    <SelectDialog 
+    :dialog="dialog" 
+    :type="'expositives'" 
+    :already="resource.expositives.map(e => e.id)"
+    @addExistingexpositives="addExistingExpo" 
+    @closeSelectDialog="closeSelectDialog"/>
 
   </div>
 </template>
 
+
 <script>
 import { bus } from "@/main.js";
-import { mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters, mapMutations } from "vuex";
 
 import Editable from "../../../../gerneral/Editable.vue";
+import SelectDialog from "../../../../gerneral/SelectDialog.vue";
+import Pdf from "../pdf/Pdf.vue"
+import Video from "../video/Video.vue"
+import NewExpo from "../newExpo/NewExpo.vue"
 
 export default {
   name: "Expositives",
 
   components: {
-    Editable
+    Editable,
+    SelectDialog,
+    Pdf,
+    Video,
+    NewExpo
   },
 
   props: {
     resource: {
       type: Object,
-      default: () => {}
+      default: () => { }
     },
     single: {
       type: Boolean,
@@ -113,121 +185,86 @@ export default {
 
   data() {
     return {
-      expositives: [],
-      index: 0,
-      showExpositives: false,
+      tab: null,
+      dialog:false,
+      addExpositiveMenu: [
+        { title: "NEW" }, 
+        { title: "SELECT" }
+      ],
     };
   },
 
   watch: {
-    index(newV) {
+    tab(newV) {
       bus.$emit("setIndex", newV);
     }
   },
 
-  created() {
-    if (
-      !("expositives" in this.resource) ||
-      this.resource.expositives.length < 1
-    ) {
-      this.expositives = [];
-    } else {
-      this.showExpositives = true;
-      let i = 1;
-      this.resource.expositives.forEach(expositive => {
-        this.expositives.push({
-          id: i,
-          rid: expositive.id,
-          name: expositive.name,
-          type: expositive.type,
-          action: ""
-        });
-        i++;
-      });
-    }
-  },
+  created() {},
 
   computed: {
-    ...mapGetters("main",[
+    ...mapGetters("main", [
       "isStudent",
       "isTeacher",
       "isAuthor",
-      "isViewer"
+      "isViewer",
     ]),
-    ...mapGetters("style",[
-      "getButtonSize",
+    ...mapGetters("style", [
       "getIconSmallSize",
       "getIconMediumSize",
       "getSmallTextClass",
-      "getIcon"
+      "getIcon",
+      "getButtonMediumSize",
+      "getButtonSmallSize"
     ]),
-    getComponent() {
-      if (this.resource.expositives.length == 0) {
-        return null;
-      }
-      if (this.index == undefined) {
-        this.setIndex(0);
-      }
-      if(!("file" in this.resource.expositives[this.index]) || (this.resource.expositives[this.index].file.data == null && !("name" in this.resource.expositives[this.index].file))){
-        return () => import("../newExpo/NewExpo")
-      }
-      const componentName =
-        this.resource.expositives[this.index].type.charAt(0).toUpperCase() +
-        this.resource.expositives[this.index].type.slice(1);
-      return () =>
-        import(
-          `../${this.resource.expositives[this.index].type}/${componentName}`
-        );
-    },
     expositivesNotNull() {
       return this.resource.expositives.length > 0;
     }
   },
 
   methods: {
-    ...mapMutations("main",[
+    ...mapMutations("main", [
       "addExpositiveByLessonId",
       "deleteExpositive",
       "editableInput"
     ]),
-    deleteExpo(id) {
-      if (
-        this.index == this.resource.expositives.findIndex(e => e.id == id)
-      ) {
-        if (this.index > 0) {
-          this.setIndex(this.index - 1);
-        }
-      }
-      this.deleteExpositive(id);
-    },
-    setIndex(i) {
-      this.index = i;
-    },
-    removeExpositives() {
-      this.index = 0;
-      this.resource.expositives = [];
-      this.showExpositives = false;
-      //TODO check if all expositves in store are deleted
-    },
+    ...mapActions("main", [
+      "addExistingExpositives"
+    ]),
     setMilestone(index) {
-      this.$refs.expo.setMilestone(index);
+      this.$refs["expo"+this.tab][0].setMilestone(index);
+    },
+    addExpositive(title) {
+      if (title == "NEW") {
+        this.addExpositiveByLessonId(this.resource.id)
+      } else if (title == "SELECT") {
+        this.dialog=true;
+      }
+    },
+    async addExistingExpo(ids){
+      await this.addExistingExpositives([this.resource.id, ids])
+      this.closeSelectDialog()
+    },
+    closeSelectDialog(){
+      this.dialog=false
     },
   }
 };
 </script>
 
+
 <style scoped>
-#navBar >>> .v-btn__content {
-  flex: auto;
+/* Tab bar styles */
+.theme--light.v-tabs .v-tab--active:hover::before, .theme--light.v-tabs .v-tab--active::before{
+  opacity:0.12;
 }
-
-.v-item-group.v-bottom-navigation .v-btn {
-  max-width: none !important;
-  min-width: 0 !important;
-  font-weight: none !important;
+#expositives>>>.v-toolbar__content, .v-toolbar__extension{
+  padding:0;
 }
-
-.v-item-group.v-bottom-navigation .v-btn.v-btn--active:not(:hover):before {
-  opacity: 0.18 !important;
+#expositives>>>.v-toolbar__content > .v-tabs:first-child, .v-toolbar__extension > .v-tabs:first-child{
+  margin:0;
+}
+#expositives>>>.v-slide-group__next, .v-slide-group__prev{
+  min-width: 24px;
 }
 </style>

@@ -12,12 +12,16 @@
         </v-list-item-avatar>
       </v-list-item>
 
-      <v-img :src="pdfData" class="my-2"
-        v-if="'image' in question && (question.image.data != null || 'name' in question.image)">
-      </v-img>
+      <div v-if="'image' in question && (question.image.data != null || 'name' in question.image)" class="d-flex flex-row-reverse mt-2">
+        <v-badge left overlap color="black" class="pr-0" @click.native="deleteImage" icon="mdi-alpha-x" >
+          <span class="mr-4"></span>
+        </v-badge>
+        <v-img :src="pdfData" class="my-2 mr-n4">
+        </v-img>
+      </div>
 
       <div v-else>
-        <v-file-input label="File input" v-model="file" prepend-icon="" outlined></v-file-input>
+        <v-file-input label="File input" v-model="file" prepend-icon="" outlined height="150"></v-file-input>
       </div>
     </v-card>
   </div>
@@ -54,7 +58,7 @@ export default {
       this.editableInput(obj);
       this.something()
     },
-    question(){
+    question() {
       this.something()
     }
   },
@@ -87,6 +91,17 @@ export default {
           }
         }
       }
+    },
+    deleteImage(){
+      const obj = {
+        id: this.question.id,
+        value: {data:null},
+        field: "image",
+        type: "question"
+      };
+      this.file=null;
+      this.editableInput(obj);
+      this.something()
     }
   }
 

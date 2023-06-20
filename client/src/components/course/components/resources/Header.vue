@@ -1,6 +1,9 @@
 <template>
   <div id="header" class="text-left">
-    <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" class="align-start">
+    <v-list-item 
+      :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" 
+      class="align-start"
+    >
       <v-list-item-content class="py-2">
         <v-list-item-title :class="getTitleClass">
           <!--Student + Viewer-->
@@ -13,7 +16,7 @@
               getModuleByResourceId(resource.id, resource.contentType)
                 .name
             }}
-          </div>
+          </div> 
           <!--Author-->
           <Editable
             v-if="isAuthor"
@@ -37,7 +40,8 @@
           :class="getSubtitleClass"
         >
           <!--Student + Viewer-->
-          <div v-if="isStudent || isViewer">
+          <div v-if="isStudent || isViewer" class="red--text text--lighten-1">
+            {{ getLessonByResourceId(resource.id).internalId }}.
             {{ getLessonByResourceId(resource.id).name }}
           </div>
           <!--Author-->
@@ -54,7 +58,11 @@
 
         <v-list-item-subtitle :class="getSubtitleClass">
           <!--Student + Viewer-->
-          <div v-if="isStudent || isViewer">
+          <div v-if="(isStudent || isViewer) && resource.contentType=='lesson'">
+            {{ resource.internalId }}.
+            {{ resource.name }}
+          </div>
+          <div v-if="(isStudent || isViewer) && resource.contentType!='lesson'">
             {{ resource.name }}
           </div>
           <!--Author-->
@@ -78,9 +86,15 @@
           />
         </v-list-item-subtitle>
       </v-list-item-content>
-      <v-list-item-avatar tile :size="getAvatarMediumSize" color="red" class="align-self-start">
+      <v-list-item-avatar 
+        tile 
+        :size="getAvatarMediumSize" 
+        color="red" 
+        class="align-self-start"
+      >
         <v-icon color="white" :size="getIconBigSize">
-          {{ resource.contentType=="code" ? getIcon(resource.type) : getIcon(resource.contentType) }}
+          {{ resource.contentType=="code" ? 
+          getIcon(resource.type) : getIcon(resource.contentType) }}
         </v-icon>
       </v-list-item-avatar>
     </v-list-item>
@@ -88,13 +102,15 @@
     <!--Student + Viewer-->
     <v-card-text
       v-if="resource.description && (isStudent || isViewer)"
-      :class="getSmallTextClass"
+      :class="!isMDsmaller ? 'px-4 '+ getSmallTextClass
+        : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
       v-html="resource.description"
     ></v-card-text>
     <!--Author-->
     <v-card-text
       v-if="resource.contentType == 'lesson' && isAuthor"
-      :class="getSmallTextClass"
+      :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
+        : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
     >
       <Editable
         :type="'lesson'"
@@ -109,13 +125,15 @@
     <!--Student + Viewer-->
     <v-card-text
       v-if="resource.statement && (isStudent || isViewer)"
-      :class="getSmallTextClass"
+      :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
+        : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
       v-html="resource.statement"
     ></v-card-text>
     <!--Author-->
     <v-card-text
       v-if="resource.contentType == 'code' && isAuthor"
-      :class="getSmallTextClass"
+      :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
+        : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
     >
       <Editable
         placeholder="Exercise statement"
@@ -127,9 +145,8 @@
       />
     </v-card-text>
 
-    <v-card-text v-if="resource.contentType == 'quiz'"></v-card-text>
-
-    <!--<v-alert v-if="resource.html != undefined" color="#2A3B4D" dark icon="mdi-language-html5" dense>
+    <!--<v-alert v-if="resource.html != undefined" color="#2A3B4D" 
+      dark icon="mdi-language-html5" dense>
       <code>
         <div v-for="line in html_escape(resource.html)" :key="line">
           {{ line }}

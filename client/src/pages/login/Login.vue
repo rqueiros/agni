@@ -184,10 +184,10 @@ export default {
     ...mapActions("main",["login"]),
     ...mapMutations("main", ["setLogin"]),
     async studentLogin() {
-      await this.login(["student", "123456"]);
+      await this.login(["Student Lastname", "123456"]);
     },
     async teacherlogin() {
-      await this.login(["teacher", "123456"]);
+      await this.login(["Teacher Lastname", "123456"]);
     },
     validate() {
       if (this.$refs.loginForm.validate()) {

@@ -1,39 +1,84 @@
 <template>
-  <div id="DialogCourse">
-    <v-dialog v-model="dialog" max-width="500px">
+  <div id="dialogCourse">
+    <v-dialog v-model="localDialog" max-width="500px">
       <v-card>
-        <v-card-title class="pb-2" :class="getTitleClass">
+
+        <v-card-title class="pb-2" :class="getSubtitleClass">
           Course - {{ dialogItem.name }}
         </v-card-title>
+
         <v-card-text>
-
-          <vue-cascader-select :options="options" @select="selected => setType(dialogItem.id, selected.value)"
-            class="ml-2 mt-2" :value="dialogItem.type" v-if="isAuthor" style="width: fit-content" />
-
-          <v-list-item v-for="goal of this.dialogItem.goals" :key="goal.id" dense>
-            <v-list-item-content v-if="isAuthor">
-              <div class="d-flex" :class="getSmallTextClass">
-                <span class="mr-2">-</span>
-                <div style="flex-grow:inherit">
-                  <Editable :type="'goal'" :value="goal.goal" :id="goal.id" :field="'goal'" :placeholder="'Insert a goal'"
-                    @input="editableInput" onclick="event.stopPropagation()" />
-                </div>
-                <v-btn icon class="ml-2" @click="deleteGoal(goal.id)" x-small>
-                  <v-icon :size="getIconSmallSize">
-                    mdi-delete
-                  </v-icon>
-                </v-btn>
+          <v-list-item id="d_selectItem" class="pa-0">
+            <v-list-item-content :class="getSmallTextClass">
+              <div class="d-flex align-center">
+                <span class="mr-4">Type:</span>
+                <vue-cascader-select 
+                  :options="options" 
+                  @select="selected => setType(dialogItem.id, selected.value)"
+                  :value="dialogItem.type" 
+                  v-if="isAuthor" 
+                />
+                <span v-if="isViewer">{{ dialogItem.type }}</span>
               </div>
             </v-list-item-content>
-            <v-list-item-content v-if="isViewer">
-              - {{ goal.goal }}
-            </v-list-item-content>
           </v-list-item>
-          <v-list-item v-if="isAuthor">
-            <v-list-item-content class="pa-1">
-              <v-btn small @click="addGoalByCourseId(dialogItem.id)">
-                <v-icon>mdi-plus</v-icon>Goal
-              </v-btn>
+
+          <v-list-item class="pa-0">
+            <v-list-item-content class="pb-0" :class="getSmallTextClass">
+              <div class="d-flex">
+                <div class="mr-4">Goals:</div>
+                <v-list class="pa-0 mt-n3" width="100%">
+                  <v-list-item 
+                    v-for="goal of this.dialogItem.goals" 
+                    :key="goal.id" 
+                    dense       
+                    class="pa-0"  
+                  >
+                    <v-list-item-content v-if="isAuthor">
+                      <div class="d-flex align-center">
+                        <span class="mr-2">-</span>
+                        <div style="flex-grow:inherit">
+                          <Editable 
+                            :type="'goal'" 
+                            :value="goal.goal" 
+                            :id="goal.id" 
+                            :field="'goal'" 
+                            :placeholder="'Insert a goal'"
+                            @input="editableInput" 
+                            onclick="event.stopPropagation()" 
+                          />
+                        </div>
+                        <v-btn 
+                          icon 
+                          class="ml-2" 
+                          @click="deleteGoal(goal.id)" 
+                          :x-small="getButtonSmallSize=='x-small'"
+                          :small="getButtonSmallSize=='small'"
+                        >
+                          <v-icon :size="getIconSmallSize">
+                            mdi-delete
+                          </v-icon>
+                        </v-btn>
+                      </div>
+                    </v-list-item-content>
+                    <v-list-item-content v-if="isViewer">
+                      - {{ goal.goal }}
+                    </v-list-item-content>
+                  </v-list-item>
+
+                  <v-list-item v-if="isAuthor" class="pa-0">
+                    <v-list-item-content class="pa-1">
+                      <v-btn 
+                        @click="addGoalByCourseId(dialogItem.id)"
+                        :small="getButtonMediumSize=='small'"
+                        :medium="getButtonMediumSize=='medium'"
+                      >
+                        <v-icon>mdi-plus</v-icon>Goal
+                      </v-btn>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </div>
             </v-list-item-content>
           </v-list-item>
         </v-card-text>
@@ -44,12 +89,12 @@
 
 <script>
 import { mapGetters, mapMutations } from "vuex";
-
 import { bus } from "@/main.js";
 
 import Vue from "vue";
 import Editable from "../../../gerneral/Editable.vue";
 import VueCascaderSelect from "vue-cascader-select";
+
 Vue.use(VueCascaderSelect);
 
 export default {
@@ -63,7 +108,12 @@ export default {
   props: {
     dialogItem: {
       type: Object,
-      default: () => { }
+      default: () => { return { 
+        "afterWeek": "", 
+        "afterPercDone": "", 
+        "contentType": "",
+        "type":""
+      }}
     },
     dialog: {
       type: Boolean,
@@ -73,6 +123,7 @@ export default {
 
   data() {
     return {
+      localDialog:this.dailog,
       options: [
         {
           label: "Course",
@@ -92,6 +143,9 @@ export default {
 
   watch: {
     dialog(newValue) {
+      this.localDialog = newValue
+    },
+    localDialog(newValue) {
       bus.$emit("dialogCourseChange", newValue);
     }
   },
@@ -105,8 +159,10 @@ export default {
     ]),
     ...mapGetters("style",[
       "getIconSmallSize",
+      "getButtonSmallSize",
       "getSmallTextClass",
-      "getTitleClass"
+      "getSubtitleClass",
+      "getButtonMediumSize"
     ]),
   },
 
@@ -132,7 +188,11 @@ export default {
 </script>
 
 <style scoped>
-#courseDialog>>>.vcs__select-menu {
-  z-index: 10
+#d_selectItem>>>.vcs__select-menu {
+  z-index: 204 !important;
+  position:fixed !important;
+  top:auto !important;
+  left:auto !important;
+  width:212px;
 }
 </style>

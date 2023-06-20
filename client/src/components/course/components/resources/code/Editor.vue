@@ -1,5 +1,6 @@
 <template>
   <div id="editor" :class="getSmallTextClass">
+
     <div v-if="single" class="pa-2 pb-0">
       <Editable
         :type="'evaluative'"
@@ -7,7 +8,7 @@
         :id="resource.id"
         placeholder="Evaluative name"
         :field="'name'"
-        @input="editableChange"
+        @input="editableInput"
         onclick="event.stopPropagation()"
       >
       </Editable>
@@ -46,7 +47,7 @@
 
     <v-btn
       width="100%"
-      v-if="isTeacher && !showSkeleton && !hasSkeleton"
+      v-if="isAuthor && !showSkeleton && !hasSkeleton"
       @click="showSkeleton = true"
       class="course_button mb-4"
     >
@@ -60,6 +61,7 @@
     >
       Skeleton
       <v-btn
+        v-if="isAuthor"
         icon
         @click="deleteSkeleton"
         :class="getIconBigSize"
@@ -85,8 +87,8 @@
 
     <v-btn
       width="100%"
-      v-if="isTeacher && !showContext && !contextLen"
-      @click="showContext = true"
+      v-if="isAuthor && !contextLen"
+      @click="addContext"
       class="course_button"
     >
       <v-icon>mdi-plus</v-icon>Context
@@ -99,7 +101,7 @@
           id="navBar"
           v-model="index"
           class="elevation-0"
-          v-if="showContext || contextLen"
+          v-if="contextLen"
         >
           <v-btn
             v-for="(item, i) in getContext"
@@ -107,21 +109,22 @@
             style="padding: 0 0.5em; border-left: solid; border-right: solid; border-width: 0.01em; border-color: lightgray;"
           >
             <div class="d-flex align-center">
+              <span v-if="isViewer">{{ item.name }}</span>
               <Editable
-                v-if="isTeacher"
+                v-if="isAuthor"
                 :type="'context'"
                 :value="item.name"
                 :id="item.id"
                 placeholder="Context name"
                 :field="'name'"
-                @input="editableChange"
+                @input="editableInput"
                 onclick="event.stopPropagation()"
               >
               </Editable>
               <v-spacer style="width:1em"></v-spacer>
               <v-icon
                 :class="getIconSmallSize"
-                v-if="isTeacher"
+                v-if="isAuthor"
                 @click="deleteCont(item.id)"
                 >mdi-delete</v-icon
               >
@@ -130,7 +133,7 @@
         </v-bottom-navigation>
 
         <div
-          v-if="(showContext || contextLen) && isTeacher"
+          v-if="contextLen && isAuthor"
           style="height: 2rem;"
           class="d-flex"
         >
@@ -142,24 +145,22 @@
           >
             <v-icon> mdi-plus </v-icon>
           </v-btn>
-          <v-btn
-            icon
-            style="min-width: 0;"
-            @click="showContext = false"
-            class="course_iconButtonL"
-          >
-            <v-icon> mdi-delete </v-icon>
-          </v-btn>
         </div>
       </div>
     </v-card>
-
-    <context v-if="contextLen" :resource="getCont" ref="context"></context>
-
-    <!--
-    <AceEditor ref="context" v-model="code2" @init="editorInit" @onchange="editorChange" lang="javascript"
-      v-if="isTeacher && showContext" class="course_text" theme="ambiance" width="100%" height="15em" :options="editorOp"
-      :commands="com" />-->
+    <AceEditor
+      ref="context"
+      v-model="code2"
+      @init="editorInit"
+      @onchange="editorChange"
+      v-if="contextLen"
+      class="course_text mb-4"
+      theme="ambiance"
+      width="100%"
+      height="15em"
+      :options="editorOp"
+      :commands="com"
+    />
 
     <v-spacer style="height: 16px"></v-spacer>
 
@@ -205,7 +206,6 @@ import "sweetalert2/src/sweetalert2.scss";
 import AceEditor from "vuejs-ace-editor";
 import { mapActions, mapGetters, mapMutations } from "vuex";
 
-import Context from "./Context.vue";
 import Editable from "../../../../gerneral/Editable.vue";
 
 import Vue from "vue";
@@ -216,6 +216,7 @@ Vue.use(VueCascaderSelect);
 
 export default {
   name: "Editor",
+
   props: {
     resource: {
       type: Object,
@@ -226,25 +227,23 @@ export default {
       default: () => false
     },
   },
+
   components: {
     AceEditor,
     VueCascaderSelect,
-    Context,
     Editable
   },
+
   data() {
     return {
-      sheet: "",
       code: "",
       code1: "",
       code2: "",
       saveHandler: "",
-      saveHandler1: "",
       statusSaveButton: false,
       statusResetButton: false,
       mapDetector: [],
       originalLog: "",
-      showContext: false,
       showSkeleton: false,
       hasSkeleton: false,
       index: 0,
@@ -284,6 +283,7 @@ export default {
       ]
     };
   },
+
   watch: {
     "resource.skeleton"(value) {
       if (value.length > 0) {
@@ -291,16 +291,18 @@ export default {
       } else {
         this.hasSkeleton = false;
       }
-    } /*
-    index(_, oldI){
-      //console.log(newI)
-      console.log(oldI)
-      if (oldI!= undefined){
-        //this.$refs.context.testM()
-        console.log(oldI)
-      }
-    }*/
+    },
+    index(newV, oldV){
+      this.saveContext(this.resource.contexts[oldV].id, this.code2)
+      this.code2 = this.resource.contexts[newV].text
+    }
   },
+
+  beforeDestroy(){
+    this.dataSumit();
+    clearInterval(this.saveHandler);
+  },
+
   created() {
     if (this.isStudent) {
       if (
@@ -321,6 +323,9 @@ export default {
     } else if (this.isTeacher) {
       this.code = this.resource.solution;
       this.code1 = this.resource.skeleton;
+      if (this.resource.contexts.length>0){
+        this.code2 = this.resource.contexts[this.index].text;
+      }
     }
     if ("skeleton" in this.resource && this.resource.skeleton != null && this.resource.skeleton.length > 0) {
       this.hasSkeleton = true;
@@ -328,6 +333,7 @@ export default {
       this.hasSkeleton = false;
     }
   },
+
   computed: {
     ...mapGetters("main",[
       "getLessonByResourceId",
@@ -335,7 +341,7 @@ export default {
       "isStudent", "isTeacher", "isViewer", "isAuthor",
     ]),
     ...mapGetters("style",[
-      "getSmallTextClass", "getIconBigSize"
+      "getSmallTextClass", "getIconBigSize", "getIconSmallSize"
     ]),
     getContext() {
       return this.resource.contexts;
@@ -346,13 +352,8 @@ export default {
     getCont() {
       return this.resource.contexts[this.index];
     }
-    /*
-    hasSkeleton() {
-      console.log("hasSkeleton")
-      console.log(this.resource)
-      return this.resource.skeleton.length > 0
-    }*/
   },
+
   methods: {
     ...mapActions("main",["setProgress"]),
     ...mapMutations("main",[
@@ -367,18 +368,14 @@ export default {
       }
       this.addContextByEvaluativeId(this.resource.id);
     },
-    editableChange(obj) {
-      this.editableInput(obj);
-    },
-    testM() {
-      this.dataSumit();
-      clearInterval(this.saveHandler);
-      if (this.$refs.context) {
-        this.$refs.context.testM();
-      }
-      this.hasSkeleton = false;
-      this.$destroy();
-      //this.saveHandler.forEach(e => {clearInterval(e)})
+    saveContext(id, code) {
+      const obj2 = {
+        id: id,
+        value: code,
+        field: "text",
+        type: "context"
+      };
+      this.editableInput(obj2);
     },
     deleteSkeleton() {
       this.showSkeleton = false;
@@ -414,12 +411,9 @@ export default {
       this.deleteContext(id);
     },
     backToSheet() {
-      //this.dataSumit()
-      //clearInterval(this.saveHandler);
       const lesson = this.getLessonByResourceId(this.resource.id);
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
-
     loadCode() {
       if (this.isStudent) {
         if (
@@ -444,7 +438,6 @@ export default {
       }
     },
     async dataSumit() {
-      //console.log(this.code)
       let originalCode = this.code;
       let originalCode1 = this.code1;
 
@@ -467,7 +460,6 @@ export default {
           field: "solution",
           type: "evaluative"
         };
-        //console.log(this.code1)
         this.editableInput(obj);
         const obj2 = {
           id: this.resource.id,
@@ -476,6 +468,7 @@ export default {
           type: "evaluative"
         };
         this.editableInput(obj2);
+        this.saveContext(this.resource.contexts[this.index].id, this.code2)
       }
 
       if (this.resource.html) {
@@ -548,13 +541,11 @@ export default {
       this.code = originalCode;
       this.code1 = originalCode1;
     },
-
     getLineNumberError(err) {
       const caller_line = err.stack.split("\n")[4];
       const index = caller_line.indexOf("at ");
       return caller_line.slice(index + 2, caller_line.length);
     },
-
     reset() {
       this.code = this.resource.skeleton;
       this.statusResetButton = true;
@@ -590,9 +581,11 @@ export default {
       editorRef.findAll(keyword, searchOptions);
       return editorRef.getSelection().getAllRanges().length;
     },
-
     editorInit: function(_editor) {
       console.log("editor", _editor);
+      if(this.isViewer){
+        _editor.setReadOnly(true);
+      }
 
       require("brace/ext/language_tools"); //language extension prerequsite...
       require("brace/mode/html");
@@ -613,6 +606,7 @@ export default {
         }
       });
  */
+      
       if (this.saveHandler == "") {
         this.saveHandler = setInterval(this.dataSumit, 10000);
       }
@@ -621,13 +615,11 @@ export default {
       this.statusSaveButton = false;
       this.statusResetButton = false;
     },
-
     gotoLine(line) {
       this.$refs.myEditor.editor.resize(true);
       this.$refs.myEditor.editor.scrollToLine(line, true, true, function() {});
       this.$refs.myEditor.editor.gotoLine(line, 0, true);
     },
-
     infiniteLoopDetector(id) {
       if (id in this.mapDetector) {
         if (Date.now() - this.mapDetector[id] > 1000) {
@@ -638,7 +630,6 @@ export default {
         this.mapDetector[id] = Date.now();
       }
     },
-
     infiniteLoopDetectorWrapper(codeStr) {
       if (typeof codeStr !== "string") {
         throw new Error(
@@ -658,28 +649,8 @@ export default {
 </script>
 
 <style scoped>
+
 /*
-#editor {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}*/
-
-.myMarker {
-  position: absolute;
-  background: rgba(100, 200, 100, 0.5);
-  z-index: 20;
-}
-
-.bar {
-  position: absolute;
-  background: rgba(100, 100, 200, 0.5);
-  z-index: 40;
-  width: 2px !important;
-}
-
 #editor >>> .v-text-field.v-text-field--solo .v-input__control {
   min-height: 0;
 }
@@ -698,7 +669,8 @@ export default {
 
 .vcs {
   position: initial;
-}
+}*/
+
 
 #editor >>> .vcs__select-menu {
   z-index: 10;
@@ -734,17 +706,15 @@ export default {
   opacity: 0.18 !important;
 }
 
-#navBar >>> .v-btn__content {
+#navBar>>>.v-btn__content {
   flex: auto;
 }
 
-#navBar >>> .v-item-group.v-bottom-navigation .v-btn {
+.v-item-group.v-bottom-navigation .v-btn {
   max-width: none !important;
   min-width: 0 !important;
   font-weight: none !important;
 }
 
-#navBar >>> .v-btn {
-  font-size: none !important;
-}
+
 </style>

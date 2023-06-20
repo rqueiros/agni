@@ -1,242 +1,183 @@
 <template>
   <div>
     <!--{{ getResourceById(resource.id,"evaluative") }}-->
-    <div v-if="single && !onlyQuestion" class="pa-2 pb-0">
-
-      <Editable
-        :type="'evaluative'"
-        :value="resource.name"
-        :id="resource.id"
-        placeholder="Evaluative name"
-        :field="'name'"
-        @input="editableInput"
-        onclick="event.stopPropagation()"
-      >
-      </Editable>
+    <div v-if="single && !onlyQuestion" class="pa-2 mb-1">
+      <Editable :type="'evaluative'" :value="resource.name" :id="resource.id" placeholder="Evaluative name"
+        :field="'name'" @input="editableInput" onclick="event.stopPropagation()" />
     </div>
 
-    <v-stepper
-      v-model="e1"
-      v-if="this.resource.questions.length > 0"
-      id="stepper"
-    >
+    <v-stepper 
+    v-model="e1" 
+    v-if="this.resource.questions.length > 0" 
+    elevation="0">
       <v-stepper-header v-if="!onlyQuestion">
         <template v-for="n in resource.questions.length">
-          <v-stepper-step
-            :complete="e1 > n"
-            :step="n"
-            editable
-            :key="n + 'abc'"
-            v-if="isStudent || isViewer"
-          >
+          <v-stepper-step :complete="e1 > n" :step="n" editable :key="n + 'abc'" v-if="isStudent || isViewer">
           </v-stepper-step>
           <v-stepper-step :step="n" editable :key="n + 'abc'" v-if="isAuthor">
           </v-stepper-step>
-
-          <v-divider
-            v-if="n !== resource.questions.length"
-            :key="n + 'abcd'"
-          ></v-divider>
+          <v-divider v-if="n !== resource.questions.length" :key="n + 'abcd'" />
         </template>
       </v-stepper-header>
 
       <v-stepper-items>
-        <v-stepper-content
-          v-for="n in resource.questions.length"
-          :step="n"
-          :key="n + 'sec'"
-        >
-          <v-btn
-            v-if="isAuthor"
-            style="position: absolute; top:8px; right: 6px; z-index: 1;"
-            icon
-            class="course_iconButtonL"
-            @click="delQ(resource.questions[n - 1].id)"
-          >
-            <v-icon class=""> mdi-delete </v-icon>
-          </v-btn>
-          <v-card class="mb-3" color="lighten-1" height="100%">
-            <v-list-item v-if="isStudent || isViewer">
-              <v-list-item-content>
-                <div
-                  v-html="n + '. ' + resource.questions[n - 1].question"
-                ></div>
-                <v-list-item-subtitle>
-                  <v-radio-group v-model="myAnswers[n - 1]" v-if="isStudent">
-                    <v-radio
-                      v-for="(answer, index) in resource.questions[n - 1]
-                        .answers"
-                      :key="index + 'third'"
-                      :label="answer.answer"
-                      :value="index"
-                    ></v-radio>
-                  </v-radio-group>
-                  <div v-if="isViewer">
-                    <tr
-                      v-for="(answer, index) in resource.questions[n - 1]
-                        .answers"
-                      :key="index + 'drd'"
-                    >
-                      <td>
-                        <v-icon
-                          v-if="
-                            resource.questions[n - 1].correctAnswer == index + 1
-                          "
-                          >mdi-alpha-x</v-icon
-                        >
-                      </td>
-                      <td>{{ answer.answer }}</td>
-                    </tr>
-                  </div>
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
+        <v-stepper-content class="pb-0" 
+        v-for="n in resource.questions.length" 
+        :step="n" 
+        :key="n + 'sec'">
+          <v-card>
+            <v-list>
+              <v-list-item>
+                <v-list-item-content class="py-0">
+                  <div  
+                  v-if="isStudent || isViewer"
+                  v-html="n + '. ' + resource.questions[n - 1].question"></div>
 
-            <v-list-item v-if="isAuthor">
-              <v-list-item-content>
-                <Editable
-                  :type="'question'"
-                  style="padding-right: 1em;"
+                  <Editable 
+                  v-if="isAuthor" 
+                  :type="'question'" 
                   :value="resource.questions[n - 1].question"
-                  :id="resource.questions[n - 1].id"
-                  :field="'question'"
-                  @input="editableInput"
-                  placeholder="Question"
-                />
-                <v-container fluid>
-                  <table style="width: 100%">
-                    <tr>
-                      <td>
-                        <span>Correct:</span>
-                      </td>
-                    </tr>
-                    <tr
-                      v-for="(answer, index) in getAnswers(n - 1)"
-                      :key="index + 'third'"
-                    >
-                      <td>
-                        <v-checkbox
-                          v-model="selected"
-                          :value="index"
-                          :label="''"
-                          class="checkboxes"
-                        >
-                        </v-checkbox>
-                      </td>
-                      <td>
-                        <Editable
-                          :type="'answer'"
-                          :value="answer.answer"
-                          :id="answer.id"
-                          :field="'answer'"
-                          @input="editableInput"
-                          placeholder="Answer"
-                        />
-                      </td>
-                      <td>
-                        <v-btn
-                          icon
-                          @click="del(answer.id)"
-                          class="course_iconButtonS"
-                        >
-                          <v-icon class="course_IconS"> mdi-delete </v-icon>
-                        </v-btn>
-                      </td>
-                    </tr>
-                  </table>
+                  :id="resource.questions[n - 1].id" 
+                  :field="'question'" 
+                  @input="editableInput" 
+                  placeholder="Question" />
+                </v-list-item-content>
+                <v-list-item-avatar v-if="isAuthor">
+                  <v-icon @click="deleteQue(resource.questions[n - 1].id)">
+                    mdi-delete
+                  </v-icon>
+                </v-list-item-avatar>
+              </v-list-item>
 
-                  <v-btn
-                    v-if="isAuthor"
-                    class="course_button course_text"
-                    width="100%"
-                    @click="
-                      addAnswerByQuestionId(resource.questions[n - 1].id)
-                    "
-                  >
-                    <v-icon> mdi-plus </v-icon>
-                    Add Answer
-                  </v-btn>
-                </v-container>
-              </v-list-item-content>
-            </v-list-item>
+              <v-list-item v-if="isStudent || isViewer">
+                <v-list-item-content>
+                  <v-list-item-subtitle>
+                    <v-radio-group 
+                    v-model="myAnswers[n - 1]" 
+                    v-if="isStudent">
+                      <v-radio 
+                      v-for="(answer, index) in resource.questions[n - 1].answers" 
+                      :key="index + 'third'" 
+                      :label="answer.answer" 
+                      :value="index" />
+                    </v-radio-group>
+                    <div v-if="isViewer">
+                      <tr 
+                      v-for="(answer, index) in resource.questions[n - 1].answers" 
+                      :key="index + 'drd'">
+                        <td>
+                          <v-icon 
+                          v-if="resource.questions[n - 1].correctAnswer == index + 1">
+                            mdi-alpha-x
+                          </v-icon>
+                        </td>
+                        <td>{{ answer.answer }}</td>
+                      </tr>
+                    </div>
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+
+              <v-list-item v-if="isAuthor">
+                <v-list-item-content class="pt-0">
+                  <v-container fluid>
+                    <v-simple-table>
+                      <tr>
+                        <td>
+                          <span>Correct:</span>
+                        </td>
+                      </tr>
+                      <tr 
+                      v-for="(answer, index) in getAnswers(n - 1)" 
+                      :key="index + 'third'">
+                        <td>
+                          <v-checkbox  
+                          class="mt-0 ml-3"
+                          v-model="selected" 
+                          :value="index" 
+                          label=""
+                          hide-details />
+                        </td>
+                        <td>
+                          <Editable 
+                          :type="'answer'" 
+                          :value="answer.answer" 
+                          :id="answer.id" 
+                          :field="'answer'"
+                          @input="editableInput" 
+                          placeholder="Answer" />
+                        </td>
+                        <td>
+                          <v-btn 
+                          icon 
+                          @click="deleteAns(answer.id)">
+                            <v-icon> mdi-delete </v-icon>
+                          </v-btn>
+                        </td>
+                      </tr>
+                    </v-simple-table>
+
+                    <v-btn 
+                    class="mt-2"
+                    v-if="isAuthor" 
+                    width="100%" 
+                    @click="addAnswerByQuestionId(resource.questions[n - 1].id)">
+                      <v-icon> mdi-plus </v-icon>
+                      Add Answer
+                    </v-btn>
+                  </v-container>
+                </v-list-item-content>
+              </v-list-item>
+          </v-list>
           </v-card>
 
-          <v-btn
-            v-show="n != steps"
-            color="success"
-            @click="nextStep(n)"
-            class="mr-2"
-            v-if="isStudent"
-          >
+          <v-btn 
+          v-show="n != steps" 
+          color="success" 
+          @click="nextStep(n)" 
+          class="mr-2" 
+          v-if="isStudent">
             Continue
           </v-btn>
-
-          <v-btn
-            v-show="n == steps"
-            color="error"
-            @click="finish"
-            v-if="isStudent"
-          >
+          <v-btn 
+          v-show="n == steps" 
+          color="error" 
+          @click="finish" 
+          v-if="isStudent">
             Finish
-          </v-btn>
-
-          <v-btn
-            v-if="isAuthor && !onlyQuestion"
-            class="course_button course_text"
-            width="100%"
-            @click="addQuestionByQuestionId(resource.questions[n - 1].id)"
-          >
-            <v-icon> mdi-plus </v-icon>
-            Add Question
           </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
-    <v-btn
-      v-if="isAuthor && resource.questions.length == 0"
-      class="course_button course_text"
-      width="100%"
-      @click="addQuestionByResourceId(resource.id)"
-    >
-      <v-icon> mdi-plus </v-icon>
-      Add Question
-    </v-btn>
 
-    <v-btn
-      v-if="!onlyQuestion"
-      class="course_button course_text"
-      width="100%"
-      @click="select"
-    >
-      select
-    </v-btn>
+    <v-menu 
+    offset-y 
+    auto 
+    v-if="isAuthor && !onlyQuestion">
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn v-bind="attrs" v-on="on" width="100%" class="pa-1 mt-0">
+          <v-icon> mdi-plus </v-icon>
+          Add Question
+        </v-btn>
+      </template>
+      <v-list dense>
+        <v-list-item 
+        v-for="(item, index) in addQuestionMenu" 
+        :key="index" 
+        link
+        @click="addQuestion(item.value, resource.id)">
+          <v-list-item-title>{{ item.title }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
 
-    <v-dialog v-model="dialog" max-width="500">
-      <v-card>
-        <v-text-field
-        v-model="search"
-        append-icon="mdi-magnify"
-        label="Search"
-        single-line
-        hide-details
-      ></v-text-field>
-        <v-data-table :items="questions" :headers="tableHeaders" hide-default-header hide-default-footer :loading="loading" height="200px"  class="overflow-y-auto my-3 elevation-2" :search="search">
+    <SelectDialog 
+    :dialog="dialog" 
+    :type="'questions'" 
+    :already="resource.questions.map(e => e.id)"
+    @addExistingquestions="addExistingQue" 
+    @closeSelectDialog="closeSelectDialog" />
 
-          <template v-slot:item.question="{ item }">
-            <v-checkbox v-model="checkboxes" :value="item.id" :label="item.question" hide-details class="px-8"
-              ></v-checkbox>
-          </template>
-        </v-data-table>
-        <v-card-actions>
-          <v-btn outlined text @click="dialog = false">
-            Cancel
-          </v-btn>
-          <v-btn outlined text @click="addQuestion">
-            Add
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
@@ -245,7 +186,9 @@ import { bus } from "@/main.js";
 import { mapActions, mapGetters, mapMutations } from "vuex";
 import Swal from "sweetalert2";
 import "sweetalert2/src/sweetalert2.scss";
+
 import Editable from "../../../../gerneral/Editable.vue";
+import SelectDialog from "../../../../gerneral/SelectDialog.vue";
 
 export default {
   name: "Quizzer",
@@ -253,20 +196,21 @@ export default {
   props: {
     resource: {
       type: Object,
-      default: () => {}
+      default: () => { }
     },
-    single:{
-      type:Boolean,
+    single: {
+      type: Boolean,
       default: () => false
     },
-    onlyQuestion:{
-      type:Boolean,
+    onlyQuestion: {
+      type: Boolean,
       default: () => false
     }
   },
 
   components: {
-    Editable
+    Editable,
+    SelectDialog
   },
 
   data() {
@@ -276,25 +220,26 @@ export default {
       steps: 0,
       quiz: {},
       selected: [],
-      dialog:false,
-      search:"",
-      questions:[],
-      tableHeaders:[{value:"question"}],
-      checkboxes:[],
-      loading:false,
+
+      dialog: false,
+
+      addQuestionMenu: [
+        { title: "New Question", value: "new" },
+        { title: "Select Question", value: "select" }
+      ],
     };
   },
 
   created() {
     //this.quiz = this.getQuizByResourceId(this.resource.quizId);
-    this.selected = this.resource.questions[this.e1 - 1].correctAnswer.map(v=>v-1)
+    this.selected = this.resource.questions[this.e1 - 1].correctAnswer.map(v => v - 1)
     if ("questions" in this.resource) {
       this.steps = this.resource.questions.length;
     } else {
       this.steps = 1;
     }
   },
-  
+
   watch: {
     steps(val) {
       if (this.e1 > val) {
@@ -302,27 +247,22 @@ export default {
       }
     },
     e1(newE1) {
-      this.selected = this.resource.questions[newE1 - 1].correctAnswer.map(v => v-1)
-      bus.$emit("setIndex", newE1-1);
+      this.selected = this.resource.questions[newE1 - 1].correctAnswer.map(v => v - 1)
+      bus.$emit("setIndex", newE1 - 1);
     },
     selected(newS) {
       const obj = {
-        value: newS.map(v => v+1),
+        value: newS.map(v => v + 1),
         type: "question",
         field: "correctAnswer",
         id: this.resource.questions[this.e1 - 1].id
       };
       this.editableInput(obj);
     },
-    dialog(newV){
-      if (!newV){
-        this.checkboxes = [];
-      }
-    }
   },
 
   computed: {
-    ...mapGetters("main",[
+    ...mapGetters("main", [
       "getLessonByResourceId",
       "getQuizByResourceId",
       "getRole",
@@ -338,7 +278,7 @@ export default {
       //return toRef(this.resource.questions, 'length');
     },
     getAnswers() {
-      return function(n) {
+      return function (n) {
         return this.resource.questions[n].answers;
       };
     },
@@ -348,7 +288,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main",[
+    ...mapMutations("main", [
       "editableInput",
       "addAnswerByQuestionId",
       "addQuestionByQuestionId",
@@ -356,12 +296,19 @@ export default {
       "deleteQuestion",
       "addQuestionByResourceId",
     ]),
-    ...mapActions("main",["setProgress", "fetchCollectionTypes", "addExistingQuestions"]),
-    del(id) {
-      this.deleteAnswer(id);
-      this.selected = this.resource.questions[this.e1 - 1].correctAnswer.map(v => v-1);
+    ...mapActions("main", ["setProgress", "fetchCollectionTypes", "addExistingQuestions"]),
+    async addExistingQue(ids) {
+      await this.addExistingQuestions([this.resource.id, ids])
+      this.closeSelectDialog()
     },
-    delQ(id) {
+    closeSelectDialog() {
+      this.dialog = false
+    },
+    deleteAns(id) {
+      this.deleteAnswer(id);
+      this.selected = this.resource.questions[this.e1 - 1].correctAnswer.map(v => v - 1);
+    },
+    deleteQue(id) {
       this.deleteQuestion(id);
       if (this.e1 > this.resource.questions.length && this.e1 > 1) {
         this.e1 = this.e1 - 1;
@@ -418,37 +365,15 @@ export default {
       const lesson = this.getLessonByResourceId(this.resource.id);
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
-    async select() {
-      const parameters = {
-        collectionType: "question"
-      };
-      this.dialog = true
-      this.loading = true;
-      let questionIds = this.resource.questions.map(q => q.id)
-      let fetchedQuestions = await this.fetchCollectionTypes(parameters);
-      this.questions = fetchedQuestions.filter(e => !questionIds.includes(e.id))
-      this.loading = false;
-    },
-    async addQuestion(){
-      let evaluativeId = this.resource.id
-      await this.addExistingQuestions([evaluativeId, this.checkboxes])
-      this.dialog = false
+    addQuestion(type, id) {
+      if (type == "new") {
+        this.addQuestionByResourceId(id)
+      } else if (type == "select") {
+        this.dialog = true;
+      }
     }
   }
 };
 </script>
 
-<style scoped>
-#stepper >>> .v-input--selection-controls {
-  margin-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-#stepper >>> .v-messages {
-  min-height: 0 !important;
-}
-
-.checkboxes >>> .v-icon {
-  font-size: 1.2em !important;
-}
-</style>
+<style scoped></style>

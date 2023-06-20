@@ -547,7 +547,7 @@ async function getStudentCourses(author, ctx) {
                   } else {
                      if (j != 0) {
                         let pastLesson = course.modules[j - 1].lessons[course.modules[j - 1].lessons.length - 1]
-                        if (pastLesson.evaluatives.length > 0) {
+                        if (pastLesson && pastLesson.evaluatives.length > 0) {
                            const evaluatives = pastLesson.evaluatives.map(e => e.status.grade)
                            const mean = evaluatives.reduce((acc, curr) => acc + curr, 0) / evaluatives.length
                            if (mean >= limit) {

@@ -9,6 +9,7 @@
             <!--STATEMENT-->
             <Header :resource="resource" v-if="!single" />
             <!--PLAYER-->
+            
             <Editor
               :resource="resource" :single="single"
               @onErrors="setErrors"
@@ -187,9 +188,6 @@ export default {
   created() {},
 
   methods: {
-    testM() {
-      this.$refs.editor.testM();
-    },
     setErrors(errors) {
       this.errors = errors;
     },

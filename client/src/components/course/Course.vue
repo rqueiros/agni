@@ -12,7 +12,7 @@
 
 <script>
 import { bus } from "@/main.js";
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapMutations, mapState } from "vuex";
 
 import CourseMenu from "./components/menu/CourseMenu.vue";
 import Resource from "./components/resources/Resource.vue";
@@ -39,6 +39,24 @@ export default {
     });
   },
 
+  watch: {
+    courses() {
+      let type;
+      if (this.resource && "contentType" in this.resource && (this.resource.contentType=="course" || this.resource.contentType=="module" || this.resource.contentType=="lesson")){
+        type = this.resource.type
+      } else {
+        type = "evaluative"
+      }
+      let id;
+      if (this.resource){
+        id = this.resource.id
+      } else {
+        id = 0
+      }
+      this.setResource(id,type)
+    },
+  },
+
   mounted() {
     this.setScreenSize(this.$refs.course.offsetWidth);
     window.addEventListener("resize", this.updateParentDivWidth);
@@ -49,6 +67,7 @@ export default {
   },
 
   computed: {
+    ...mapState("main", { courses: state => state.courses }),
     ...mapGetters("main",["getResourceById"]),
     getCourseClass() {
       if (this.courseWidth <= 480) {
@@ -68,17 +87,10 @@ export default {
   methods: {
     ...mapMutations("style",["setScreenSize"]),
     setResource(resourceId, type) {
-      if (
-        this.resource &&
-        this.resource != null &&
-        this.resource.contentType == "code"
-      ) {
-        this.$refs.resource.testM();
-      }
       this.resource = null;
       this.isResource = resourceId;
       this.type = type;
-      if (resourceId > 0) {
+      if (resourceId != 0) {
         this.resource = this.getResourceById(resourceId, type);
       }
     },
@@ -97,12 +109,16 @@ export default {
   overflow-y: visible !important;
 }
 
+
+/*
+
 .iconButton{
   height: 20px !important;
   width: 20px !important;
   margin-bottom:1px;
   margin-top:1px;
-}
+}*/
+
 /* Course Size *//*
 .courseXS {
   font-size: 1em;
@@ -120,9 +136,6 @@ export default {
   font-size: 1em;
 }*/
 
-.resource {
-  padding: 0 0 0 25% !important;
-}
 
 
 /*

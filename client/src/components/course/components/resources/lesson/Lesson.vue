@@ -2,16 +2,19 @@
   <div id="lesson">
     <v-container fluid>
       <v-row class="mb-1 mt-0">
-        <v-col :cols="isSMsmaller && isStudent ? 12 : 7" class="py-0">
+        <v-col :cols="isSMsmaller ? 12 : 7" class="py-0">
           <v-card outlined>
+
             <Header :resource="resource" />
 
-            <v-spacer class="mb-3"></v-spacer>
+            <v-spacer class="mb-1"></v-spacer>
 
+            <v-divider v-if="resource.expositives.length>0"/>
             <Expositives :resource="resource" ref="expositives" />
 
             <v-spacer class="mb-6"></v-spacer>
 
+            <v-divider v-if="resource.evaluatives.length>0"/>
             <Evaluatives :resource="resource" />
 
             <v-spacer v-if="isStudent" class="mb-6"></v-spacer>
@@ -36,7 +39,7 @@
         <v-col
           cols="5"
           class="py-0 pl-0"
-          :class="isSMsmaller && isStudent ? 'd-none' : 'd-block'"
+          :class="isSMsmaller ? 'd-none' : 'd-block'"
         >
           <Timeline
             :resource="resource.expositives[index]"
@@ -44,7 +47,7 @@
           />
         </v-col>
       </v-row>
-      <v-row :class="isSMsmaller && isStudent ? 'd-block' : 'd-none'">
+      <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
         <v-col cols="12">
           <Timeline
             :resource="resource.expositives[index]"
@@ -106,9 +109,6 @@ export default {
     ])
   },
   methods: {
-    testM() {
-      console.log("testM-lesson");
-    },
     setMilestone(index) {
       this.$refs.expositives.setMilestone(index);
     }

@@ -28,8 +28,11 @@ const main = {
     students: [],
     maxId: 0,
     changed: false,
+
+    BUTTONSTYLE:false
   },
   getters: {
+    getBUTTONSTYLE: state => state.BUTTONSTYLE,
     //------------------------Authentication----------------------------------
     isLogged: state => state.login,
     getJWT: state => state.jwt,
@@ -65,7 +68,7 @@ const main = {
     },
     getModuleByEvaluative: state => id => {
       return state.courses.flatMap(c => c.children).find(m =>
-        m.children.flatMap(l => l.evaluatives.map(e => e.id)).includes(id)
+        m.children.filter(l => "evaluatives" in l).flatMap(l => l.evaluatives.map(e => e.id)).includes(id)
       );
     },
     getModuleByExpositive: state => id => {
@@ -111,6 +114,7 @@ const main = {
           if (type == "lesson") {
             return state.courses.flatMap(c => c.children).flatMap(m => m.children).find(l => l.id == id)
           } else if (type == "evaluative") {
+            //return state.courses
             return state.courses.flatMap(c => c.children).flatMap(m => m.children).flatMap(l => l.evaluatives).find(l => l.id == id)
           }
         }
@@ -120,8 +124,8 @@ const main = {
 
     //-------Status
     getStatusByResourceId: state => id => {
-      return state.evaluatives.find(evaluative => evaluative.status.id == id)
-        .status;
+      return state.courses[0].children.flatMap(m => m.children).flatMap(l => l.evaluatives)
+        .find(evaluative => evaluative.status.id == id).status;
     },
     getCompletationStatusByLesson: state => id => {
       if (id == "0") {
@@ -214,7 +218,7 @@ const main = {
     },
     setCourseField(state, [id, field, value]) {
       const course = state.courses.find(c => c.id == id);
-      if (course[field] != value){
+      if (course[field] != value) {
         this.commit("main/setChanged", true);
       }
       course[field] = value;
@@ -230,7 +234,7 @@ const main = {
         .filter(c => "goals" in c)
         .flatMap(c => c.goals)
         .find(g => g.id == id);
-      if (goal[field] != value){
+      if (goal[field] != value) {
         this.commit("main/setChanged", true);
       }
       goal[field] = value;
@@ -322,7 +326,7 @@ const main = {
       const module = state.courses
         .flatMap(c => c.children)
         .find(m => m.id == id);
-      if (module[field] != value){
+      if (module[field] != value) {
         this.commit("main/setChanged", true);
       }
       module[field] = value;
@@ -397,7 +401,7 @@ const main = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .find(l => l.id == id);
-      if (lesson[field] != value){
+      if (lesson[field] != value) {
         this.commit("main/setChanged", true);
       }
       lesson[field] = value;
@@ -421,7 +425,7 @@ const main = {
           .map(m => m.condition)
           .find(c => c.id == id);
       }
-      if (condition[field] != value){
+      if (condition[field] != value) {
         this.commit("main/setChanged", true);
       }
       condition[field] = value;
@@ -482,8 +486,9 @@ const main = {
         new: true,
         id: n - 1,
         name: "",
-        type: "newExpo",
-        milestones: []
+        milestones: [],
+        file:{data:null},
+        type:null
       };
       lesson.expositives.push(expositive);
       this.commit("main/setChanged", true);
@@ -517,7 +522,7 @@ const main = {
       const id = list[0];
       const file = list[1];
       let expositive;
-      if (state.courses.length>0){
+      if (state.courses.length > 0) {
         expositive = state.courses
           .flatMap(c => c.children)
           .flatMap(m => m.children)
@@ -581,11 +586,90 @@ const main = {
       lesson.evaluatives.push(evaluative);
       this.commit("main/setChanged", true);
     },
+    addQuizByLessonId(state, id) {
+      const lesson = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .find(l => l.id == id);
+      let n = Math.min(...state.evaluatives.map(l => l.id));
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
+      }
+      let evaluative = {
+        id: n - 1,
+        new: true,
+        contentType: "quiz",
+        name: "",
+        questions: [],
+      };
+      let questions;
+      let answers;
+      questions = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .flatMap(l => l.evaluatives)
+        .filter(e => e.contentType == "quiz")
+        .flatMap(e => e.questions.map(q => q.id));
+      answers = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .flatMap(l => l.evaluatives)
+        .filter(e => e.contentType == "quiz")
+        .flatMap(e => e.questions)
+        .flatMap(q => q.answers.map(a => a.id));
+
+      let i = Math.max(...questions);
+      if (i < 0) {
+        i = 0;
+      }
+      let i2 = Math.max(...answers);
+      if (i2 < 0) {
+        i2 = 0;
+      }
+      if (!("questions" in evaluative)) {
+        evaluative.questions = []
+      }
+      evaluative.questions.push({
+        new: true,
+        question: "",
+        id: i + 1,
+        correctAnswer: [],
+        answers: [
+          { answer: "", id: i2 + 1 },
+          { answer: "", id: i2 + 2 }
+        ]
+      });
+      lesson.evaluatives.push(evaluative);
+      this.commit("main/setChanged", true);
+    },
+    addProgExByLessonId(state, id) {
+      const lesson = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .find(l => l.id == id);
+      let n = Math.min(...state.evaluatives.map(l => l.id));
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
+      }
+      let evaluative = {
+        id: n - 1,
+        new: true,
+        contentType: "code",
+        name: "",
+        type: null,
+        contexts: [],
+        skeleton: "",
+        solution: "",
+        tests: [],
+      };
+      lesson.evaluatives.push(evaluative);
+      this.commit("main/setChanged", true);
+    },
     changeEvaluativeTypeById(state, list) {
       const id = list[0];
       const type = list[1];
       let evaluative
-      if (state.courses.length>0){
+      if (state.courses.length > 0) {
         evaluative = state.courses
           .flatMap(c => c.children)
           .flatMap(m => m.children)
@@ -597,7 +681,7 @@ const main = {
       if (type == "quiz") {
         let questions;
         let answers;
-        if (state.courses.length>0){
+        if (state.courses.length > 0) {
           questions = state.courses
             .flatMap(c => c.children)
             .flatMap(m => m.children)
@@ -612,7 +696,7 @@ const main = {
             .flatMap(e => e.questions)
             .flatMap(q => q.answers.map(a => a.id));
         } else {
-          if ("questions" in state.evaluatives[0]){
+          if ("questions" in state.evaluatives[0]) {
             questions = state.evaluatives[0].questions.map(q => q.id);
             answers = state.evaluatives[0].questions.flatMap(q => q.answers.map(a => a.id));
           } else {
@@ -628,7 +712,7 @@ const main = {
         if (i2 < 0) {
           i2 = 0;
         }
-        if (!("questions" in evaluative)){
+        if (!("questions" in evaluative)) {
           evaluative.questions = []
         }
         evaluative.questions.push({
@@ -663,15 +747,14 @@ const main = {
     setEvaluativeField(state, [id, field, value]) {
       let evaluative
       if (state.courses.length > 0) {
-        evaluative = state.courses
-          .flatMap(c => c.children)
+        evaluative = state.courses[0].children
           .flatMap(m => m.children)
           .flatMap(l => l.evaluatives)
           .find(e => e.id == id);
       } else {
         evaluative = state.evaluatives[0]
       }
-      if (evaluative[field] != value){
+      if (evaluative[field] != value) {
         this.commit("main/setChanged", true);
       }
       evaluative[field] = value;
@@ -693,6 +776,7 @@ const main = {
       }
       this.commit("main/setEvaluatives", [evaluative])
     },
+
 
     //-------Question
     setQuestions(state, questions) {
@@ -746,7 +830,7 @@ const main = {
         question: "",
         id: i - 1,
         correctAnswer: [],
-        image:{data:null},
+        image: { data: null },
         answers: [
           { answer: "", id: i2 - 1 },
           { answer: "", id: i2 - 2 }
@@ -800,7 +884,7 @@ const main = {
         question: "",
         id: i - 1,
         correctAnswer: [],
-        image:{data:null},
+        image: { data: null },
         answers: [
           { answer: "", id: i2 - 1 },
           { answer: "", id: i2 - 2 }
@@ -898,11 +982,12 @@ const main = {
       if (n > 0 || !isFinite(n)) {
         n = 0;
       }
-      question.answers.push({
+      let answer = {
         new: true,
         answer: "",
         id: n - 1
-      });
+      }
+      question.answers.push(answer);
       this.commit("main/setChanged", true);
     },
     setAnswerField(state, [id, field, value]) {
@@ -923,7 +1008,7 @@ const main = {
       } else {
         a = state.questions[0].answers.find(a => a.id == id)
       }
-      if (a[field] != value){
+      if (a[field] != value) {
         this.commit("main/setChanged", true);
       }
       a[field] = value;
@@ -1025,7 +1110,7 @@ const main = {
       } else {
         test = state.evaluatives[0].tests.find(t => t.id == id)
       }
-      if (test[field] != value){
+      if (test[field] != value) {
         this.commit("main/setChanged", true);
       }
       test[field] = value;
@@ -1064,7 +1149,7 @@ const main = {
     },
     deleteMilestone(state, id) {
       let expositive;
-      if (state.courses > 0) {
+      if (state.courses.length > 0) {
         expositive = state.courses
           .flatMap(c => c.children)
           .flatMap(m => m.children)
@@ -1090,12 +1175,17 @@ const main = {
         milestone = state.expositives[0].milestones.find(m => m.id == id)
       }
       if (field == "frame" && typeof (value) == "string") {
-        if (milestone[field] != JSON.parse(value)){
-          this.commit("main/setChanged", true);
+        try {
+          let newV = JSON.parse(value)
+          if (milestone[field] != newV) {
+            this.commit("main/setChanged", true);
+          }
+          milestone[field] = newV
+        } catch(err){
+          console.log(err) //TODO not allow numbers to input
         }
-        milestone[field] = JSON.parse(value)
       } else {
-        if (milestone[field] != value){
+        if (milestone[field] != value) {
           this.commit("main/setChanged", true);
         }
         milestone[field] = value;
@@ -1132,7 +1222,6 @@ const main = {
         format: "",
         name: "",
         text: "",
-        contentType: "new",
         show: false
       });
       this.commit("main/setChanged", true);
@@ -1166,7 +1255,7 @@ const main = {
       } else {
         context = state.evaluatives[0].contexts.find(c => c.id == id)
       }
-      if (context[field] != value){
+      if (context[field] != value) {
         this.commit("main/setChanged", true);
       }
       context[field] = value;
@@ -1178,7 +1267,7 @@ const main = {
     },
     setOccurrenceField(state, [id, field, value]) {
       const occ = state.occurrences.find(c => c.id == id);
-      if (occ[field] != value){
+      if (occ[field] != value) {
         this.commit("main/setChanged", true);
       }
       occ[field] = value;
@@ -1209,7 +1298,7 @@ const main = {
     },
     setClassField(state, [id, field, value]) {
       const classe = state.occurrences.flatMap(o => o.classes).find(c => c.id == id)
-      if (classe[field] != value){
+      if (classe[field] != value) {
         this.commit("main/setChanged", true);
       }
       classe[field] = value;
@@ -1369,7 +1458,7 @@ const main = {
           }
         })
         .then(response => {
-          resp = response.data.data;
+          resp = response.data.data[0]; //TODO resp is list [idMenu:0, {}]
         });
       const course = await this.dispatch("convert/prepareCourse", resp)
       this.commit("main/setCourses", [course])
@@ -1557,7 +1646,7 @@ const main = {
       this.commit("main/setCourses", [course])
       if (state.getters.getRole == "author") {
         this.commit("main/createEditableCourse");
-      } 
+      }
     },
     async prepareExpositive(state, [resp, isCopy]) {
       const expositive = await this.dispatch("convert/prepareExpositive", [resp, isCopy])
@@ -1682,9 +1771,9 @@ const main = {
       const formData = new FormData();
       formData.append("data", JSON.stringify(data));
       files.forEach(file => {
-        if (file.type=="image"){
+        if (file.type == "image") {
           formData.append("files.image", file.file)
-        } else if (file.type == "file"){
+        } else if (file.type == "file") {
           formData.append("files.file", file.file)
         }
       })
@@ -1745,20 +1834,18 @@ const main = {
       this.commit("main/createEditableCourse");
     },
 
-    async addExistingExpositives(state, [lessonId, expositveIds, currentId]) {
-      this.commit("main/deleteExpositive", currentId)
+    async addExistingExpositives(state, [lessonId, expositveIds]) {
       for (let expositveId of expositveIds) {
-        let expositive = await state.dispatch("fetchCollectionType", [expositveId, "expositives"]);
-        expositive = await this.dispatch("convert/prepareExpositive", expositive)
+        let expositive = await this.dispatch("main/fetchCollectionType", [expositveId, "expositives"]);
+        expositive = await this.dispatch("convert/prepareExpositive", [expositive,false])
         let lesson = state.getters.getCourse.children.flatMap(m => m.children).find(l => l.id == lessonId)
         lesson.expositives.push((expositive))
       }
       //this.commit("main/setChanged", false);
     },
-    async addExistingEvaluatives(state, [lessonId, evalutaiveIds, currentId]) {
-      this.commit("main/deleteEvaluative", currentId)
+    async addExistingEvaluatives(state, [lessonId, evalutaiveIds]) {
       for (let evaluativeId of evalutaiveIds) {
-        let evaluative = await state.dispatch("fetchEvaluative", [evaluativeId, "evaluatives"]);
+        let evaluative = await this.dispatch("main/fetchCollectionType", [evaluativeId, "evaluatives"]);
         evaluative = await this.dispatch("convert/prepareEvaluative", evaluative)
         let lesson = state.getters.getCourse.children.flatMap(m => m.children).find(l => l.id == lessonId)
         lesson.evaluatives.push((evaluative))
@@ -1767,9 +1854,14 @@ const main = {
     },
     async addExistingQuestions(state, [evaluativeId, questionIds]) {
       for (let questionId of questionIds) {
-        let question = await state.dispatch("fetchQuestion", [questionId, "questions"]);
-        question = await this.dispatch("convert/prepareQuestion", question)
-        let evaluative = state.getters.getCourse.children.flatMap(m => m.children).flatMap(l => l.evaluatives).find(e => e.id == evaluativeId)
+        let question = await this.dispatch("main/fetchCollectionType", [questionId, "questions"]);
+        question = await this.dispatch("convert/prepareQuestion", [question, false])
+        let evaluative
+        if (state.getters.getCourses.length>0){
+          evaluative = state.getters.getCourse.children.flatMap(m => m.children).flatMap(l => l.evaluatives).find(e => e.id == evaluativeId)
+        } else {
+          evaluative = state.getters.getEvaluative
+        }
         evaluative.questions.push((question))
       }
       //this.commit("main/setChanged", false);
@@ -1779,8 +1871,8 @@ const main = {
 };
 
 const serverData = {
-  domain: "https://agni.dcc.fc.up.pt/strapi",
-  //domain: "http://localhost:1337",
+  //domain: "https://agni.dcc.fc.up.pt/strapi",
+  domain: "http://localhost:1337",
   authentication: "/api/auth/local",
   register: "/api/auth/local/register",
   me: "/api/users/me?populate=*",

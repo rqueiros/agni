@@ -1,24 +1,21 @@
 <template>
-  <div id="timeline" style="width:100%">
+  <div id="timeline">
     <v-card
-      class="mx-auto"
       outlined
-      v-if="resource != undefined && resExist"
-      id="timeline"
+      v-if="resource != undefined"
     >
-      <v-list-item>
-        <v-list-item-content>
+      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
+        <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">
             TIMELINE
           </v-list-item-title>
           <v-list-item-subtitle
             :class="getSmallTextClass"
-            v-if="'type' in resource"
+            v-if="'type' in resource && resource.type!=null"
             >Jump in the {{ resource.type.toUpperCase() }} for specific
             topics!</v-list-item-subtitle
           >
         </v-list-item-content>
-
         <v-list-item-avatar
           tile
           :size="getAvatarMediumSize"
@@ -31,78 +28,98 @@
       </v-list-item>
 
       <!--
-      <v-subheader v-if="resource.type == 'video'" :class="getSmallTextClass(screenSize)">
+      <v-subheader v-if="resource.type == 'video'" 
+      :class="getSmallTextClass(screenSize)">
         Video length: {{ convert(duration) }}
       </v-subheader>
       <v-subheader v-else :class="getSmallTextClass(screenSize)">PDF length:
         {{
-          resource.milestones.find(milestone => milestone.label === "End").frame
+          resource.milestones
+          .find(milestone => milestone.label === "End").frame
         }}
         pages
       </v-subheader>-->
 
-      <v-timeline
+      <v-timeline class="pt-2 pb-0 mb-3 mr-2 overflow-hidden"
         align-top
         dense
         v-if="
-          ('milestones' in resource && resource.milestones.length != 0) ||
+          ('milestones' in resource && resource.milestones.length > 0) ||
             isTeacher
         "
         :class="getSmallTextClass"
       >
-        <v-timeline-item
-          class="milestone"
+        <v-timeline-item 
+          v-for="(milestone, i) in resource.milestones"
+          :small="getButtonMediumSize=='small'"
+          class="milestone mb-3 pa-0"
           @click.native="goto(parseInt(milestone.frame))"
           :icon="getIcon(milestone)"
-          v-for="(milestone, i) in resource.milestones"
           :color="getColor(milestone)"
           :key="i"
         >
           <!--Student + Viewer-->
-          <v-row v-if="isStudent || isViewer">
-            <v-col class="mt-1">
+          <v-row 
+            v-if="isStudent || isViewer" 
+            no-gutters 
+            :style="isMD ? 'height: 24px;' : 'height: 38px;'"
+            class="d-flex align-center" 
+          >
+            <v-col>
               <span
                 v-html="convert(milestone.frame) + ' - ' + milestone.label"
               ></span>
             </v-col>
           </v-row>
           <!--Author-->
-          <v-row v-if="isAuthor" class="ml-0">
-            <v-col class="mt-1 pt-3" style="padding:2px;" cols="2">
+          <v-row 
+            v-if="isAuthor" 
+            no-gutters 
+            :style="isMD ? 'height: 24px;' : 'height: 38px;'" 
+            class="d-flex align-center"
+          >
+            <v-col cols="2" class="pr-1" >
               <Editable
-                :type="'milestone'"
-                :value="(typeof(milestone.frame) == 'string') ? milestone.frame : JSON.stringify(milestone.frame)"
+                type="milestone"
+                :value="(typeof(milestone.frame) == 'string') ? 
+                  milestone.frame : JSON.stringify(milestone.frame)"
                 :id="milestone.id"
-                :field="'frame'"
+                field="frame"
                 placeholder="Frame"
                 @input="editableInput"
                 onclick="event.stopPropagation()"
-              ></Editable>
+              />
             </v-col>
-            <v-col class="mt-1 pt-3" style="padding:2px;">
+            <v-col class="pl-1 pr-1">
               <Editable
-                :type="'milestone'"
+                type="milestone"
                 :value="milestone.label"
                 :id="milestone.id"
-                :field="'label'"
+                field="label"
                 placeholder="Label"
                 @input="editableInput"
                 onclick="event.stopPropagation()"
-              ></Editable>
+              />
             </v-col>
-            <v-col class="pt-3" style="padding:2px;">
+            <v-col cols="2" class="pl-1">
               <v-btn
                 icon
+                :x-small="getButtonSmallSize=='x-small'"
+                :small="getButtonSmallSize=='small'"
                 @click="deleteMilestone(milestone.id)"
-                class="course_iconButtonS"
               >
                 <v-icon :size="getIconSmallSize">mdi-delete</v-icon>
               </v-btn>
             </v-col>
           </v-row>
         </v-timeline-item>
-        <v-timeline-item hide-dot v-if="isAuthor">
-          <v-btn @click="addMilestoneByExpositiveId(resource.id)" small>
+        <v-timeline-item hide-dot v-if="isAuthor" class="pb-2">
+          <v-btn 
+            class="mt-1" 
+            @click="addMilestoneByExpositiveId(resource.id)" 
+            :small="getButtonMediumSize=='small'"
+            :medium="getButtonMediumSize=='medium'"
+          >
             <v-icon>mdi-plus</v-icon>Add Milestone
           </v-btn>
         </v-timeline-item>
@@ -112,8 +129,10 @@
   </div>
 </template>
 
+
 <script>
 import { mapGetters, mapMutations } from "vuex";
+
 import Editable from "../../../../gerneral/Editable.vue";
 
 export default {
@@ -141,7 +160,7 @@ export default {
       "isStudent",
       "isTeacher",
       "isViewer",
-      "isAuthor"
+      "isAuthor",
     ]),
     ...mapGetters("style",[
       "getTitleClass",
@@ -149,10 +168,11 @@ export default {
       "getAvatarMediumSize",
       "getIconBigSize",
       "getIconSmallSize",
+      "isMDsmaller",
+      "isMD",
+      "getButtonMediumSize",
+      "getButtonSmallSize"
     ]),
-    resExist() {
-      return this.resource.type != "newExpo";
-    },
   },
   methods: {
     ...mapMutations("main",[
@@ -160,9 +180,6 @@ export default {
       "addMilestoneByExpositiveId",
       "deleteMilestone"
     ]),
-    setDuration(duration) {
-      this.duration = duration;
-    },
     goto(index) {
       this.selected = index;
       this.$emit("onMilestone", index);
@@ -179,73 +196,45 @@ export default {
       }
     },
     getColor(milestone) {
-      let color;
+      let ids = this.resource.milestones.map(m => m.id)
       if (milestone.frame == this.selected) {
-        color = "black";
+        return "black";
+      } else if (ids[0]==milestone.id){
+        return "green";
+      } else if (ids[ids.length-1]==milestone.id){
+        return "red";
       } else {
-        if (milestone.label == "Start") {
-          color = "green";
-        } else if (milestone.label == "End") {
-          color = "red";
-        } else {
-          color = "blue";
-        }
+        return "blue"
       }
-      return color;
     },
     getIcon(milestone) {
-      let icone;
-      if (milestone.label == "Start") {
-        icone = "mdi-flag-triangle";
-      } else if (milestone.label == "End") {
-        icone = "mdi-flag-triangle";
+      let ids = this.resource.milestones.map(m => m.id)
+      if (ids[0]==milestone.id){
+        return "mdi-flag-triangle";
+      } else if (ids[ids.length-1]==milestone.id){
+        return "mdi-flag-triangle";
       } else {
-        icone = "mdi-play";
+        return "mdi-play"
       }
-      return icone;
     }
   }
 };
 </script>
+
 
 <style scoped>
 .milestone:hover {
   cursor: pointer;
 }
 
-#timeline >>> .v-timeline-item__dot {
-  height: 2.2em !important;
-  width: 2.2em !important;
-}
-
-#timeline >>> .v-timeline-item__dot .v-timeline-item__inner-dot {
-  height: 1.8em !important;
-  width: 1.8em !important;
-  margin: 0.2em !important;
-}
-
-#timeline >>> .v-icon.v-icon {
-  font-size: 1.5em;
-}
-
-#timeline >>> .v-timeline {
-  padding-top: 1em;
-  margin-bottom: 1em;
-}
-
-#timeline >>> .v-timeline-item {
-  padding-bottom: 1em;
-}
-
+/* Timeline styles */
 #timeline >>> .v-timeline--dense .v-timeline-item__body {
-  max-width: calc(100% - 6em) !important;
+  max-width: calc(100% - 5rem) !important;
 }
-
 #timeline >>> .v-timeline-item__divider {
-  min-width: 6em !important;
+  min-width: 5rem !important;
 }
-
 .v-application--is-ltr .v-timeline--dense:not(.v-timeline--reverse)::before {
-  left: calc(3em - 1px) !important;
+  left: calc(2.5rem - 1px) !important;
 }
 </style>

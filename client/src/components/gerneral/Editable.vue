@@ -7,8 +7,8 @@
       v-show="edit"
       :placeholder="placeholder"
       :value="valueLocal"
-      :class="'editable '"
-      style="width: calc(100% - 2px); margin:1px;padding-left:4px;"
+      :class="'editable'"
+      style="width: calc(100% - 2px); margin:1px;"
       @blur="
         valueLocal = $event.target.value;
         func();
@@ -107,8 +107,9 @@ export default {
 .editable {
   background-color: rgb(226, 226, 226);
   font-size: inherit;
-  padding: 1px;
+  padding: 4px;
   border-radius: 5px;
+  line-height: normal !important;
 }
 .editable:hover {
   cursor: text !important;

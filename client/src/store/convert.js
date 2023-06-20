@@ -157,7 +157,7 @@ const convert = {
       if ("name" in evaluative) {
         newEvaluative.name = evaluative.name
       }
-      newEvaluative.content = [{}];
+      newEvaluative.content = [{id:evaluative.compId}];
       if (evaluative.contentType == "quiz") {
         newEvaluative.content[0].__component = "base.quiz";
         if ("questions" in evaluative) {
@@ -189,15 +189,15 @@ const convert = {
         if ("solution" in evaluative) {
           newEvaluative.content[0].solution = evaluative.solution
         }
-        if ("context" in evaluative) {
-          newEvaluative.content[0].context = [];
-          evaluative.context.forEach(context => {
+        if ("contexts" in evaluative) {
+          newEvaluative.content[0].contexts = [];
+          evaluative.contexts.forEach(context => {
             if (context.new) {
               delete context.new
               delete context.id
-              newEvaluative.content[0].context.push(context)
+              newEvaluative.content[0].contexts.push(context)
             } else {
-              newEvaluative.content[0].context.push(context)
+              newEvaluative.content[0].contexts.push(context)
             }
           })
         }
@@ -338,14 +338,21 @@ const convert = {
         module.lessons.forEach(async lesson => {
           lesson.idMenu = count;
           count++;
+          let newExpositives = []
+          let newEvaluatives = []
           lesson.expositives = lesson.expositives.data;
           for (let i = 0; i < lesson.expositives.length; i++) {
-            lesson.expositives[i] = await this.dispatch("convert/prepareExpositive", [lesson.expositives[i], false])
+            let expo = await this.dispatch("convert/prepareExpositive", [lesson.expositives[i], false])
+            newExpositives.push(expo)
           }
           lesson.evaluatives = lesson.evaluatives.data;
           for (let i = 0; i < lesson.evaluatives.length; i++) {
-            lesson.evaluatives[i] = await this.dispatch("convert/prepareEvaluative", lesson.evaluatives[i])
+            let evalu = await this.dispatch("convert/prepareEvaluative", lesson.evaluatives[i])
+            newEvaluatives.push(evalu)
           }
+          lesson.expositives = newExpositives
+          lesson.evaluatives = newEvaluatives
+
           lesson.contentType = "lesson";
           lesson.internalId = "L" + lessonCount;
           lessonCount++;
@@ -369,10 +376,12 @@ const convert = {
       return course;
     },
     prepareExpositive(state, [resp, isCopy]) {
-      const expositive = resp;
+      let expositive = resp;
+      //expositive.name=resp.attributes.name
       Object.keys(expositive.attributes).forEach(key => {
         expositive[key] = expositive.attributes[key];
       });
+      
       expositive.contentType = expositive.type;
       delete expositive.attributes;
       if(isCopy && "milestones" in expositive){
@@ -383,39 +392,64 @@ const convert = {
       return expositive;
     },
     prepareEvaluative(state, resp) {
-      const evaluative = resp;
-      Object.keys(evaluative.attributes).forEach(key => {
-        evaluative[key] = evaluative.attributes[key];
+      
+      let evaluative = {}
+      //evaluative = resp;
+      //evaluative.name = resp.attributes.name
+      evaluative.id= resp.id
+      
+      Object.keys(resp.attributes).forEach(key => {
+        evaluative[key] = resp.attributes[key];
       });
-      if (evaluative.content) {
-        Object.keys(evaluative.content[0]).forEach(async key => {
+      
+      if (resp.attributes.content) {
+        Object.keys(resp.attributes.content[0]).forEach(async key => {
           if (key == "__component") {
-            if (evaluative.content[0]["__component"] == "base.quiz") {
+            if (resp.attributes.content[0]["__component"] == "base.quiz") {
               evaluative.type = "quiz";
               evaluative.contentType = "quiz";
             } else {
               evaluative.contentType = "code";
             }
+          } else if (key == "id") {
+            evaluative.compId = resp.attributes.content[0].id
           } else if (key == "questions") {
-            evaluative.questions = evaluative.content[0]["questions"].data;
-            for (var i = 0; i < evaluative.questions.length; i++) {
-              evaluative.questions[i] = await this.dispatch("convert/prepareQuestion", [evaluative.questions[i],false])
+            //evaluative.questions = resp.attributes.content[0]["questions"];
+            evaluative.questions = []
+            for (var i = 0; i < resp.attributes.content[0].questions.data.length; i++) {
+              let que = await this.dispatch("convert/prepareQuestion", [resp.attributes.content[0].questions.data[i],false])
+              evaluative.questions.push(que)
             }
+            //evaluative.questions = newQuestions
           } else if (key != "id") {
-            evaluative[key] = evaluative.content[0][key];
+            evaluative[key] = resp.attributes.content[0][key];
           }
         });
+        if(evaluative.contentType=="code" && !("contexts" in evaluative)){
+          evaluative.contexts=[]
+        }
       }
-      delete evaluative.content;
-      delete evaluative.attributes;
+      //delete evaluative.content;
+      //delete evaluative.attributes;
+      //let evaluative = {name:"eval", id:resp.id}
       return evaluative;
     },
     prepareQuestion(state, [resp, isCopy]) {
-      const question = resp;
-      Object.keys(question.attributes).forEach(key2 => {
-        question[key2] = question.attributes[key2];
+      let question = {}
+      //let question = resp;
+      question.id = resp.id
+      Object.keys(resp.attributes).forEach(key2 => {
+        if (key2 == "answers"){
+          let newAnswers = []
+          for (let i = 0; i < resp.attributes.answers.length;i++){
+            newAnswers.push(resp.attributes.answers[i])
+          }
+          question.answers = newAnswers
+        } else {
+          question[key2] = resp.attributes[key2];
+        }
       });
-      delete question.attributes;
+      //delete question.attributes;
       question.correctAnswer = JSON.parse(question.correctAnswer)
       if(isCopy && "answers" in question){
         question.answers.forEach(answer => {

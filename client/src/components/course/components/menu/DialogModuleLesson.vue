@@ -1,12 +1,14 @@
 <template>
-  <div id="DialogModuleLesson">
-    <v-dialog v-model="dialog" max-width="500px">
+  <div id="dialogModuleLesson">
+    <v-dialog v-model="localDialog" max-width="500px">
       <v-card v-if="dialog">
-        <v-card-title class="pb-2" :class="getTitleClass">
-          {{ dialogItem.contentType[0].toUpperCase() }}. {{ dialogItem.name }} - Condition:
+        <v-card-title class="pb-2" :class="getSubtitleClass">
+          {{ dialogItem.contentType[0].toUpperCase() }}.
+          {{ dialogItem.name }} - Condition:
         </v-card-title>
-        <v-card-text>
-          <v-container>
+
+        <v-card-text style="color:rgba(0, 0, 0, 0.87)">
+          <v-container fluid :class="getSmallTextClass">
             <v-row>
               <v-col class="text-center">
                 After Week:
@@ -21,9 +23,15 @@
               <v-col>
                 <!--Author-->
                 <span v-if="isAuthor">
-                  <Editable :type="'condition'" :value="dialogItem.condition.afterWeek"
-                    :id="dialogItem.condition.strapiId" :field="'afterWeek'" @input="editableInput"
-                    onclick="event.stopPropagation()" />
+                  <Editable 
+                    :type="'condition'" 
+                    :value="dialogItem.condition.afterWeek == null ? '' : 
+                      dialogItem.condition.afterWeek.toString()"
+                    :id="dialogItem.condition.id" 
+                    :field="'afterWeek'" 
+                    @input="editableInput"
+                    onclick="event.stopPropagation()"
+                  />
                 </span>
                 <!--Viewer-->
                 <span v-if="isViewer">
@@ -33,12 +41,18 @@
               <v-col class="py-0">
                 <!--Author-->
                 <span v-if="isAuthor">
-                  <vue-cascader-select :placeholder="'Type'" :options="options" @select="selected =>
-                    setType(
-                      this.dialogItem.condition.strapiId,
-                      selected.value
-                    )" class="course_text mt-0 ml-0" @clear="val => setType(this.dialogItem.condition.strapiId, '')"
-                    :value="this.dialogItem.condition.type" style="margin-left:8px;width: fit-content; margin-top:8px" />
+                  <vue-cascader-select 
+                    :placeholder="'Type'" 
+                    :options="options" 
+                    @select="selected =>
+                      setType(
+                        dialogItem.condition.id,
+                        selected.value
+                      )" 
+                    @clear="val => setType(dialogItem.condition.id, '')"
+                    :value="dialogItem.condition.type == null ? '' : 
+                      dialogItem.condition.type"
+                  />
                 </span>
                 <!--Viewer-->
                 <span v-if="isViewer">
@@ -48,9 +62,15 @@
               <v-col>
                 <!--Author-->
                 <span v-if="isAuthor">
-                  <Editable :type="'condition'" :value="dialogItem.condition.afterPercDone"
-                    :id="dialogItem.condition.strapiId" :field="'afterPercDone'" @input="editableInput"
-                    onclick="event.stopPropagation()" />
+                  <Editable 
+                    :type="'condition'" 
+                    :value="dialogItem.condition.afterPercDone == null ? '' : 
+                      dialogItem.condition.afterPercDone.toString()"
+                    :id="dialogItem.condition.id" 
+                    :field="'afterPercDone'" 
+                    @input="editableInput"
+                    onclick="event.stopPropagation()" 
+                  />
                 </span>
                 <!--Viewer-->
                 <span v-if="isViewer">
@@ -65,10 +85,10 @@
   </div>
 </template>
 
+
 <script>
 import Vue from "vue";
 import { mapGetters, mapMutations } from "vuex";
-
 import { bus } from "@/main.js";
 
 import VueCascaderSelect from "vue-cascader-select";
@@ -87,7 +107,12 @@ export default {
   props: {
     dialogItem: {
       type: Object,
-      default: () => { return { "afterWeek": "", "afterPercDone": "", "contentType": "a" } }
+      default: () => { return { 
+        "afterWeek": "", 
+        "afterPercDone": "", 
+        "contentType": "",
+        "type":""
+      }}
     },
     dialog: {
       type: Boolean,
@@ -95,15 +120,21 @@ export default {
     }
   },
 
-  data: () => ({
-    options: [
-      { label: "AND", value: "AND" },
-      { label: "OR", value: "OR" }
-    ]
-  }),
+  data() {
+    return {
+      localDialog:this.dialog,
+      options: [
+        { label: "AND", value: "AND" },
+        { label: "OR", value: "OR" }
+      ]
+    }
+  },
 
   watch: {
     dialog(newValue) {
+      this.localDialog = newValue
+    },
+    localDialog(newValue) {
       bus.$emit("dialogModuleLessonChange", newValue);
     }
   },
@@ -118,7 +149,7 @@ export default {
     ...mapGetters("style",[
       "getIconSmallSize",
       "getSmallTextClass",
-      "getTitleClass"
+      "getSubtitleClass",
     ]),
   },
 
@@ -140,4 +171,6 @@ export default {
 }
 </script>
 
-<style scoped></style>
+
+<style scoped>
+</style>

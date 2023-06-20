@@ -21,11 +21,12 @@ const style = {
     //------------------Icon----------------------------------------------------
     getIcon: () => type => {
       switch(type) {
-        case "Contest": return "mdi-tropohy";
+        case "Contest": return "mdi-trophy";
         case "Course": return "mdi-school-outline";
         case "Test/Exam": return "mdi-note-edit-outline";
         case "programming-exercise": return "mdi-code-json";
         case "quiz": return "mdi-head-question-outline";
+        case "code": return "mdi-code-json";
         case "pdf": return "mdi-file-pdf-box";
         case "video": return "mdi-video";
         case "home": return "mdi-home-variant";
@@ -35,13 +36,16 @@ const style = {
         case "account": return "mdi-card-account-details";
         case "blank": return "mdi-text-box-outline";
         case "skeleton": return "mdi-text-box-plus-outline";
-        case "buggy": return "mdi-bug";        
+        case "buggy": return "mdi-bug";
+        case "delete": return "mdi-delete";
+        case "edit": return "mdi-pencil";
+        case "lesson": return "mdi-note-text-outline"  
         default: return "";
       }
     },
     getIconSmallSize: (state, getters) => {
-      if (getters.isSMsmaller) return "x-large";
-      else if (getters.isMD) return "medium";
+      if (getters.isSMsmaller) return "large";
+      else if (getters.isMD) return "large";
       else return "x-large";
     },
     getIconMediumSize: (state, getters) => {
@@ -55,11 +59,30 @@ const style = {
       else return "xx-large";
     },
 
+    //------------------Button--------------------------------------------------
+    getButtonSmallSize: (state, getters) => {
+      if (getters.isSMsmaller) return "x-small";
+      else if (getters.isMD) return "x-small";
+      else return "small";
+    },
+    getButtonMediumSize: (state, getters) => {
+      if (getters.isSMsmaller) return "medium";
+      else if (getters.isMD) return "small";
+      else return "medium";
+    },
+
+    
+    getButtonSize: (state, getters) => {
+      if (getters.isSMsmaller) return "";
+      else if (getters.isMD) return "small";
+      else return "";
+    },
+
     //------------------Avatar--------------------------------------------------
     getAvatarSmallSize: (state, getters) => {
-      if (getters.isSMsmaller) return "50";
-      else if (getters.isMD) return "40";
-      else return "50";
+      if (getters.isSMsmaller) return "35";
+      else if (getters.isMD) return "35";
+      else return "45";
     },
     getAvatarMediumSize: (state, getters) => {
       if (getters.isSMsmaller) return "65";
@@ -79,21 +102,14 @@ const style = {
       else return "text-body-1";
     },
     getTitleClass: (state, getters) => {
-      if (getters.isSMsmaller) return "text-h5";
+      if (getters.isSMsmaller) return "text-h4";
       else if (getters.isMD) return "text-h5";
       else return "text-h4";
     },
     getSubtitleClass: (state, getters) => {
       if (getters.isSMsmaller) return "text-h6";
-      else if (getters.isMD) return "text-subtitle-1";
+      else if (getters.isMD) return "text-subtitle-1 font-weight-medium";
       else return "text-h6";
-    },
-
-    //------------------Button--------------------------------------------------
-    getButtonSize: (state, getters) => {
-      if (getters.isSMsmaller) return "";
-      else if (getters.isMD) return "small";
-      else return "";
     },
 
     //-----------------Snackbar-------------------------------------------------

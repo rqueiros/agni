@@ -1,17 +1,26 @@
 <template>
   <div id="player">
-    <!--
-      :src="
-        'https://agni.dcc.fc.up.pt/strapi/' + resource.file.data.attributes.url
-      "
-    -->
-    <pdf
-      ref="pdfComponent"
-      @num-pages="pageCount = $event"
-      @page-loaded="currentPage = $event"
-      :src="pdfData"
-      :page="page"
-    ></pdf>
+    <div>
+      <v-badge 
+        tile 
+        class="badge"
+        v-if="isAuthor" 
+        overlap
+        color="#f5f5f5"
+        @click.native="deletePDF" 
+        icon="mdi-alpha-x" 
+      >
+      </v-badge>
+      <pdf 
+        style="width: 100%;"
+        ref="pdfComponent" 
+        @num-pages="pageCount = $event" 
+        @page-loaded="currentPage = $event" 
+        :src="pdfData"
+        :page="page" 
+      />
+    </div>
+
     <!--
     <v-rating
       v-model="rating"
@@ -19,21 +28,17 @@
       color="orange"
     ></v-rating>-->
 
-    <div class="text-center">
-      <v-container>
-        <v-row justify="center">
-          <v-col cols="8" style="padding: 4px">
-            <v-pagination
-              v-model="page"
-              :length="pageCount"
-              :total-visible="5"
-              size="small"
-            ></v-pagination>
-          </v-col>
-        </v-row>
-      </v-container>
+    <div class="text-center pa-1">
+      <v-pagination 
+        v-model="page" 
+        :length="pageCount" 
+        :total-visible="5" 
+      />
     </div>
-    <v-card-actions v-if="isStudent">
+    <v-card-actions 
+      v-if="isStudent"
+      :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" 
+    >
       <v-btn color="success" class="mb-2" @click="print">
         PRINT
         <v-icon right dark> mdi-printer </v-icon>
@@ -41,6 +46,7 @@
       <v-btn color="error" class="mb-2" @click="printAll">
         PRINT ALL<v-icon right dark> mdi-printer-settings </v-icon>
       </v-btn>
+
       <!-- <v-btn color="primary" dark class="mb-2" @click="copyText">
         GET LINKS<v-icon right dark>
           mdi-content-copy
@@ -50,23 +56,27 @@
   </div>
 </template>
 
+
 <script>
 import pdf from "vue-pdf";
-import Swal from "sweetalert2";
+//import Swal from "sweetalert2";
 import "sweetalert2/src/sweetalert2.scss";
-import { mapGetters } from "vuex";
+import { mapGetters, mapMutations } from "vuex";
 
 export default {
   name: "Player",
+
   components: {
     pdf
   },
+
   props: {
     resource: {
       type: Object,
-      default: () => {}
+      default: () => { }
     }
   },
+
   data() {
     return {
       rating: 0,
@@ -75,12 +85,12 @@ export default {
       pdfData: null
     };
   },
+
   created() {
-    this.role = this.getRole;
     const file = this.resource.file;
     if ("data" in file) {
       this.pdfData =
-        this.getDomain + 
+        this.getDomain +
         this.resource.file.data.attributes.url;
     } else {
       const reader = new FileReader();
@@ -92,26 +102,29 @@ export default {
       reader.readAsArrayBuffer(file);
     }
   },
+
   computed: {
-    ...mapGetters("main",["getRole", "getDomain"]),
-    isStudent() {
-      return this.role == "student";
-    },
-    isTeacher() {
-      return (
-        this.role == "teacher" || this.role == "author" || this.role == "viewer"
-      );
-    }
+    ...mapGetters("main", [
+      "getDomain", 
+      "isAuthor", 
+      "isStudent", 
+      "isTeacher", 
+      "isViewer"
+    ]),
+    ...mapGetters("style", [
+      "isMDsmaller", 
+      "isMD"
+    ])
   },
+
   methods: {
+    ...mapMutations("main", [
+      "setExpositiveField"
+    ]),
+    getCurrentPage: () => this.page,
     currentPage(page) {
       this.page = page;
     },
-    pageUrl(page) {
-      this.page = page;
-    },
-    getCurrentPage: () => this.page,
-
     print() {
       this.$refs.pdfComponent.print(100, [this.currentPage]);
     },
@@ -122,13 +135,18 @@ export default {
       }
       this.$refs.pdfComponent.print(100, [...pages]);
     },
+    deletePDF(){
+      this.setExpositiveField([this.resource.id, "file", {data:null}])
+      this.setExpositiveField([this.resource.id, "type", null])
+    }
+    /*
     copyText() {
       let links = [];
 
       // Get the links
       const currentPage = this.page;
-      this.$refs.pdfComponent.pdf.forEachPage(function(page) {
-        return page.getTextContent().then(function(content) {
+      this.$refs.pdfComponent.pdf.forEachPage(function (page) {
+        return page.getTextContent().then(function (content) {
           if (page.pageNumber == currentPage) {
             links = content.items.filter(item => item.str.startsWith("http"));
             let text = "";
@@ -146,7 +164,7 @@ export default {
               confirmButtonText: "OK",
               cancelButtonText: "CANCEL"
             }).then(result => {
-              /* Read more about isConfirmed, isDenied below */
+              // Read more about isConfirmed, isDenied below 
               if (result.isConfirmed) {
                 //this.code = this.resource.code;
               }
@@ -154,18 +172,36 @@ export default {
           }
         });
       });
-    }
+    },*/
   }
 };
 </script>
 
-<style>
-.v-pagination__item,
-.v-pagination__navigation,
-.v-pagination__more {
-  min-width: 0;
-  font-size: 0.9em;
-  height: 2.5em;
-  width: 2.5em;
+
+<style scoped>
+/* Make links from pdf disappear */
+::v-deep section{
+  display: none;
+}
+
+/* Badge styles */
+.badge:hover{
+  cursor: pointer;
+}
+.badge{
+  z-index:5; 
+  position:absolute; 
+  top:12px; 
+  right:12px; 
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 
+    0px 1px 5px 0px rgba(0, 0, 0, 0.12)
+}
+#player>>>.v-badge--tile .v-badge__badge{
+  border-radius: 4px;
+  color:black;
+}
+#player>>>.v-badge__badge .v-icon{
+  font-size: 20px;
 }
 </style>
