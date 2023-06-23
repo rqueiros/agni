@@ -8,7 +8,7 @@
         overlap
         color="#f5f5f5"
         @click.native="deletePDF" 
-        icon="mdi-alpha-x" 
+        icon="mdi-close" 
       >
       </v-badge>
       <pdf 
@@ -122,6 +122,9 @@ export default {
       "setExpositiveField"
     ]),
     getCurrentPage: () => this.page,
+    pageUrl(page){
+      this.page = page
+    },
     currentPage(page) {
       this.page = page;
     },
@@ -202,6 +205,6 @@ export default {
   color:black;
 }
 #player>>>.v-badge__badge .v-icon{
-  font-size: 20px;
+  font-size: 16px;
 }
 </style>

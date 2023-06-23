@@ -1,8 +1,8 @@
 <template>
   <div id="tests">
     <v-card outlined>
-      <v-list-item>
-        <v-list-item-content>
+      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
+        <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">
             TESTS
           </v-list-item-title>
@@ -12,7 +12,6 @@
             >Run the teacher tests and create your owns!</v-list-item-subtitle
           >
         </v-list-item-content>
-
         <v-list-item-avatar
           tile
           :size="getAvatarMediumSize"
@@ -24,39 +23,46 @@
         </v-list-item-avatar>
       </v-list-item>
 
-      <!---------------STUDENT------------------------------------------------->
       <v-data-table
-        v-if="isStudent"
-        :headers="headers"
-        :items="tests"
-        sort-by="input"
-        group-by="type"
+        :headers="isAuthor ? headers.author : 
+            isViewer ? headers.viewer : headers.student" 
+        :items="resource.tests"
+        :sort-by="isStudent ? input : ''"
+        mobile-breakpoint="0"
+        :group-by="isStudent ? 'type' : []"
+        :hide-default-footer="isTeacher"
+        :no-data-text="isTeacher ? '' : 'There are no Tests'"
+        disable-sort
       >
         <template v-slot:top>
           <v-toolbar flat>
             <v-dialog v-model="dialog" max-width="500px">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn
+                <v-btn 
                   @click="run"
                   color="success"
                   :disabled="getErrors"
                   class="mb-2 mr-2"
+                  :class="!isMDsmaller ? '' : isMD ? 'ml-n2' : ''"
                   v-bind="attrs"
+                  :small="getButtonMediumSize=='small'"
+                  :medium="getButtonMediumSize=='medium'"
                 >
                   Run Tests
                 </v-btn>
-                <!--<v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">-->
-                <v-btn
+                <v-btn v-if="isStudent"
                   color="primary"
                   dark
                   class="mb-2"
                   v-bind="attrs"
                   @click="newTest"
+                  :small="getButtonMediumSize=='small'"
+                  :medium="getButtonMediumSize=='medium'"
                 >
                   New Test
                 </v-btn>
               </template>
-              <v-card>
+              <v-card v-if="isStudent">
                 <v-card-title>
                   <span class="headline">{{ formTitle }}</span>
                 </v-card-title>
@@ -84,7 +90,9 @@
                   <v-btn color="blue darken-1" text @click="close">
                     Cancel
                   </v-btn>
-                  <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
+                  <v-btn color="blue darken-1" text @click="save"> 
+                    Save 
+                  </v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -107,7 +115,11 @@
             </v-dialog>
           </v-toolbar>
         </template>
-        <template v-slot:group.header="{ items, isOpen, toggle }">
+
+        <template 
+          v-slot:group.header="{ items, isOpen, toggle }" 
+          v-if="isStudent"
+        >
           <th colspan="3">
             <v-icon @click="toggle"
               >{{
@@ -128,192 +140,132 @@
             }}
           </th>
         </template>
+
         <template v-slot:item.input="{ item }">
-          {{ item.alias || item.input }}
+          <div :class="getSmallTextClass">
+            <span v-if="isStudent">
+              {{ item.alias || item.input }}
+            </span>
+            <span v-if="isAuthor" >
+              <Editable
+                :type="'test'"
+                :value="item.input"
+                :id="item.id"
+                :field="'input'"
+                placeholder="Input"
+                @input="editableInput"
+              ></Editable>
+              <Editable
+                :type="'test'"
+                :value="item.expected"
+                :id="item.id"
+                :field="'expected'"
+                placeholder="Expected"
+                @input="editableInput"
+              ></Editable>
+            </span>
+            <span v-if="isViewer">
+              <div>{{ item.input }}</div>
+              <div>{{ item.expected }}</div>
+            </span>
+          </div>
         </template>
+
         <template v-slot:item.output="{ item }">
-          <v-chip :color="getColor(item)" dark>
+          <v-chip 
+            :color="getColor(item)" 
+            dark
+            :small="getButtonMediumSize=='small'" 
+            :medium="getButtonMediumSize=='medium'"
+          >
             {{ item.output }}
           </v-chip>
         </template>
+
         <template v-slot:item.expected="{ item }">
-          {{
-            item.options && !item.options.showExpected
-              ? "hidden"
-              : item.expected
-          }}
+          <div :class="getSmallTextClass">
+            {{
+              item.options && !item.options.showExpected
+                ? "hidden"
+                : item.expected
+            }}
+          </div>
         </template>
-      </v-data-table>
-      <!---->
 
-      <!---------------Teacher------------------------------------------------->
-      <v-data-table
-        :headers="teacherHeaders"
-        :items="tests"
-        v-if="isAuthor"
-        mobile-breakpoint="0"
-        :no-data-text="''"
-        id="teachertable"
-        hide-default-footer
-      >
-        <template v-slot:top>
-          <v-toolbar flat>
-            <v-dialog v-model="dialog" max-width="500px">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  @click="run"
-                  color="success"
-                  :disabled="getErrors"
-                  class="course_button course_text"
-                  v-bind="attrs"
-                >
-                  Run Solution on Tests
-                </v-btn>
-              </template>
-            </v-dialog>
-          </v-toolbar>
+        <template v-slot:item.type="{item}">
+          <div :class="getSmallTextClass">
+            <span v-if="isAuthor">
+              <vue-cascader-select
+                :options="options"
+                @select="
+                  selected => setTypes(item.id, selected.value)
+                "
+                :value="
+                  'subtype' in item && item.subtype != '' && item.subtype != null
+                    ? item.subtype
+                    : item.type != null ? item.type : ''
+                "
+              />
+            </span>
+            <span v-if="isViewer">
+              <div>{{ item.type }}</div>
+              <div>{{ item.subtype }}</div>
+            </span>
+          </div>
         </template>
-        <template v-slot:body="{ items }">
-          <tbody>
-            <template v-for="item in items">
-              <tr :key="item.id">
-                <td>
-                  <v-chip :color="getColor(item)" dark>
-                    {{ item.output }}
-                  </v-chip>
-                </td>
-                <td :class="getSmallTextClass">
-                  <Editable
-                    :type="'test'"
-                    :value="item.input"
-                    :id="item.id"
-                    :field="'input'"
-                    placeholder="Input"
-                    @input="editableInput"
-                  ></Editable>
-                  <Editable
-                    :type="'test'"
-                    :value="item.expected"
-                    :id="item.id"
-                    :field="'expected'"
-                    placeholder="Expected"
-                    @input="editableInput"
-                  ></Editable>
-                </td>
-                <td :class="getSmallTextClass">
-                  <vue-cascader-select
-                    :options="options"
-                    @select="
-                      selected => setTypes(item.id, selected.value)
-                    "
-                    :value="
-                      'subtype' in item && item.subtype != '' && item.subtype != null
-                        ? item.subtype
-                        : item.type != null ? item.type : ''
-                    "
-                  />
-                </td>
-                <td>
-                  <v-btn
-                    icon
-                    v-if="item.show"
-                    @click="changeTestVisibility(item.id, false)" x-small
-                  >
-                    <v-icon>
-                      mdi-eye
-                    </v-icon>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    v-if="!item.show"
-                    x-small
-                    @click="changeTestVisibility(item.id, true)"
-                  >
-                    <v-icon>
-                      mdi-eye-off
-                    </v-icon>
-                  </v-btn>
-                </td>
-                <td class="pa-0">
-                  <v-btn
-                    icon
-                    @click="deleteTest(item.id)"
-                    x-small
-                  >
-                    <v-icon> mdi-delete </v-icon>
-                  </v-btn>
-                </td>
-              </tr>
-            </template>
-            <template>
-              <tr style="background-color: transparent !important">
-                <td :colspan="teacherHeaders.length" class="pa-1">
-                  <v-btn
-                    width="100%"
-                    @click="addTestByEvaluativeId(resource.id)"
-                    small
-                  >
-                    <v-icon>mdi-plus</v-icon> Add Test
-                  </v-btn>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </template>
-      </v-data-table>
 
-      <v-data-table
-        :headers="viewerHeaders"
-        :items="tests"
-        v-if="isViewer"
-        mobile-breakpoint="0"
-        :no-data-text="''"
-        id="teachertable"
-        hide-default-footer
-      >
-        <template v-slot:top>
-          <v-toolbar flat>
-            <v-dialog v-model="dialog" max-width="500px">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  @click="run"
-                  color="success"
-                  :disabled="getErrors"
-                  class="course_button course_text"
-                  v-bind="attrs"
-                >
-                  Run on Tests
-                </v-btn>
-              </template>
-            </v-dialog>
-          </v-toolbar>
+        <template v-slot:item.show="{item}">
+          <v-btn
+            icon
+            v-if="item.show"
+            @click="changeTestVisibility(item.id, false)" 
+            :disabled="isViewer"
+            :x-small="getButtonSmallSize=='x-small'"
+            :small="getButtonSmallSize=='small'"
+          >
+            <v-icon :size="getIconSmallSize">
+              mdi-eye
+            </v-icon>
+          </v-btn>
+          <v-btn
+            icon
+            v-if="!item.show"
+            :x-small="getButtonSmallSize=='x-small'"
+            :small="getButtonSmallSize=='small'"
+            @click="changeTestVisibility(item.id, true)"
+            :disabled="isViewer"
+          >
+            <v-icon :size="getIconSmallSize">
+              mdi-eye-off
+            </v-icon>
+          </v-btn>
         </template>
-        <template v-slot:body="{ items }">
-          <tbody>
-            <template v-for="item in items">
-              <tr :key="item.id">
-                <td>
-                  <v-chip :color="getColor(item)" dark>
-                    {{ item.output }}
-                  </v-chip>
-                </td>
-                <td :class="getSmallTextClass">
-                  <div>{{ item.input }}</div>
-                  <div>{{ item.expected }}</div>
-                </td>
-                <td :class="getSmallTextClass">
-                  <div>{{ item.type }}</div>
-                  <div>{{ item.subtype }}</div>
-                </td>
-                <td>
-                  {{ item.show }}
-                </td>
-              </tr>
-            </template>
-          </tbody>
+
+        <template v-slot:item.actions="{item}">
+          <v-btn
+            icon
+            @click="deleteTest(item.id)"
+            :x-small="getButtonSmallSize=='x-small'"
+            :small="getButtonSmallSize=='small'"
+          >
+            <v-icon :size="getIconSmallSize">
+              mdi-delete
+            </v-icon>
+          </v-btn>
+        </template>
+
+        <template v-slot:footer v-if="isAuthor">
+          <v-btn
+            width="100%"
+            @click="addTestByEvaluativeId(resource.id)"
+            :small="getButtonMediumSize=='small'" 
+            :medium="getButtonMediumSize=='medium'"
+            class="mb-2 mt-1"
+          >
+            <v-icon>mdi-plus</v-icon> Add Test
+          </v-btn>
         </template>
       </v-data-table>
-      <!---->
 
       <!-- <br />
        <v-alert
@@ -346,10 +298,11 @@ import Swal from "sweetalert2";
 import { html2dom } from "@/assets/utils/html2dom.js";
 import "sweetalert2/src/sweetalert2.scss";
 import { mapActions, mapGetters, mapMutations } from "vuex";
-import Editable from "../../../../gerneral/Editable.vue";
 /* import * as LJS from "@/assets/utils/test.js";
  */
 import Vue from "vue";
+
+import Editable from "../../../../gerneral/Editable.vue";
 import VueCascaderSelect from "vue-cascader-select";
 
 Vue.use(VueCascaderSelect);
@@ -371,30 +324,34 @@ export default {
   data: () => ({
     dialog: false,
     dialogDelete: false,
-    headers: [
-      { text: "Input", value: "input", align: "start", sortable: true },
-      { text: "Type", value: "type" },
-      { text: "Output", value: "output" },
-      { text: "Expected", value: "expected" }
-    ],
-    headers2: [
-      { text: "Input", value: "input", align: "center", sortable: true },
-      { text: "Output", value: "output" },
-      { text: "Expected", value: "expected" }
-    ],
-    teacherHeaders: [
-      { text: "Output", value: "output", align: "start" },
-      { text: "Input \n Expected", value: "input" },
-      { text: "Type", value: "type" },
-      { text: "", value: "show" },
-      { text: "", value: "" }
-    ],
-    viewerHeaders: [
-      { text: "Output", value: "output", align: "start" },
-      { text: "Input \n Expected", value: "input" },
-      { text: "Type", value: "type" },
-      { text: "Show", value: "show" }
-    ],
+
+    headers:{
+      student: [
+        { text: "Input", value: "input", align: "start", sortable: true },
+        { text: "Type", value: "type" },
+        { text: "Output", value: "output" },
+        { text: "Expected", value: "expected" }
+      ],
+      student2: [
+        { text: "Input", value: "input", align: "center", sortable: true },
+        { text: "Output", value: "output" },
+        { text: "Expected", value: "expected" }
+      ],
+      author: [
+        { text: "Output", value: "output", align: "center"},
+        { text: "Input \n Expected", value: "input", align: "center" },
+        { text: "Type", value: "type",  align: "center" },
+        { text: "", value: "show", align: "center"},
+        { text: "", value: "actions" }
+      ],
+      viewer: [
+        { text: "Output", value: "output", align: "center"},
+        { text: "Input \n Expected", value: "input", align: "center" },
+        { text: "Type", value: "type", align: "center" },
+        { text: "Show", value: "show", align: "center" }
+      ],
+    },
+
     editedIndex: -1,
     editedItem: {
       input: "",
@@ -442,7 +399,6 @@ export default {
   computed: {
     ...mapGetters("main",[
       "getStatusByResourceId",
-      "getRole",
       "getStatusTeacher",
       "isStudent",
       "isTeacher",
@@ -454,13 +410,14 @@ export default {
       "getSmallTextClass",
       "getAvatarMediumSize",
       "getIconBigSize",
-      "getSmallTextClass"
+      "isMDsmaller",
+      "isMD",
+      "getIconSmallSize",
+      "getButtonMediumSize",
+      "getButtonSmallSize",
     ]),
     formTitle() {
       return this.editedIndex === -1 ? "New Test" : "Edit Test";
-    },
-    tests() {
-      return this.resource.tests;
     },
     getErrors() {
       return this.errors.some(error => error.type == "error");
@@ -480,8 +437,14 @@ export default {
   },
 
   methods: {
-    ...mapActions("main",["setProgress"]),
-    ...mapMutations("main",["addTestByEvaluativeId", "deleteTest", "editableInput"]),
+    ...mapActions("main",[
+      "setProgress"
+    ]),
+    ...mapMutations("main",[
+      "addTestByEvaluativeId", 
+      "deleteTest", 
+      "editableInput"
+    ]),
     changeTestVisibility(id, value) {
       const obj = {
         id: id,
@@ -547,7 +510,6 @@ export default {
         "info"
       );
     },
-
     /* run2() {
       this.code = this.getProgressFromResourceId(this.resource.id).code;
         
@@ -561,7 +523,6 @@ export default {
                 
       });
     }, */
-
     run() {
       // Save the code
       this.$emit("onSaveCode");
@@ -586,7 +547,7 @@ export default {
         }
 
         // Expressions
-        this.tests.forEach(test => {
+        this.resource.tests.forEach(test => {
           let res;
           //console.log("2. run test->" + test.type);
           if (test.type == "log") {
@@ -650,7 +611,7 @@ export default {
         });
 
         //Update progress
-        const status = (this.nTestsSuccess / this.tests.length) * 100;
+        const status = (this.nTestsSuccess / this.resource.tests.length) * 100;
 
         if (this.isStudent) {
           await this.setProgress({
@@ -663,7 +624,6 @@ export default {
         this.code = originalCode;
       }, 1000);
     },
-
     getColor(item) {
       if (item.output == "") return "white";
       else if (
@@ -673,24 +633,15 @@ export default {
         return "green";
       } else return "red";
     },
-
-    editItem(item) {
-      this.editedIndex = this.tests.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-
     deleteItem(item) {
-      this.editedIndex = this.tests.indexOf(item);
+      this.editedIndex = this.resource.tests.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
     },
-
     deleteItemConfirm() {
-      this.tests.splice(this.editedIndex, 1);
+      this.resource.tests.splice(this.editedIndex, 1);
       this.closeDelete();
     },
-
     close() {
       this.dialog = false;
       this.$nextTick(() => {
@@ -698,7 +649,6 @@ export default {
         this.editedIndex = -1;
       });
     },
-
     closeDelete() {
       this.dialogDelete = false;
       this.$nextTick(() => {
@@ -706,12 +656,11 @@ export default {
         this.editedIndex = -1;
       });
     },
-
     save() {
       if (this.editedIndex > -1) {
-        Object.assign(this.tests[this.editedIndex], this.editedItem);
+        Object.assign(this.resource.tests[this.editedIndex], this.editedItem);
       } else {
-        this.tests.push(this.editedItem);
+        this.resource.tests.push(this.editedItem);
       }
       this.close();
     }
@@ -719,46 +668,44 @@ export default {
 };
 </script>
 
+
 <style scoped>
-#teachertable >>> td {
-  padding: 0 0.5em;
+#tests >>> td {
+  padding: 0 4px;
 }
 
-#teachertable >>> th {
-  padding: 0 0.5em;
+#tests >>> th {
+  padding: 0 4px;
 }
 
+/* dropdown styles */
 .vcs {
   position: initial;
+  min-width: 60px;
 }
-
-#teachertable >>> .vcs__select-menu {
+#tests >>> .vcs__select-menu {
   z-index: 1;
   width: fit-content !important;
   left: auto;
   top: auto;
 }
-
-#teachertable >>> .vcs__select-menu__not-main {
+#tests >>> .vcs__select-menu__not-main {
   left: calc(100% - 1px) !important;
   top: -1px !important;
 }
-
-#teachertable >>> .vcs__picker input {
+#tests >>> .vcs__arrow-container {
+  padding-left: 6px;
+  right: 6px;
+}
+#tests >>> .vcs__arrow {
+  padding: 2px;
+}
+#tests >>> .vcs__cross {
+  display: none;
+}
+#tests >>> .vcs__picker input {
   height: 2em;
   padding: 0 20px 0 5px;
 }
 
-#teachertable >>> .vcs__arrow-container {
-  padding-left: 6px;
-  right: 6px;
-}
-
-#teachertable >>> .vcs__arrow {
-  padding: 2px;
-}
-
-#teachertable >>> .vcs__cross {
-  display: none;
-}
 </style>

@@ -1,26 +1,17 @@
 <template>
   <div id="quiz">
-
     <v-container fluid>
       <v-row class="mb-1 mt-0">
-        <v-col class="py-0"
-          :cols="
-            isSMsmaller && isStudent
-              ? 12
-              : 7
-          "
-        >
+        <v-col class="py-0" :cols="isSMsmaller ? 12 : 7">
+          <v-card outlined>
 
-          <v-card class="mx-auto" max-width="100%" outlined>
-            <!--STATEMENT-->
-            <Header :resource="resource" v-if="!single && !onlyQuestion"/>
-            <!--PLAYER-->
+            <Header :resource="resource" v-if="!isEvaluative && !isQuestion"/>
 
             <Quizzer
               :resource="resource"
               ref="quizzer"
-              :single="single"
-              :onlyQuestion="onlyQuestion"
+              :isEvaluative="isEvaluative"
+              :isQuestion="isQuestion"
             />
 
             <!--
@@ -30,7 +21,6 @@
               color="orange"
             ></v-rating>-->
 
-            <!--FEEDBACK-->
             <v-expansion-panels v-if="isStudent">
               <v-expansion-panel>
                 <v-expansion-panel-header disable-icon-rotate>
@@ -52,12 +42,12 @@
         <v-col
           cols="5"
           class="py-0 pl-0"
-          :class="isSMsmaller && isStudent ? 'd-none' : 'd-block'"
+          :class="isSMsmaller ? 'd-none' : 'd-block'"
         >
           <Img :question="getQuestion"/>
         </v-col>
       </v-row>
-      <v-row :class="isSMsmaller && isStudent ? 'd-block' : 'd-none'">
+      <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
         <v-col cols="12">
           <Img :question="getQuestion"/>
         </v-col>
@@ -65,6 +55,7 @@
     </v-container>
   </div>
 </template>
+
 
 <script>
 import { bus } from "@/main.js";
@@ -88,11 +79,11 @@ export default {
       type: Object,
       default: () => {}
     },
-    single:{
+    isEvaluative:{
       type:Boolean,
       default: () => false
     },
-    onlyQuestion:{
+    isQuestion:{
       type:Boolean,
       default: () => false
     }
@@ -111,11 +102,15 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main",["getRole", "isStudent", "isTeacher", "isViewer", "isAuthor"]),
-    ...mapGetters("style", ["isSMsmaller"]),
-    getR() {
-      return this.resource;
-    },
+    ...mapGetters("main",[
+      "isStudent", 
+      "isTeacher", 
+      "isViewer", 
+      "isAuthor"
+    ]),
+    ...mapGetters("style", [
+      "isSMsmaller"
+    ]),
     getQuestion(){
       return this.resource.questions[this.index]
     }
@@ -123,4 +118,5 @@ export default {
 };
 </script>
 
-<style></style>
+
+<style scoped></style>

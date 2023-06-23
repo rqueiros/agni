@@ -1,6 +1,6 @@
 <template>
-  <div id="question" class="ma-n3">
-    <Quiz :resource="{questions:[getQuestion]}" :onlyQuestion="true"/>
+  <div id="question" class="ma-n3" ref="ques">
+    <Quiz :resource="{questions:[getQuestion]}" :isQuestion="true"/>
   </div>
 </template>
 
@@ -40,11 +40,26 @@ export default {
     },
   },
 
+  mounted() {
+    this.setScreenSize(this.$refs.ques.offsetWidth);
+    window.addEventListener("resize", this.updateParentDivWidth);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateParentDivWidth);
+  },
+
+  beforeDestroy(){
+    clearTimeout(this.updateParentDivWidthTimeout);
+    window.removeEventListener("resize", this.updateParentDivWidth);
+  },
+
   computed:{
     ...mapGetters("main", ["getQuestion"]),
   },
 
   methods:{
+    ...mapMutations("style",["setScreenSize"]),
     ...mapMutations("main", ["addAnswerByQuestionId", "editableInput", "deleteAnswer"]),
     setItems(){
       this.resource = this.getQuestion;
@@ -53,6 +68,12 @@ export default {
       this.deleteAnswer(id);
       this.selected = this.resource.correctAnswer.map(v=>v-1);
     },
+    updateParentDivWidth() {
+      clearTimeout(this.updateParentDivWidthTimeout);
+      this.updateParentDivWidthTimeout = setTimeout(() => {
+        this.setScreenSize(this.$refs.ques.offsetWidth);
+      }, 200);
+    }
   },
 }
 </script>

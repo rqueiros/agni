@@ -3,7 +3,7 @@
     <v-list-item 
       :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" 
       class="align-start"
-    >
+    >asdfasd
       <v-list-item-content class="py-2">
         <v-list-item-title :class="getTitleClass">
           <!--Student + Viewer-->
@@ -20,9 +20,9 @@
           <!--Author-->
           <Editable
             v-if="isAuthor"
-            :type="'module'"
-            :field="'name'"
-            :placeholder="'Module Name'"
+            type="module"
+            field="name"
+            placeholder="Module Name"
             :value="
               getModuleByResourceId(resource.id, resource.contentType)
                 .name
@@ -47,8 +47,8 @@
           <!--Author-->
           <Editable
             v-if="isAuthor"
-            :type="'lesson'"
-            :field="'name'"
+            type="lesson"
+            field="name"
             placeholder="Lesson name"
             :value="getLessonByResourceId(resource.id).name"
             :id="getLessonByResourceId(resource.id).id"
@@ -69,19 +69,19 @@
           <Editable
             v-if="isAuthor && resource.contentType == 'lesson'"
             placeholder="Lesson name"
-            :type="'lesson'"
+            type="lesson"
             :value="resource.name"
             :id="resource.id"
-            :field="'name'"
+            field="name"
             @input="editableInput"
           />
           <Editable
             v-if="isAuthor && resource.contentType != 'lesson'"
             placeholder="Exercise name"
-            :type="'evaluative'"
+            type="evaluative"
             :value="resource.name"
             :id="resource.id"
-            :field="'name'"
+            field="name"
             @input="editableInput"
           />
         </v-list-item-subtitle>
@@ -113,11 +113,11 @@
         : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
     >
       <Editable
-        :type="'lesson'"
+        type="lesson"
         placeholder="Lesson description"
         :value="resource.description"
         :id="resource.id"
-        :field="'description'"
+        field="description"
         @input="editableInput"
       />
     </v-card-text>
@@ -137,10 +137,10 @@
     >
       <Editable
         placeholder="Exercise statement"
-        :type="'evaluative'"
+        type="evaluative"
         :value="resource.statement"
         :id="resource.id"
-        :field="'statement'"
+        field="statement"
         @input="editableInput"
       />
     </v-card-text>

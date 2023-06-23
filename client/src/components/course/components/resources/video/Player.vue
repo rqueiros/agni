@@ -7,7 +7,7 @@
       overlap
       color="#f5f5f5"
       @click.native="deleteVideo" 
-      icon="mdi-alpha-x" 
+      icon="mdi-close" 
     >
     </v-badge>
     <vue-player 
@@ -116,6 +116,6 @@ export default {
   color:black;
 }
 #player>>>.v-badge__badge .v-icon{
-  font-size: 20px;
+  font-size: 16px;
 }
 </style>

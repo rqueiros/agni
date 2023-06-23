@@ -1,185 +1,232 @@
 <template>
-  <div>
-    <!--{{ getResourceById(resource.id,"evaluative") }}-->
-    <div v-if="single && !onlyQuestion" class="pa-2 mb-1">
-      <Editable :type="'evaluative'" :value="resource.name" :id="resource.id" placeholder="Evaluative name"
-        :field="'name'" @input="editableInput" onclick="event.stopPropagation()" />
+  <div id="quizzer">
+    <div 
+      v-if="isEvaluative && !isQuestion" 
+      class="pa-2 mb-1" 
+      :class="getSubtitleClass"
+    >
+      <Editable 
+        v-if="isAuthor"
+        type="evaluative" 
+        :value="resource.name" 
+        :id="resource.id" 
+        placeholder="Evaluative name"
+        field="name"
+        @input="editableInput" 
+        onclick="event.stopPropagation()" 
+      />
+      <span v-if="isViewer">
+        {{ resource.name }}
+      </span>
     </div>
 
     <v-stepper 
-    v-model="e1" 
-    v-if="this.resource.questions.length > 0" 
-    elevation="0">
-      <v-stepper-header v-if="!onlyQuestion">
+      v-model="question" 
+      v-if="this.resource.questions.length > 0" 
+      elevation="0"
+    >
+      <v-stepper-header v-if="!isQuestion" style="height:60px">
         <template v-for="n in resource.questions.length">
-          <v-stepper-step :complete="e1 > n" :step="n" editable :key="n + 'abc'" v-if="isStudent || isViewer">
-          </v-stepper-step>
-          <v-stepper-step :step="n" editable :key="n + 'abc'" v-if="isAuthor">
-          </v-stepper-step>
-          <v-divider v-if="n !== resource.questions.length" :key="n + 'abcd'" />
+          <v-stepper-step 
+            color="error"
+            :complete="question > n && isStudent" 
+            :step="n" 
+            editable 
+            :key="n" 
+            v-if="true"
+          />
+          <v-divider v-if="n !== resource.questions.length" :key="n+'b'"/>
         </template>
       </v-stepper-header>
 
       <v-stepper-items>
-        <v-stepper-content class="pb-0" 
-        v-for="n in resource.questions.length" 
-        :step="n" 
-        :key="n + 'sec'">
-          <v-card>
-            <v-list>
-              <v-list-item>
-                <v-list-item-content class="py-0">
-                  <div  
+        <v-stepper-content class="py-2" 
+          v-for="n in resource.questions.length" 
+          :step="n" 
+          :key="n+'c'"
+        >
+          <v-list :class="getSmallTextClass">
+            <v-list-item class="pb-2" style="min-height:0">
+              <v-list-item-content class="pb-0"> 
+                <!--Student & Viewer-->
+                <div
                   v-if="isStudent || isViewer"
-                  v-html="n + '. ' + resource.questions[n - 1].question"></div>
+                  v-html="n + '. ' + resource.questions[n - 1].question">
+                </div>
 
-                  <Editable 
+                <!--Author-->
+                <Editable 
                   v-if="isAuthor" 
-                  :type="'question'" 
+                  type="question" 
                   :value="resource.questions[n - 1].question"
                   :id="resource.questions[n - 1].id" 
-                  :field="'question'" 
+                  field="question" 
                   @input="editableInput" 
-                  placeholder="Question" />
-                </v-list-item-content>
-                <v-list-item-avatar v-if="isAuthor">
-                  <v-icon @click="deleteQue(resource.questions[n - 1].id)">
+                  placeholder="Question" 
+                />
+              </v-list-item-content>
+
+              <!--Author-->
+              <v-list-item-avatar 
+                v-if="isAuthor"
+                min-height="0"  
+                height="fit-content"
+                class="my-0 ml-0 d-flex align-self-end justify-end"
+              >
+                <v-btn 
+                  icon
+                  :small="getButtonMediumSize=='small'"
+                  :medium="getButtonMediumSize=='medium'"
+                >
+                  <v-icon 
+                    @click="deleteQue(resource.questions[n - 1].id)"
+                    :size="getIconMediumSize"
+                  >
                     mdi-delete
                   </v-icon>
-                </v-list-item-avatar>
-              </v-list-item>
+                </v-btn>
+              </v-list-item-avatar>
+            </v-list-item>
 
-              <v-list-item v-if="isStudent || isViewer">
-                <v-list-item-content>
-                  <v-list-item-subtitle>
-                    <v-radio-group 
-                    v-model="myAnswers[n - 1]" 
-                    v-if="isStudent">
-                      <v-radio 
-                      v-for="(answer, index) in resource.questions[n - 1].answers" 
-                      :key="index + 'third'" 
-                      :label="answer.answer" 
-                      :value="index" />
-                    </v-radio-group>
-                    <div v-if="isViewer">
-                      <tr 
-                      v-for="(answer, index) in resource.questions[n - 1].answers" 
-                      :key="index + 'drd'">
-                        <td>
-                          <v-icon 
-                          v-if="resource.questions[n - 1].correctAnswer == index + 1">
-                            mdi-alpha-x
-                          </v-icon>
-                        </td>
-                        <td>{{ answer.answer }}</td>
-                      </tr>
-                    </div>
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-
-              <v-list-item v-if="isAuthor">
-                <v-list-item-content class="pt-0">
-                  <v-container fluid>
-                    <v-simple-table>
-                      <tr>
-                        <td>
-                          <span>Correct:</span>
-                        </td>
-                      </tr>
-                      <tr 
+            <v-list-item class="py-1">
+              <v-list-item-content class="pa-0">
+                <v-container 
+                  fluid
+                  :class="isAuthor ? 'py-0' : 'py-1'" 
+                >
+                  <v-simple-table>
+                    <tr v-if="isTeacher">
+                      <td class="pb-1">
+                        <span>Correct:</span>
+                      </td>
+                    </tr>
+                    <tr 
                       v-for="(answer, index) in getAnswers(n - 1)" 
-                      :key="index + 'third'">
-                        <td>
-                          <v-checkbox  
-                          class="mt-0 ml-3"
+                      :key="index + 'third'"
+                    >
+                      <td class="py-1 pl-2" width="50">
+                        <v-checkbox  
+                          color="error"
+                          class="mt-0"
                           v-model="selected" 
                           :value="index" 
-                          label=""
-                          hide-details />
-                        </td>
-                        <td>
+                          hide-details 
+                          :dense="getIconMediumSize=='x-large'"
+                          :disabled="isViewer"
+                        />
+                      </td>
+                      <td>
+                        <span v-if="isStudent || isViewer">
+                          {{ answer.answer }}
+                        </span>
+                        <span v-if="isAuthor">
                           <Editable 
-                          :type="'answer'" 
-                          :value="answer.answer" 
-                          :id="answer.id" 
-                          :field="'answer'"
-                          @input="editableInput" 
-                          placeholder="Answer" />
-                        </td>
-                        <td>
-                          <v-btn 
+                            type="answer" 
+                            :value="answer.answer" 
+                            :id="answer.id" 
+                            field="answer"
+                            @input="editableInput" 
+                            placeholder="Answer" 
+                          />
+                        </span>
+                      </td>
+                      <td v-if="isAuthor" class="pl-2">
+                        <v-btn 
                           icon 
-                          @click="deleteAns(answer.id)">
-                            <v-icon> mdi-delete </v-icon>
-                          </v-btn>
-                        </td>
-                      </tr>
-                    </v-simple-table>
+                          @click="deleteAns(answer.id)"
+                          :x-small="getButtonSmallSize=='x-small'"
+                          :small="getButtonSmallSize=='small'"
+                        >
+                          <v-icon :size="getIconSmallSize">
+                            mdi-delete
+                          </v-icon>
+                        </v-btn>
+                      </td>
+                    </tr>
+                    <tr v-if="isAuthor" >
+                      <td :colspan="3" class="px-2 pt-2">
+                        <v-btn 
+                          class="ma-1"
+                          width="100%" 
+                          @click="addAnswerByQuestionId(resource.questions[n - 1].id)"
+                          :small="getButtonMediumSize=='small'"
+                          :medium="getButtonMediumSize=='medium'"
+                        >
+                          <v-icon> mdi-plus </v-icon>
+                          Add Answer
+                        </v-btn>
+                      </td>
+                    </tr>
+                  </v-simple-table>
+                </v-container>
+              </v-list-item-content>
+            </v-list-item>
 
-                    <v-btn 
-                    class="mt-2"
-                    v-if="isAuthor" 
-                    width="100%" 
-                    @click="addAnswerByQuestionId(resource.questions[n - 1].id)">
-                      <v-icon> mdi-plus </v-icon>
-                      Add Answer
-                    </v-btn>
-                  </v-container>
-                </v-list-item-content>
-              </v-list-item>
+            <v-list-item v-if="isStudent">
+              <v-btn 
+                v-show="n != steps" 
+                color="success" 
+                @click="nextStep(n)" 
+                class="mr-2" 
+                :small="getButtonMediumSize=='small'"
+                :medium="getButtonMediumSize=='medium'"
+              >
+                Continue
+              </v-btn>
+              <v-btn 
+                v-show="n == steps" 
+                color="error" 
+                @click="finish" 
+                :small="getButtonMediumSize=='small'"
+                :medium="getButtonMediumSize=='medium'"
+              >
+                Finish
+              </v-btn>
+            </v-list-item>
           </v-list>
-          </v-card>
-
-          <v-btn 
-          v-show="n != steps" 
-          color="success" 
-          @click="nextStep(n)" 
-          class="mr-2" 
-          v-if="isStudent">
-            Continue
-          </v-btn>
-          <v-btn 
-          v-show="n == steps" 
-          color="error" 
-          @click="finish" 
-          v-if="isStudent">
-            Finish
-          </v-btn>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
 
-    <v-menu 
-    offset-y 
-    auto 
-    v-if="isAuthor && !onlyQuestion">
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn v-bind="attrs" v-on="on" width="100%" class="pa-1 mt-0">
-          <v-icon> mdi-plus </v-icon>
-          Add Question
-        </v-btn>
-      </template>
-      <v-list dense>
-        <v-list-item 
-        v-for="(item, index) in addQuestionMenu" 
-        :key="index" 
-        link
-        @click="addQuestion(item.value, resource.id)">
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
+    <div class="px-6">
+      <v-menu offset-y v-if="isAuthor && !isQuestion">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn 
+            v-bind="attrs" 
+            v-on="on" 
+            width="100%" 
+            class="mb-2"
+            :small="getButtonMediumSize=='small'"
+            :medium="getButtonMediumSize=='medium'"
+          >
+            <v-icon> mdi-plus </v-icon>
+            Add Question
+          </v-btn>
+        </template>
+        <v-list dense>
+          <v-list-item 
+            class="text-center"
+            v-for="(item, index) in addQuestionMenu" 
+            :key="index" 
+            @click="addQuestion(item.title, resource.id)"
+          >
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </div>
 
     <SelectDialog 
-    :dialog="dialog" 
-    :type="'questions'" 
-    :already="resource.questions.map(e => e.id)"
-    @addExistingquestions="addExistingQue" 
-    @closeSelectDialog="closeSelectDialog" />
+      :dialog="dialog" 
+      :type="'questions'" 
+      :already="resource.questions.map(e => e.id)"
+      @addExistingquestions="addExistingQue" 
+      @closeSelectDialog="dialog = false" 
+    />
 
   </div>
 </template>
+
 
 <script>
 import { bus } from "@/main.js";
@@ -198,11 +245,11 @@ export default {
       type: Object,
       default: () => { }
     },
-    single: {
+    isEvaluative: {
       type: Boolean,
       default: () => false
     },
-    onlyQuestion: {
+    isQuestion: {
       type: Boolean,
       default: () => false
     }
@@ -215,8 +262,8 @@ export default {
 
   data() {
     return {
-      myAnswers: [],
-      e1: 1,
+      studentAnswers: {},
+      question: 1,
       steps: 0,
       quiz: {},
       selected: [],
@@ -224,15 +271,17 @@ export default {
       dialog: false,
 
       addQuestionMenu: [
-        { title: "New Question", value: "new" },
-        { title: "Select Question", value: "select" }
+        { title: "NEW" },
+        { title: "SELECT" }
       ],
     };
   },
 
   created() {
     //this.quiz = this.getQuizByResourceId(this.resource.quizId);
-    this.selected = this.resource.questions[this.e1 - 1].correctAnswer.map(v => v - 1)
+    if (this.isTeacher){
+      this.selected = this.resource.questions[this.question - 1].correctAnswer.map(v => v - 1)
+    }
     if ("questions" in this.resource) {
       this.steps = this.resource.questions.length;
     } else {
@@ -242,22 +291,30 @@ export default {
 
   watch: {
     steps(val) {
-      if (this.e1 > val) {
-        this.e1 = val;
+      if (this.question > val) {
+        this.question = val;
       }
     },
-    e1(newE1) {
-      this.selected = this.resource.questions[newE1 - 1].correctAnswer.map(v => v - 1)
+    question(newE1) {
+      if (this.isTeacher){
+        this.selected = this.resource.questions[newE1 - 1].correctAnswer.map(v => v - 1)
+      } else if (this.isStudent){
+        this.selected = newE1-1 in this.studentAnswers ? this.studentAnswers[newE1-1] : []
+      }
       bus.$emit("setIndex", newE1 - 1);
     },
     selected(newS) {
-      const obj = {
-        value: newS.map(v => v + 1),
-        type: "question",
-        field: "correctAnswer",
-        id: this.resource.questions[this.e1 - 1].id
-      };
-      this.editableInput(obj);
+      if (this.isTeacher){
+        const obj = {
+          value: newS.map(v => v + 1),
+          type: "question",
+          field: "correctAnswer",
+          id: this.resource.questions[this.question - 1].id
+        };
+        this.editableInput(obj);
+      } else if (this.isStudent){
+        this.studentAnswers[this.question-1] =  newS
+      }
     },
   },
 
@@ -265,26 +322,27 @@ export default {
     ...mapGetters("main", [
       "getLessonByResourceId",
       "getQuizByResourceId",
-      "getRole",
-      "getResourceById",
       "isStudent",
       "isTeacher",
       "isViewer",
       "isAuthor",
-      "getLessonByResourceId"
+    ]),
+    ...mapGetters("style", [
+      "getSmallTextClass",
+      "getIconSmallSize",
+      "getButtonSmallSize",
+      "getIconMediumSize",
+      "getButtonMediumSize",
+      "getSubtitleClass"
     ]),
     getSteps() {
       return this.resource.questions.length;
-      //return toRef(this.resource.questions, 'length');
     },
     getAnswers() {
       return function (n) {
         return this.resource.questions[n].answers;
       };
     },
-    getCorrectAnswers() {
-      return this.resource.correctAnswer;
-    }
   },
 
   methods: {
@@ -296,29 +354,30 @@ export default {
       "deleteQuestion",
       "addQuestionByResourceId",
     ]),
-    ...mapActions("main", ["setProgress", "fetchCollectionTypes", "addExistingQuestions"]),
+    ...mapActions("main", [
+      "setProgress", 
+      "fetchCollectionTypes", 
+      "addExistingQuestions"
+    ]),
     async addExistingQue(ids) {
       await this.addExistingQuestions([this.resource.id, ids])
-      this.closeSelectDialog()
-    },
-    closeSelectDialog() {
       this.dialog = false
     },
     deleteAns(id) {
       this.deleteAnswer(id);
-      this.selected = this.resource.questions[this.e1 - 1].correctAnswer.map(v => v - 1);
+      this.selected = this.resource.questions[this.question - 1].correctAnswer.map(v => v - 1);
     },
     deleteQue(id) {
       this.deleteQuestion(id);
-      if (this.e1 > this.resource.questions.length && this.e1 > 1) {
-        this.e1 = this.e1 - 1;
+      if (this.question > this.resource.questions.length && this.question > 1) {
+        this.question = this.question - 1;
       }
     },
     nextStep(n) {
       if (n === this.steps) {
-        this.e1 = 1;
+        this.question = 1;
       } else {
-        this.e1 = n + 1;
+        this.question = n + 1;
       }
     },
     async finish() {
@@ -326,19 +385,30 @@ export default {
         cont = 0;
       const wrongQuestions = [];
       this.resource.questions.forEach(question => {
-        if (question.correctAnswer == this.myAnswers[i] + 1) {
-          cont++;
-        } else {
-          wrongQuestions.push(i + 1);
+        let studentAnswer = this.studentAnswers[i].map(v => v+1)
+        if (studentAnswer.length != question.correctAnswer.length){
+          wrongQuestions.push(i);
+          i++;
+          return
         }
+        for (let j =0; j<question.correctAnswer.length; j++){
+          console.log(question.correctAnswer[j],studentAnswer[j])
+          if (question.correctAnswer[j]!=studentAnswer[j]){
+            wrongQuestions.push(i);
+            i++;
+            return
+          }
+        }
+        cont++
         i++;
       });
+
       const status = (cont / this.resource.questions.length) * 100;
       const ques = this.resource.questions.map(q => {
         return { question: q.id };
       });
       for (let i = 0; i < ques.length; i++) {
-        ques[i].answer = this.myAnswers[i] + 1;
+        ques[i].answer = JSON.stringify(this.studentAnswers[i].map(v=>v+1))
       }
 
       let htmlMsg = `${cont} from ${this.resource.questions.length} (${status}%) answers correct!`;
@@ -362,13 +432,15 @@ export default {
         }
       });
 
-      const lesson = this.getLessonByResourceId(this.resource.id);
+      const lesson = this.getLessonByResourceId(this.resource.id); //TODO problem with contentType
+      //console.log(lesson)
+      //console.log(lesson.id, lesson.contentType)
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
     addQuestion(type, id) {
-      if (type == "new") {
+      if (type == "NEW") {
         this.addQuestionByResourceId(id)
-      } else if (type == "select") {
+      } else if (type == "SELECT") {
         this.dialog = true;
       }
     }
@@ -376,4 +448,17 @@ export default {
 };
 </script>
 
-<style scoped></style>
+
+<style scoped>
+/*Checkboxes styles */
+#quizzer>>>.v-input--selection-controls{
+  padding-top:0;
+}
+#quizzer>>>.v-data-table__wrapper{
+  overflow:visible;
+}
+
+#quizzer>>>.v-stepper__step{
+  padding:18px
+}
+</style>

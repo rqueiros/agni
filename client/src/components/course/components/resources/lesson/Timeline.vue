@@ -1,9 +1,6 @@
 <template>
   <div id="timeline">
-    <v-card
-      outlined
-      v-if="resource != undefined"
-    >
+    <v-card outlined v-if="resource != undefined">
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
         <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">
@@ -16,11 +13,7 @@
             topics!</v-list-item-subtitle
           >
         </v-list-item-content>
-        <v-list-item-avatar
-          tile
-          :size="getAvatarMediumSize"
-          color="green"
-        >
+        <v-list-item-avatar tile :size="getAvatarMediumSize" color="green">
           <v-icon color="white" :size="getIconBigSize">
             mdi-timeline-clock
           </v-icon>
@@ -182,7 +175,9 @@ export default {
     ]),
     goto(index) {
       this.selected = index;
-      this.$emit("onMilestone", index);
+      if(index>0){
+        this.$emit("onMilestone", index);
+      }
     },
     convert(index) {
       if (this.resource.type == "video") {

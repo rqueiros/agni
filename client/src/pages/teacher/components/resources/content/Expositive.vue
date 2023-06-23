@@ -1,32 +1,19 @@
 <template>
-  <div id="expositive">
-    <v-container fluid class="pa-0">
-      <v-row class="mb-1 mt-0">
-        <v-col cols="7" class="py-0">
-          <v-card outlined>
-            <Expositives :single="true" :resource="{ expositives: [expositive] }" ref="expositives" />
-          </v-card>
-        </v-col>
-        <v-col cols="5" class="py-0 pl-0">
-          <Timeline :resource="expositive" @onMilestone="setMilestone" />
-        </v-col>
-      </v-row>
-    </v-container>
+  <div id="expositive" ref="expo">
+    <Expo :expositive="expositive"/>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import Expositives from '../../../../../components/course/components/resources/lesson/Expositives.vue';
-import Timeline from '../../../../../components/course/components/resources/lesson/Timeline.vue';
+import { mapGetters, mapMutations } from 'vuex';
 
+import Expo from './Expo.vue';
 
 export default {
   name: "Expositive",
 
   components: {
-    Expositives,
-    Timeline
+    Expo
   },
 
   data() {
@@ -39,16 +26,34 @@ export default {
     this.setItems()
   },
 
+  mounted() {
+    this.setScreenSize(this.$refs.course.offsetWidth);
+    window.addEventListener("resize", this.updateParentDivWidth);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateParentDivWidth);
+  },
+
+  beforeDestroy(){
+    clearTimeout(this.updateParentDivWidthTimeout);
+    window.removeEventListener("resize", this.updateParentDivWidth);
+  },
+
   computed: {
-    ...mapGetters("main", ["getExpositive"])
+    ...mapGetters("main", ["getExpositive"]),
   },
 
   methods: {
+    ...mapMutations("style",["setScreenSize"]),
     setItems() {
       this.expositive = this.getExpositive
     },
-    setMilestone(index) {
-      this.$refs.expositives.setMilestone(index);
+    updateParentDivWidth() {
+      clearTimeout(this.updateParentDivWidthTimeout);
+      this.updateParentDivWidthTimeout = setTimeout(() => {
+        this.setScreenSize(this.$refs.expo.offsetWidth);
+      }, 200);
     }
   },
 

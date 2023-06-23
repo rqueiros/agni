@@ -6,10 +6,7 @@
       style="border-left: 0; border-right: 0;"
     >
       <!--Author-->
-      <v-menu 
-        offset-y 
-        v-if="!expositivesNotNull && isAuthor"
-      >
+      <v-menu offset-y v-if="!expositivesNotNull && isAuthor">
         <template v-slot:activator="{ on, attrs }">
           <v-btn 
             v-bind="attrs" 
@@ -35,109 +32,110 @@
         </v-list>
       </v-menu>
 
-        <v-layout column>
-          <v-app-bar flat color="white" class="pa-0" height="40">
-            <v-tabs
-              style="width:calc(100% - 44px)"
-              center-active
-              v-model="tab"
-              color="error"
-              grow
-              show-arrows
-              hide-slider
+      <v-layout column>
+        <v-app-bar flat color="white" class="pa-0" height="40">
+          <v-tabs
+            style="width:calc(100% - 44px)"
+            center-active
+            v-model="tab"
+            color="error"
+            grow
+            show-arrows
+            hide-slider
+          >
+            <v-tab 
+              v-for="(item, i) in resource.expositives" 
+              :key="i" 
+              style="width:100px"
+              :class="getSmallTextClass"
             >
-              <v-tab 
-                v-for="(item, i) in resource.expositives" 
-                :key="i" 
-                style="width:100px"
-                :class="getSmallTextClass"
-              >
-                <!--Student & Viewer-->
-                <span v-if="isStudent || isViewer">
-                  <v-icon 
-                    v-if="isStudent || isViewer" 
-                    :size="getIconMediumSize"
-                  >
-                    {{ getIcon(item.type) }}
-                  </v-icon>
-                  {{item.name}}
-                </span>
+              <!--Student & Viewer-->
+              <span v-if="isStudent || isViewer">
+                <v-icon 
+                  v-if="isStudent || isViewer" 
+                  :size="getIconMediumSize"
+                >
+                  {{ getIcon(item.type) }}
+                </v-icon>
+                {{item.name}}
+              </span>
 
-                <!--Author-->
-                <span v-if="isAuthor" class="d-flex align-center">
-                  <Editable 
-                    v-if="isAuthor" 
-                    :type="'expositive'" 
-                    :value="item.name" 
-                    :id="item.id" 
-                    class="pr-1"
-                    placeholder="Expositive name" 
-                    :field="'name'" 
-                    @input="editableInput"
-                    onclick="event.stopPropagation()" />
-                  <v-btn 
-                    icon 
-                    :x-small="getButtonSmallSize=='x-small'"
-                    :small="getButtonSmallSize=='small'"
-                  >
-                    <v-icon 
-                    v-if="isAuthor && !single" 
-                    :size="getIconSmallSize" 
-                    @click="deleteExpositive(item.id)">
-                      mdi-delete
-                    </v-icon>
-                  </v-btn>
-                </span>
-              </v-tab>
-            </v-tabs>
-
-            <!--Author-->
-            <v-menu 
-              offset-y 
-              auto 
-              v-if="(expositivesNotNull) && isAuthor && !single"
-            >
-              <template v-slot:activator="{ on, attrs }">
+              <!--Author-->
+              <span v-if="isAuthor" class="d-flex align-center">
+                <Editable 
+                  v-if="isAuthor" 
+                  type="expositive" 
+                  :value="item.name" 
+                  :id="item.id" 
+                  class="pr-1"
+                  placeholder="Expositive name" 
+                  field="name" 
+                  @input="editableInput"
+                  onclick="event.stopPropagation()" />
                 <v-btn 
-                  min-width="0"
-                  width="36px"
-                  height="36px"
-                  class="ma-1"
-                  v-bind="attrs" 
-                  v-on="on" 
-                  :small="getButtonMediumSize=='small'" 
-                  :medium="getButtonMediumSize=='medium'"
+                  icon 
+                  :x-small="getButtonSmallSize=='x-small'"
+                  :small="getButtonSmallSize=='small'"
+                  onclick="event.stopPropagation()"
                 >
-                  <v-icon>mdi-plus</v-icon>
+                  <v-icon 
+                  v-if="isAuthor && !isExpositive" 
+                  :size="getIconSmallSize" 
+                  @click="deleteExpositive(item.id)">
+                    mdi-delete
+                  </v-icon>
                 </v-btn>
-              </template>
-              <v-list dense>
-                <v-list-item 
-                  class="text-center"
-                  :class="getSmallTextClass"
-                  v-for="(item, index) in addExpositiveMenu" 
-                  :key="index" 
-                  @click="addExpositive(item.title)"
-                >
-                  <v-list-item-title>
-                    {{ item.title }}
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </v-app-bar>
+              </span>
+            </v-tab>
+          </v-tabs>
 
-          <v-tabs-items v-model="tab">
-            <v-tab-item
-              v-for="(item, i) in resource.expositives"
-              :key="i"
-            >
-              <Pdf v-if="item.type=='pdf'" :resource="item" :ref="'expo'+i"/>
-              <Video v-else-if="item.type=='video'" :resource="item" :ref="'expo'+i" />
-              <NewExpo v-else :resource="item" />
-            </v-tab-item>
-          </v-tabs-items>
-        </v-layout>      
+          <!--Author-->
+          <v-menu 
+            offset-y 
+            auto 
+            v-if="(expositivesNotNull) && isAuthor && !isExpositive"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn 
+                min-width="0"
+                width="36px"
+                height="36px"
+                class="ma-1"
+                v-bind="attrs" 
+                v-on="on" 
+                :small="getButtonMediumSize=='small'" 
+                :medium="getButtonMediumSize=='medium'"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+            <v-list dense>
+              <v-list-item 
+                class="text-center"
+                :class="getSmallTextClass"
+                v-for="(item, index) in addExpositiveMenu" 
+                :key="index" 
+                @click="addExpositive(item.title)"
+              >
+                <v-list-item-title>
+                  {{ item.title }}
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-app-bar>
+
+        <v-tabs-items v-model="tab">
+          <v-tab-item
+            v-for="(item, i) in resource.expositives"
+            :key="i"
+          >
+            <Pdf v-if="item.type=='pdf'" :resource="item" :ref="'expo'+i"/>
+            <Video v-else-if="item.type=='video'" :resource="item" :ref="'expo'+i" />
+            <NewExpo v-else :resource="item" />
+          </v-tab-item>
+        </v-tabs-items>
+      </v-layout>      
     </v-card>
 
     <SelectDialog 
@@ -177,7 +175,7 @@ export default {
       type: Object,
       default: () => { }
     },
-    single: {
+    isExpositive: {
       type: Boolean,
       default: () => false
     }

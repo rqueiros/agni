@@ -89,7 +89,7 @@
                 :type="item.contentType"
                 :value="item.name"
                 :id="item.id"
-                :field="'name'"
+                field="name"
                 :placeholder="
                   item.contentType.charAt(0).toUpperCase() +
                     item.contentType.slice(1) +

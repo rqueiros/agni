@@ -1,5 +1,5 @@
 <template>
-  <div id="course" ref="course" :class="getCourseClass">
+  <div id="course" ref="course">
     <v-sheet class="rounded">
       <CourseMenu @onResourceClicked="setResource" />
       <Resource v-if="resource" :resource="resource" ref="resource" />
@@ -34,6 +34,7 @@ export default {
   }),
 
   created() {
+    this.updateParentDivWidth = this.updateParentDivWidth.bind(this); //TODO fuck shit i dont konw
     bus.$on("changeIt", payload => {
       this.setResource(payload[0], payload[1]);
     });
@@ -66,32 +67,25 @@ export default {
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
+  beforeDestroy(){
+    clearTimeout(this.updateParentDivWidthTimeout);
+    window.removeEventListener("resize", this.updateParentDivWidth);
+  },
+
   computed: {
     ...mapState("main", { courses: state => state.courses }),
     ...mapGetters("main",["getResourceById"]),
-    getCourseClass() {
-      if (this.courseWidth <= 480) {
-        return "courseXS";
-      } else if (this.courseWidth <= 768) {
-        return "courseS";
-      } else if (this.courseWidth <= 1024) {
-        return "courseM";
-      } else if (this.courseWidth <= 1200) {
-        return "courseL";
-      } else {
-        return "courseXL";
-      }
-    }
   },
 
   methods: {
     ...mapMutations("style",["setScreenSize"]),
     setResource(resourceId, type) {
-      this.resource = null;
       this.isResource = resourceId;
       this.type = type;
       if (resourceId != 0) {
         this.resource = this.getResourceById(resourceId, type);
+      } else {
+        this.resource = null;
       }
     },
     updateParentDivWidth() {

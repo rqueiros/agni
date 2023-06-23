@@ -5,7 +5,7 @@
       hide-details 
       v-model="file" 
       prepend-icon="" 
-      height="150"
+      height="180"
       outlined 
       class="rounded-0"
       style="border-right-width: 0; border-left-width: 0;"
@@ -52,6 +52,7 @@ export default {
 
 
 <style scoped>
+/* file input styles */
 #newExpo>>>.theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state) > .v-input__control > .v-input__slot fieldset{
   color:rgba(0, 0, 0, 0.12);
   border-right-width: 0; 

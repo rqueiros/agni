@@ -1,8 +1,8 @@
 <template>
   <div id="editor" :class="getSmallTextClass">
-
-    <div v-if="single" class="pa-2 pb-0">
+    <div v-if="isEvaluative" class="pa-2 pb-4" :class="getSubtitleClass">
       <Editable
+        v-if="isAuthor"
         :type="'evaluative'"
         :value="resource.name"
         :id="resource.id"
@@ -10,165 +10,206 @@
         :field="'name'"
         @input="editableInput"
         onclick="event.stopPropagation()"
-      >
-      </Editable>
+      />
+      <span v-if="isViewer">
+        {{ resource.name }}
+      </span>
     </div>
-    <vue-cascader-select
-      :options="options"
-      @select="selected => setType(resource.id, selected.value)"
-      class="ml-2 mt-2"
-      :value="resource.type != null ? resource.type : ''"
-      v-if="isAuthor"
-      style="width: fit-content"
-    />
 
-    <div v-if="isViewer">{{ resource.type }}</div>
-
-    <v-card
-      outlined
-      class="d-flex align-center justify-center mt-4"
-      height="2rem"
-    >
-      Solution
-    </v-card>
-    <AceEditor
-      ref="myEditor"
-      v-model="code"
-      lang="javascript"
-      class="mb-4"
-      theme="ambiance"
-      width="100%"
-      height="20em"
-      :options="editorOp"
-      :commands="com"
-      @init="editorInit"
-      @onchange="editorChange"
-    />
-
-    <v-btn
-      width="100%"
-      v-if="isAuthor && !showSkeleton && !hasSkeleton"
-      @click="showSkeleton = true"
-      class="course_button mb-4"
-    >
-      <v-icon>mdi-plus</v-icon>Skeleton
-    </v-btn>
-    <v-card
-      v-if="isTeacher && (showSkeleton || hasSkeleton)"
-      height="2rem"
-      outlined
-      class="d-flex align-center justify-center mt-4"
-    >
-      Skeleton
-      <v-btn
+    <div class="pb-2" v-if="isTeacher">
+      <vue-cascader-select
+        :options="options"
+        @select="selected => setType(resource.id, selected.value)"
+        :class="isMD ? 'ml-2' : 'ml-4'"
+        :value="resource.type != null ? resource.type : ''"
         v-if="isAuthor"
-        icon
-        @click="deleteSkeleton"
-        :class="getIconBigSize"
-        style="position:absolute; top:0em; right: 0em;"
+        style="width: fit-content"
+      />
+      <div v-if="isViewer">Type: {{ resource.type }}</div>
+    </div>
+
+    <div class="py-2">
+      <v-card
+        v-if="isTeacher"
+        outlined
+        class="d-flex align-center justify-center"
+        height="32px"
       >
-        <v-icon class="">mdi-delete</v-icon>
+        Solution
+      </v-card>
+      <AceEditor
+        ref="myEditor"
+        v-model="code"
+        lang="javascript"
+        theme="ambiance"
+        width="100%"
+        height="20rem"
+        :options="editorOp"
+        :commands="com"
+        @init="editorInit"
+        @onchange="editorChange"
+      />
+    </div>
+
+    <div class="py-2" v-if="isTeacher">
+      <v-btn
+        width="100%"
+        v-if="isAuthor && !showSkeleton && !hasSkeleton"
+        @click="showSkeleton = true"
+        height="36px"
+      >
+        <v-icon>mdi-plus</v-icon>Skeleton
       </v-btn>
-    </v-card>
-    <AceEditor
-      ref="skeleton"
-      v-model="code1"
-      @init="editorInit"
-      @onchange="editorChange"
-      lang="javascript"
-      v-if="(isTeacher && showSkeleton) || (isTeacher && hasSkeleton)"
-      class="course_text mb-4"
-      theme="ambiance"
-      width="100%"
-      height="15em"
-      :options="editorOp"
-      :commands="com"
-    />
-
-    <v-btn
-      width="100%"
-      v-if="isAuthor && !contextLen"
-      @click="addContext"
-      class="course_button"
-    >
-      <v-icon>mdi-plus</v-icon>Context
-    </v-btn>
-    <v-card elevation="0" outlined class="d-flex">
-      <div style="width: 100%;" v-if="isTeacher" class="d-flex">
-        <v-bottom-navigation
-          grow
-          style="height: 2rem;"
-          id="navBar"
-          v-model="index"
-          class="elevation-0"
-          v-if="contextLen"
+      <div v-if="showSkeleton || hasSkeleton">
+        <v-card
+          height="32px"
+          outlined
+          class="d-flex align-center justify-center"
         >
+          Skeleton
           <v-btn
-            v-for="(item, i) in getContext"
-            :key="i"
-            style="padding: 0 0.5em; border-left: solid; border-right: solid; border-width: 0.01em; border-color: lightgray;"
-          >
-            <div class="d-flex align-center">
-              <span v-if="isViewer">{{ item.name }}</span>
-              <Editable
-                v-if="isAuthor"
-                :type="'context'"
-                :value="item.name"
-                :id="item.id"
-                placeholder="Context name"
-                :field="'name'"
-                @input="editableInput"
-                onclick="event.stopPropagation()"
-              >
-              </Editable>
-              <v-spacer style="width:1em"></v-spacer>
-              <v-icon
-                :class="getIconSmallSize"
-                v-if="isAuthor"
-                @click="deleteCont(item.id)"
-                >mdi-delete</v-icon
-              >
-            </div>
-          </v-btn>
-        </v-bottom-navigation>
-
-        <div
-          v-if="contextLen && isAuthor"
-          style="height: 2rem;"
-          class="d-flex"
-        >
-          <v-btn
+            v-if="isAuthor"
             icon
-            style="min-width: 0;"
-            @click="addContext"
-            class="getIconBigSize"
+            @click="deleteSkeleton"
+            :x-small="getButtonSmallSize=='x-small'"
+            :small="getButtonSmallSize=='small'"
+            style="position:absolute; top:auto; right: 8px;"
           >
-            <v-icon> mdi-plus </v-icon>
+            <v-icon :size="getIconSmallSize">mdi-delete</v-icon>
           </v-btn>
-        </div>
+        </v-card>
+        <AceEditor
+          ref="skeleton"
+          v-model="code1"
+          @init="editorInit"
+          @onchange="editorChange"
+          lang="javascript"
+          theme="ambiance"
+          width="100%"
+          height="10rem"
+          :options="editorOp"
+          :commands="com"
+        />
       </div>
-    </v-card>
-    <AceEditor
-      ref="context"
-      v-model="code2"
-      @init="editorInit"
-      @onchange="editorChange"
-      v-if="contextLen"
-      class="course_text mb-4"
-      theme="ambiance"
-      width="100%"
-      height="15em"
-      :options="editorOp"
-      :commands="com"
-    />
+    </div>
 
-    <v-spacer style="height: 16px"></v-spacer>
+    <div class="pt-2 pb-4" v-if="isTeacher">
+      <v-card 
+        flat
+        outlined
+        class="d-flex align-center" 
+        style="border-left: 0; border-right: 0;"
+      >
+        <v-btn
+          width="100%"
+          v-if="isAuthor && !contextLen"
+          @click="addContextByEvaluativeId(resource.id)"
+        >
+        <v-icon>mdi-plus</v-icon>Context
+      </v-btn>
+        <v-layout column>
+          <v-app-bar flat color="white" class="pa-0" rounded height="32">
+            <v-tabs
+              style="width:calc(100% - 40px)"
+              center-active
+              v-model="tab"
+              color="error"
+              grow
+              show-arrows
+              hide-slider
+            >
+              <v-tab 
+                v-for="(item, i) in resource.contexts" 
+                :key="i" 
+                style="width:100px"
+                :class="getSmallTextClass"
+              >
+                <!--Student & Viewer-->
+                <span v-if="isStudent || isViewer">
+                  {{item.name}}
+                </span>
 
-    <span v-if="isStudent" class="caption mr-2"
-      >(autosave each 10 seconds)</span
+                <!--Author-->
+                <span v-if="isAuthor" class="d-flex align-center">
+                  <Editable
+                    :type="'context'"
+                    :value="item.name"
+                    :id="item.id"
+                    placeholder="Context name"
+                    :field="'name'"
+                    @input="editableInput"
+                    onclick="event.stopPropagation()"
+                  />
+                  <v-btn 
+                    v-if="isAuthor" 
+                    icon 
+                    :x-small="getButtonSmallSize=='x-small'"
+                    :small="getButtonSmallSize=='small'"
+                    onclick="event.stopPropagation()"
+                    @click="deleteCont(item.id)"
+                  >
+                    <v-icon :size="getIconSmallSize">
+                      mdi-delete
+                    </v-icon>
+                  </v-btn>
+                </span>
+              </v-tab>
+            </v-tabs>
+
+            <!--Author-->
+            <v-btn 
+              v-if="contextLen"
+              min-width="0"
+              width="32px"
+              height="28px"
+              class="ma-1"
+              @click="addContextByEvaluativeId(resource.id)"
+              :small="getButtonMediumSize=='small'" 
+              :medium="getButtonMediumSize=='medium'"
+            >
+              <v-icon> mdi-plus </v-icon>
+            </v-btn>
+          </v-app-bar>
+
+          <v-tabs-items v-model="tab">
+            <v-tab-item
+              v-for="(item, i) in resource.contexts"
+              :key="i"
+            >
+            <AceEditor
+              ref="context"
+              v-model="code2"
+              @init="editorInit"
+              @onchange="editorChange"
+              v-if="contextLen"
+              theme="ambiance"
+              width="100%"
+              height="10rem"
+              :options="editorOp"
+              :commands="com"
+            />
+            </v-tab-item>
+          </v-tabs-items>
+        </v-layout>  
+      </v-card>
+    </div>
+
+    <span 
+      v-if="isStudent" 
+      class="caption ml-2" 
+      :class="isMD ? 'ml-2' : 'ml-4'"
     >
-    <v-card-actions>
-      <v-btn color="error" class="mb-2" @click="backToSheet" v-if="!single">
+      (autosave each 10 seconds)
+    </span>
+
+    <v-card-actions v-if="isStudent" class="d-flex flex-wrap">
+      <v-btn 
+        color="error" 
+        class="mb-2" 
+        @click="backToSheet" 
+        :small="getButtonMediumSize=='small'"
+        :medium="getButtonMediumSize=='medium'"
+      >
         BACK TO SHEET<v-icon right dark> mdi-autorenew </v-icon>
       </v-btn>
       <v-btn
@@ -176,21 +217,22 @@
         class="mb-2"
         @click="dataSumit"
         :disabled="statusSaveButton"
-        v-if="isStudent"
+        :small="getButtonMediumSize=='small'"
+        :medium="getButtonMediumSize=='medium'"
       >
         SAVE
         <pre>(Ctrl+S)</pre>
         <v-icon right dark> mdi-content-save </v-icon>
       </v-btn>
-
       <v-btn
         color="primary"
         dark
         class="mb-2"
         @click="getTeachersCode"
-        v-if="isStudent"
+        :small="getButtonMediumSize=='small'"
+        :medium="getButtonMediumSize=='medium'"
       >
-        GET TEACHER'S CODE<v-icon right dark> mdi-account-switch </v-icon>
+        TEACHER'S CODE<v-icon right dark> mdi-account-switch </v-icon>
       </v-btn>
     </v-card-actions>
   </div>
@@ -222,7 +264,7 @@ export default {
       type: Object,
       default: () => null
     },
-    single: {
+    isEvaluative: {
       type: Boolean,
       default: () => false
     },
@@ -236,30 +278,25 @@ export default {
 
   data() {
     return {
+      tab: 0,
       code: "",
       code1: "",
       code2: "",
+
       saveHandler: "",
       statusSaveButton: false,
       statusResetButton: false,
       mapDetector: [],
       originalLog: "",
+
       showSkeleton: false,
       hasSkeleton: false,
-      index: 0,
+      contextDeleted:false,
+
       options: [
-        {
-          label: "blank",
-          value: "blank"
-        },
-        {
-          label: "skeleton",
-          value: "skeleton"
-        },
-        {
-          label: "buggy",
-          value: "buggy"
-        }
+        { label: "blank", value: "blank" },
+        { label: "skeleton", value: "skeleton" },
+        { label: "buggy", value: "buggy" }
       ],
       editorOp: {
         enableBasicAutocompletion: true,
@@ -292,9 +329,14 @@ export default {
         this.hasSkeleton = false;
       }
     },
-    index(newV, oldV){
-      this.saveContext(this.resource.contexts[oldV].id, this.code2)
-      this.code2 = this.resource.contexts[newV].text
+    tab(newV, oldV){
+      if (newV != undefined && !this.contextDeleted){
+        this.saveContext(this.resource.contexts[oldV].id, this.code2)
+        this.code2 = this.resource.contexts[newV].text
+      } else if (this.contextDeleted){
+        this.code2 = this.resource.contexts[newV].text
+        this.contextDeleted=false
+      }
     }
   },
 
@@ -324,7 +366,7 @@ export default {
       this.code = this.resource.solution;
       this.code1 = this.resource.skeleton;
       if (this.resource.contexts.length>0){
-        this.code2 = this.resource.contexts[this.index].text;
+        this.code2 = this.resource.contexts[this.tab].text;
       }
     }
     if ("skeleton" in this.resource && this.resource.skeleton != null && this.resource.skeleton.length > 0) {
@@ -338,35 +380,44 @@ export default {
     ...mapGetters("main",[
       "getLessonByResourceId",
       "getStatusByResourceId",
-      "isStudent", "isTeacher", "isViewer", "isAuthor",
+      "isStudent", 
+      "isTeacher", 
+      "isViewer",
+      "isAuthor",
     ]),
     ...mapGetters("style",[
-      "getSmallTextClass", "getIconBigSize", "getIconSmallSize"
+      "getSmallTextClass", 
+      "getIconBigSize", 
+      "getIconSmallSize",
+      "isMD",
+      "getButtonSmallSize",
+      "getButtonMediumSize",
+      "getSubtitleClass"
     ]),
-    getContext() {
-      return this.resource.contexts;
-    },
     contextLen() {
       return this.resource.contexts.length > 0;
     },
-    getCont() {
-      return this.resource.contexts[this.index];
-    }
   },
 
   methods: {
-    ...mapActions("main",["setProgress"]),
+    ...mapActions("main",[
+      "setProgress"
+    ]),
     ...mapMutations("main",[
       "editableInput",
       "setTeacherProgress",
       "addContextByEvaluativeId",
       "deleteContext"
     ]),
-    addContext() {
-      if (!this.contextLen) {
-        this.index = 0;
+    deleteCont(id){
+      this.contextDeleted=true
+      let index = this.resource.contexts.findIndex(c => c.id == id)
+      let verify = this.resource.contexts.length-1 > index
+      let verify2 = this.tab <= index
+      this.deleteContext(id)
+      if (verify && verify2){
+        this.code2 = this.resource.contexts[this.tab].text;
       }
-      this.addContextByEvaluativeId(this.resource.id);
     },
     saveContext(id, code) {
       const obj2 = {
@@ -397,19 +448,7 @@ export default {
       };
       this.editableInput(obj);
     },
-    setIndex(i) {
-      this.index = i;
-    },
-    deleteCont(id) {
-      if (
-        this.index == this.resource.contexts.findIndex(e => e.id == id)
-      ) {
-        if (this.index > 0) {
-          this.setIndex(this.index - 1);
-        }
-      }
-      this.deleteContext(id);
-    },
+
     backToSheet() {
       const lesson = this.getLessonByResourceId(this.resource.id);
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
@@ -468,7 +507,9 @@ export default {
           type: "evaluative"
         };
         this.editableInput(obj2);
-        this.saveContext(this.resource.contexts[this.index].id, this.code2)
+        if (this.tab != undefined){
+          this.saveContext(this.resource.contexts[this.tab].id, this.code2)
+        }
       }
 
       if (this.resource.html) {
@@ -543,8 +584,8 @@ export default {
     },
     getLineNumberError(err) {
       const caller_line = err.stack.split("\n")[4];
-      const index = caller_line.indexOf("at ");
-      return caller_line.slice(index + 2, caller_line.length);
+      const tab = caller_line.tabOf("at ");
+      return caller_line.slice(tab + 2, caller_line.length);
     },
     reset() {
       this.code = this.resource.skeleton;
@@ -582,7 +623,6 @@ export default {
       return editorRef.getSelection().getAllRanges().length;
     },
     editorInit: function(_editor) {
-      console.log("editor", _editor);
       if(this.isViewer){
         _editor.setReadOnly(true);
       }
@@ -649,72 +689,48 @@ export default {
 </script>
 
 <style scoped>
-
-/*
-#editor >>> .v-text-field.v-text-field--solo .v-input__control {
-  min-height: 0;
-}
-
-#editor >>> .v-messages {
-  min-height: 0;
-}
-
-#editor >>> .v-label {
-  font-size: inherit;
-}
-
-#editor >>> .v-text-field input {
-  padding: 0;
-}
-
+/* Dropdown styles */
 .vcs {
   position: initial;
-}*/
-
-
+}
 #editor >>> .vcs__select-menu {
   z-index: 10;
   width: 13em;
   left: auto;
   top: auto;
 }
-
 #editor >>> .vcs__select-menu__not-main {
   left: calc(100% - 1px) !important;
   top: -1px !important;
 }
-
 #editor >>> .vcs__picker input {
   height: 2em;
   padding: 0 20px 0 5px;
 }
-
 #editor >>> .vcs__arrow-container {
   padding-left: 6px;
   right: 6px;
 }
-
 #editor >>> .vcs__arrow {
   padding: 2px;
 }
-
 #editor >>> .vcs__cross {
   display: none;
 }
 
-.v-item-group.v-bottom-navigation .v-btn.v-btn--active:not(:hover):before {
-  opacity: 0.18 !important;
-}
 
-#navBar>>>.v-btn__content {
-  flex: auto;
+/* Tab bar styles */
+.theme--light.v-tabs .v-tab--active:hover::before, .theme--light.v-tabs .v-tab--active::before{
+  opacity:0.12;
 }
-
-.v-item-group.v-bottom-navigation .v-btn {
-  max-width: none !important;
-  min-width: 0 !important;
-  font-weight: none !important;
+#editor>>>.v-toolbar__content, .v-toolbar__extension{
+  padding:0;
 }
-
+#editor>>>.v-toolbar__content > .v-tabs:first-child, .v-toolbar__extension > .v-tabs:first-child{
+  margin:0;
+}
+#editor>>>.v-slide-group__next, .v-slide-group__prev{
+  min-width: 24px;
+}
 
 </style>

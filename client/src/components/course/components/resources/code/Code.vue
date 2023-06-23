@@ -2,30 +2,27 @@
   <div id="code">
     <v-container fluid>
       <v-row>
-        <v-col
-          :cols="isSMsmaller ? 12 : 7"
-        >
-          <v-card max-width="100%" outlined>
-            <!--STATEMENT-->
-            <Header :resource="resource" v-if="!single" />
-            <!--PLAYER-->
+        <v-col :cols="isSMsmaller ? 12 : 7">
+          <v-card outlined>
+            <Header :resource="resource" v-if="!isEvaluative" />
             
             <Editor
-              :resource="resource" :single="single"
+              :resource="resource" :isEvaluative="isEvaluative"
               @onErrors="setErrors"
               @onLogs="setLogs"
               ref="editor"
             />
 
+            <!--
             <v-rating
               v-model="rating"
               background-color="orange lighten-3"
               color="orange"
               v-if="isStudent"
             >
-            </v-rating>
-            <!--FEEDBACK-->
-            <v-expansion-panels v-if="isStudent">
+            </v-rating>-->
+
+            <v-expansion-panels v-if="isStudent || isAuthor">
               <v-expansion-panel>
                 <v-expansion-panel-header disable-icon-rotate>
                   Errors ({{ errors.length }})
@@ -60,7 +57,7 @@
                   </v-data-table>
                 </v-expansion-panel-content>
               </v-expansion-panel>
-              <v-expansion-panel>
+              <v-expansion-panel v-if="isStudent">
                 <v-expansion-panel-header disable-icon-rotate>
                   Logs ({{ logs.length }})
                   <template v-slot:actions>
@@ -94,7 +91,8 @@
                   </v-data-table>
                 </v-expansion-panel-content>
               </v-expansion-panel>
-              <v-expansion-panel>
+
+              <v-expansion-panel v-if="isStudent">
                 <v-expansion-panel-header disable-icon-rotate>
                   Questions (0)
                   <template v-slot:actions>
@@ -111,21 +109,20 @@
             </v-expansion-panels>
           </v-card>
         </v-col>
-
-        <v-col cols="5" class="pl-0">
+        <v-col 
+          cols="5" 
+          class="pl-0" 
+          :class="isSMsmaller ? 'd-none' : 'd-block'"
+        >
           <Tests
             :resource="resource"
             :errors="errors"
             :logs="logs"
             @onSaveCode="saveCode"
-            :class="isSMsmaller ? 'd-none' : 'd-block'"
           />
         </v-col>
       </v-row>
-
-      <v-row
-        :class="isSMsmaller ? 'd-block' : 'd-none'"
-      >
+      <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
         <v-col cols="12">
           <Tests
             :resource="resource"
@@ -159,7 +156,7 @@ export default {
       type: Object,
       default: () => null
     },
-    single: {
+    isEvaluative: {
       type: Boolean,
       default: () => false
     },
@@ -169,13 +166,7 @@ export default {
     return {
       headers: [
         { text: "Row", value: "row", sortable: true },
-        {
-          text: "Type",
-          align: "start",
-          sortable: false,
-          value: "type"
-        },
-
+        { text: "Type", align: "start", sortable: false, value: "type" },
         { text: "Message", value: "text" }
       ],
       errors: [],
