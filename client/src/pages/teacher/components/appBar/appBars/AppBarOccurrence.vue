@@ -152,6 +152,8 @@ export default {
   },
 
   created() {
+    this.saveButton = !this.changed
+
     bus.$on("deleteDialog", payload => {
       this.deleteDialog = payload;
     });
@@ -194,7 +196,7 @@ export default {
   },
 
   computed: {
-    ...mapState("main", {changed:state => state.changed}),
+    ...mapState("main", { changed: state => state.changed }),
     ...mapGetters("main", ["getPublishedAt", "isAuthor", "isViewer", "getCourse"]),
     ...mapGetters("style", ["getErrorSnackbar", "getSuccessSnackbar"]),
     isDraft() {

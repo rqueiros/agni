@@ -3,7 +3,7 @@
     <v-list-item 
       :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" 
       class="align-start"
-    >asdfasd
+    >
       <v-list-item-content class="py-2">
         <v-list-item-title :class="getTitleClass">
           <!--Student + Viewer-->
@@ -135,6 +135,7 @@
       :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
         : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
     >
+      <!--
       <Editable
         placeholder="Exercise statement"
         type="evaluative"
@@ -142,6 +143,12 @@
         :id="resource.id"
         field="statement"
         @input="editableInput"
+      />-->
+      <vue-editor 
+        v-model="resource.statement" 
+        style="background-color: rgb(226, 226, 226); border-radius: 8px;"
+        :editor-toolbar="customToolbar"
+        placeholder="Evaluative statement"
       />
     </v-card-text>
 
@@ -161,6 +168,9 @@
 import { mapGetters, mapMutations } from "vuex";
 import Editable from "../../../gerneral/Editable.vue";
 
+import { VueEditor } from "vue2-editor";
+
+
 export default {
   name: "Header",
 
@@ -171,7 +181,23 @@ export default {
   },
 
   components: {
-    Editable
+    Editable,
+    VueEditor
+  },
+
+  data() {
+    return {
+      customToolbar: [
+        ["bold", "italic", "underline", "strike"],
+        [
+          { align: "" },
+          { align: "center" },
+        ],
+        ["code-block"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ color: [] }, { background: [] }],
+      ],
+    }
   },
 
   computed: {
@@ -195,6 +221,18 @@ export default {
     ])
   },
 
+  watch: {
+    "resource.statement"(value) {
+      const obj2 = {
+        id: this.resource.id,
+        value: value,
+        field: "statement",
+        type: "evaluative"
+      };
+      this.editableInput(obj2);
+    },
+  },
+
   methods: {
     ...mapMutations("main",["editableInput"]),
     /*html_escape(html_str) {
@@ -205,4 +243,24 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+/* Text editor */
+#header>>>.ql-toolbar.ql-snow{
+  border:none;
+  border-bottom: 1px solid #ccc;
+}
+#header>>>.ql-container.ql-snow{
+  border:none;
+}
+#header>>>.ql-editor{
+  font-size:0.75rem;
+  min-height: 100px;
+}
+#header>>>.quillWrapper .ql-snow.ql-toolbar .ql-formats{
+  margin-bottom:2px;
+}
+#header>>>.quillWrapper .ql-snow.ql-toolbar{
+  padding-top:4px;
+  padding-bottom:4px
+}
+</style>

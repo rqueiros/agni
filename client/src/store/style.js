@@ -40,6 +40,7 @@ const style = {
         case "delete": return "mdi-delete";
         case "edit": return "mdi-pencil";
         case "lesson": return "mdi-note-text-outline"  
+        case "question": return "mdi-chat-question-outline"
         default: return "";
       }
     },

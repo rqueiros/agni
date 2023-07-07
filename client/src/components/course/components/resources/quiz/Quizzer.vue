@@ -1,23 +1,25 @@
 <template>
   <div id="quizzer">
-    <div 
-      v-if="isEvaluative && !isQuestion" 
-      class="pa-2 mb-1" 
-      :class="getSubtitleClass"
-    >
-      <Editable 
-        v-if="isAuthor"
-        type="evaluative" 
-        :value="resource.name" 
-        :id="resource.id" 
-        placeholder="Evaluative name"
-        field="name"
-        @input="editableInput" 
-        onclick="event.stopPropagation()" 
-      />
-      <span v-if="isViewer">
-        {{ resource.name }}
-      </span>
+    <div :class="isMD ? 'mx-2' : 'mx-4'">
+      <div 
+        v-if="isEvaluative && !isQuestion" 
+        class="pt-2 pb-2" 
+        :class="getSubtitleClass"
+      >
+        <Editable 
+          v-if="isAuthor"
+          type="evaluative" 
+          :value="resource.name" 
+          :id="resource.id" 
+          placeholder="Evaluative name"
+          field="name"
+          @input="editableInput" 
+          onclick="event.stopPropagation()" 
+        />
+        <span v-if="isViewer">
+          {{ resource.name }}
+        </span>
+      </div>
     </div>
 
     <v-stepper 
@@ -55,6 +57,7 @@
                 </div>
 
                 <!--Author-->
+                <!--
                 <Editable 
                   v-if="isAuthor" 
                   type="question" 
@@ -63,12 +66,20 @@
                   field="question" 
                   @input="editableInput" 
                   placeholder="Question" 
+                />-->
+                <vue-editor 
+                  v-if="isAuthor"
+                  v-model="resource.questions[n - 1].question" 
+                  style="background-color: rgb(226, 226, 226); border-radius: 8px;"
+                  :editor-toolbar="customToolbar"
+                  placeholder="Question"
+                  @text-change="(delta, oldDelta) => questionChange(delta, oldDelta)"
                 />
               </v-list-item-content>
 
               <!--Author-->
               <v-list-item-avatar 
-                v-if="isAuthor"
+                v-if="isAuthor & !isQuestion"
                 min-height="0"  
                 height="fit-content"
                 class="my-0 ml-0 d-flex align-self-end justify-end"
@@ -237,6 +248,9 @@ import "sweetalert2/src/sweetalert2.scss";
 import Editable from "../../../../gerneral/Editable.vue";
 import SelectDialog from "../../../../gerneral/SelectDialog.vue";
 
+import { VueEditor } from "vue2-editor";
+
+
 export default {
   name: "Quizzer",
 
@@ -257,7 +271,8 @@ export default {
 
   components: {
     Editable,
-    SelectDialog
+    SelectDialog,
+    VueEditor
   },
 
   data() {
@@ -274,6 +289,17 @@ export default {
         { title: "NEW" },
         { title: "SELECT" }
       ],
+
+      customToolbar: [
+        ["bold", "italic", "underline", "strike"],
+        [
+          { align: "" },
+          { align: "center" },
+        ],
+        ["code-block"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ color: [] }, { background: [] }],
+      ],
     };
   },
 
@@ -288,6 +314,7 @@ export default {
       this.steps = 1;
     }
   },
+
 
   watch: {
     steps(val) {
@@ -305,13 +332,16 @@ export default {
     },
     selected(newS) {
       if (this.isTeacher){
-        const obj = {
-          value: newS.map(v => v + 1),
-          type: "question",
-          field: "correctAnswer",
-          id: this.resource.questions[this.question - 1].id
-        };
-        this.editableInput(obj);
+        let corrA = this.resource.questions[this.question - 1].correctAnswer.map(v => v - 1)
+        if (!(newS.length == corrA.length && newS.every((v, i) => v == corrA[i]))){
+          const obj = {
+            value: newS.map(v => v + 1),
+            type: "question",
+            field: "correctAnswer",
+            id: this.resource.questions[this.question - 1].id
+          };
+          this.editableInput(obj);
+        }
       } else if (this.isStudent){
         this.studentAnswers[this.question-1] =  newS
       }
@@ -333,7 +363,8 @@ export default {
       "getButtonSmallSize",
       "getIconMediumSize",
       "getButtonMediumSize",
-      "getSubtitleClass"
+      "getSubtitleClass",
+      "isMD"
     ]),
     getSteps() {
       return this.resource.questions.length;
@@ -353,6 +384,7 @@ export default {
       "deleteAnswer",
       "deleteQuestion",
       "addQuestionByResourceId",
+      "setChanged"
     ]),
     ...mapActions("main", [
       "setProgress", 
@@ -367,6 +399,11 @@ export default {
       this.deleteAnswer(id);
       this.selected = this.resource.questions[this.question - 1].correctAnswer.map(v => v - 1);
     },
+    questionChange(delta,oldDelta,){
+      if (oldDelta.ops[0].insert!="\n"){
+        this.setChanged(true)
+      }
+    },  
     deleteQue(id) {
       this.deleteQuestion(id);
       if (this.question > this.resource.questions.length && this.question > 1) {
@@ -433,8 +470,7 @@ export default {
       });
 
       const lesson = this.getLessonByResourceId(this.resource.id); //TODO problem with contentType
-      //console.log(lesson)
-      //console.log(lesson.id, lesson.contentType)
+
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
     addQuestion(type, id) {
@@ -460,5 +496,25 @@ export default {
 
 #quizzer>>>.v-stepper__step{
   padding:18px
+}
+
+/* Text editor */
+#quizzer>>>.ql-toolbar.ql-snow{
+  border:none;
+  border-bottom: 1px solid #ccc;
+}
+#quizzer>>>.ql-container.ql-snow{
+  border:none;
+}
+#quizzer>>>.ql-editor{
+  font-size:0.75rem;
+  min-height: 100px;
+}
+#quizzer>>>.quillWrapper .ql-snow.ql-toolbar .ql-formats{
+  margin-bottom:2px;
+}
+#quizzer>>>.quillWrapper .ql-snow.ql-toolbar{
+  padding-top:4px;
+  padding-bottom:4px
 }
 </style>

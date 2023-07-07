@@ -1,10 +1,10 @@
 <template>
-  <v-snackbar v-model="snackbar" :timeout="timeout" :color="color">
+  <v-snackbar v-model="localSnackbar" :timeout="timeout" :color="color">
     <v-icon>{{ icon }}</v-icon>
     {{ text }}
 
     <template v-slot:action="{ attrs }">
-      <v-btn text v-bind="attrs" @click="snackbar = false">
+      <v-btn text v-bind="attrs" @click="localSnackbar = false">
         Close
       </v-btn>
     </template>
@@ -42,9 +42,21 @@ export default {
     }
   },
 
+  data() {
+    return {
+      localSnackbar: this.snackbar
+    }
+  },
+
   watch: {
     snackbar(newValue) {
+      this.localSnackbar = newValue;
       bus.$emit("snackbarChange", newValue);
+    },
+    localSnackbar(newValue) {
+      if (newValue === false) {
+        bus.$emit("snackbarChange", newValue);
+      }
     }
   },
 

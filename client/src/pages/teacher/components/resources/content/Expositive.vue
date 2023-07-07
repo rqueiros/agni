@@ -1,6 +1,6 @@
 <template>
   <div id="expositive" ref="expo">
-    <Expo :expositive="expositive"/>
+    <Expo :expositive="getExpositive" v-if="getExpositive"/>
   </div>
 </template>
 
@@ -23,11 +23,11 @@ export default {
   },
 
   created() {
-    this.setItems()
+    this.updateParentDivWidth = this.updateParentDivWidth.bind(this);
   },
 
   mounted() {
-    this.setScreenSize(this.$refs.course.offsetWidth);
+    this.setScreenSize(this.$refs.expo.offsetWidth);
     window.addEventListener("resize", this.updateParentDivWidth);
   },
 
@@ -46,9 +46,6 @@ export default {
 
   methods: {
     ...mapMutations("style",["setScreenSize"]),
-    setItems() {
-      this.expositive = this.getExpositive
-    },
     updateParentDivWidth() {
       clearTimeout(this.updateParentDivWidthTimeout);
       this.updateParentDivWidthTimeout = setTimeout(() => {

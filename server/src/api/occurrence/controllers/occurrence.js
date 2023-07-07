@@ -63,10 +63,22 @@ const occurrenceStructure = {
    year: true,
    startDate:true,
    endDate:true,
-   courses:{
-      populate:{
-         name:true,
-         type:true
+   courses: {
+      populate: {
+         name: true,
+         type: true,
+         modules: {
+            populate: {
+               condition:true,
+               name: true,
+               lessons: {
+                  populate: {
+                     condition:true,
+                     name: true,
+                  }
+               }
+            }
+         },
       }
    },
    classes:{
@@ -122,7 +134,8 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          const result = []
-         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
+
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
 
          if (data.publishedAt == null) {
             data.author = ctx.state.user.id
@@ -132,17 +145,13 @@ module.exports = createCoreController(uid, () => {
             return occ;
          }
 
-         if (Array.isArray(data) == false) {
-            data = [data]
-         }
+         data = (Array.isArray(data) == false) ? [data] : data
          for (const index of Array(data.length).keys()) {
             const ctx2 = await prepareCtx(ctx, data[index], "create")
             const r = await super.create(ctx2)
             result.push(r)
          }
-         if (result.length == 1) {
-            return result[0]
-         }
+         result = (result.length == 1) ? result[0] : result
          return result
       },
 
@@ -152,7 +161,7 @@ module.exports = createCoreController(uid, () => {
          if (!permission) {
             return ctx.badRequest("You are not allowed to update this occurrence")
          }
-         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
 
          const ctx2 = await prepareCtx(ctx, data, "update")
          const result = await super.update(ctx2)
@@ -177,12 +186,13 @@ module.exports = createCoreController(uid, () => {
 
 async function prepareCtx(ctx, data, type) {
    let parm = ctx.params
+   console.log(data)
    if ("classes" in data && data.classes != null) {
       data.classes = await prepareClasses(ctx, data.classes, type)
    }
    ctx.params = parm
    data.author = ctx.state.user.id
-   ctx.request.body = {data:data}
+   ctx.request.body = {data:JSON.stringify(data)}
    return ctx
 }
 

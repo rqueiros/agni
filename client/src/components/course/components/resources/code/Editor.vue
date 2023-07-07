@@ -1,31 +1,56 @@
 <template>
-  <div id="editor" :class="getSmallTextClass">
-    <div v-if="isEvaluative" class="pa-2 pb-4" :class="getSubtitleClass">
-      <Editable
-        v-if="isAuthor"
-        :type="'evaluative'"
-        :value="resource.name"
-        :id="resource.id"
-        placeholder="Evaluative name"
-        :field="'name'"
-        @input="editableInput"
-        onclick="event.stopPropagation()"
-      />
-      <span v-if="isViewer">
-        {{ resource.name }}
-      </span>
-    </div>
+  <div id="editor" :class="getSmallTextClass" >
+    <div :class="isMD ? 'mx-2' : 'mx-4'">
+      <div v-if="isEvaluative" class="pt-2 pb-2" :class="getSubtitleClass">
+        <Editable
+          v-if="isAuthor"
+          :type="'evaluative'"
+          :value="resource.name"
+          :id="resource.id"
+          placeholder="Evaluative name"
+          :field="'name'"
+          @input="editableInput"
+          onclick="event.stopPropagation()"
+        />
+        <span v-if="isViewer">
+          {{ resource.name }}
+        </span>        
+      </div>
 
-    <div class="pb-2" v-if="isTeacher">
-      <vue-cascader-select
-        :options="options"
-        @select="selected => setType(resource.id, selected.value)"
-        :class="isMD ? 'ml-2' : 'ml-4'"
-        :value="resource.type != null ? resource.type : ''"
-        v-if="isAuthor"
-        style="width: fit-content"
-      />
-      <div v-if="isViewer">Type: {{ resource.type }}</div>
+      <div v-if="isEvaluative" :class="getSmallTextClass" class="pb-2">
+        <!--
+        <Editable
+          v-if="isAuthor"
+          :type="'evaluative'"
+          :value="resource.statement"
+          :id="resource.id"
+          placeholder="Evaluative statement"
+          :field="'statement'"
+          @input="editableInput"
+          onclick="event.stopPropagation()"
+        />-->
+        <span v-if="isViewer">
+          {{ resource.statement }}
+        </span> 
+        <vue-editor 
+          v-if="isAuthor"
+          v-model="resource.statement" 
+          style="background-color: rgb(226, 226, 226); border-radius: 8px;"
+          :editor-toolbar="customToolbar"
+          placeholder="Evaluative statement"
+        />
+      </div>
+
+      <div class="pb-2" v-if="isTeacher">
+        <vue-cascader-select
+          :options="options"
+          @select="selected => setType(resource.id, selected.value)"
+          :value="resource.type != null ? resource.type : ''"
+          v-if="isAuthor"
+          style="width: fit-content"
+        />
+        <div v-if="isViewer">Type: {{ resource.type }}</div>
+      </div>
     </div>
 
     <div class="py-2">
@@ -253,6 +278,7 @@ import Editable from "../../../../gerneral/Editable.vue";
 import Vue from "vue";
 import VueCascaderSelect from "vue-cascader-select";
 Vue.use(VueCascaderSelect);
+import { VueEditor } from "vue2-editor";
 
 // TODO: implement a previous/next navigation in the editor component
 
@@ -273,11 +299,24 @@ export default {
   components: {
     AceEditor,
     VueCascaderSelect,
-    Editable
+    Editable,
+    VueEditor
   },
 
   data() {
     return {
+      content: "<h1>Some initial content</h1>",
+      customToolbar: [
+        ["bold", "italic", "underline", "strike"],
+        [
+          { align: "" },
+          { align: "center" },
+        ],
+        ["code-block"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ color: [] }, { background: [] }],
+      ],
+
       tab: 0,
       code: "",
       code1: "",
@@ -320,7 +359,7 @@ export default {
       ]
     };
   },
-
+ 
   watch: {
     "resource.skeleton"(value) {
       if (value.length > 0) {
@@ -337,7 +376,16 @@ export default {
         this.code2 = this.resource.contexts[newV].text
         this.contextDeleted=false
       }
-    }
+    },
+    "resource.statement"(value) {
+      const obj2 = {
+        id: this.resource.id,
+        value: value,
+        field: "statement",
+        type: "evaluative"
+      };
+      this.editableInput(obj2);
+    },
   },
 
   beforeDestroy(){
@@ -392,7 +440,8 @@ export default {
       "isMD",
       "getButtonSmallSize",
       "getButtonMediumSize",
-      "getSubtitleClass"
+      "getSubtitleClass",
+      "getSmallTextClass"
     ]),
     contextLen() {
       return this.resource.contexts.length > 0;
@@ -507,7 +556,7 @@ export default {
           type: "evaluative"
         };
         this.editableInput(obj2);
-        if (this.tab != undefined){
+        if (this.tab != undefined && this.resource.contexts.length>0){
           this.saveContext(this.resource.contexts[this.tab].id, this.code2)
         }
       }
@@ -731,6 +780,27 @@ export default {
 }
 #editor>>>.v-slide-group__next, .v-slide-group__prev{
   min-width: 24px;
+}
+
+
+/* Text editor */
+#editor>>>.ql-toolbar.ql-snow{
+  border:none;
+  border-bottom: 1px solid #ccc;
+}
+#editor>>>.ql-container.ql-snow{
+  border:none;
+}
+#editor>>>.ql-editor{
+  font-size:0.75rem;
+  min-height: 100px;
+}
+#editor>>>.quillWrapper .ql-snow.ql-toolbar .ql-formats{
+  margin-bottom:2px;
+}
+#editor>>>.quillWrapper .ql-snow.ql-toolbar{
+  padding-top:4px;
+  padding-bottom:4px
 }
 
 </style>

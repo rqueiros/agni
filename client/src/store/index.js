@@ -269,8 +269,7 @@ const main = {
 
     //-------Module
     addModuleByCourseId(state, id) {
-      console.log(id)
-      const course = state.courses[0];
+      const course = state.courses.find(c => c.id == id);
       let n = Math.min(...course.children.map(m => m.id));
       if (n > 0 || !isFinite(n)) {
         n = 0;
@@ -462,7 +461,7 @@ const main = {
         new: true,
         afterPercDone: "",
         afterWeek: "",
-        type: ""
+        type: null
       };
       condition.id = n - 1;
       element.condition = condition;
@@ -591,7 +590,7 @@ const main = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .find(l => l.id == id);
-      let n = Math.min(...state.evaluatives.map(l => l.id));
+      let n = Math.min(...state.courses[0].children.flatMap(c => c.children).flatMap(l => l.evaluatives).map(l => l.id));
       if (n > 0 || !isFinite(n)) {
         n = 0;
       }
@@ -647,7 +646,7 @@ const main = {
         .flatMap(c => c.children)
         .flatMap(m => m.children)
         .find(l => l.id == id);
-      let n = Math.min(...state.evaluatives.map(l => l.id));
+      let n = Math.min(...state.courses[0].children.flatMap(c => c.children).flatMap(l => l.evaluatives).map(l => l.id));
       if (n > 0 || !isFinite(n)) {
         n = 0;
       }
@@ -745,6 +744,7 @@ const main = {
       this.commit("main/setChanged", true);
     },
     setEvaluativeField(state, [id, field, value]) {
+      
       let evaluative
       if (state.courses.length > 0) {
         evaluative = state.courses[0].children
@@ -754,10 +754,12 @@ const main = {
       } else {
         evaluative = state.evaluatives[0]
       }
-      if (evaluative[field] != value) {
+      if (evaluative && evaluative[field] != value || field == "statement") {
         this.commit("main/setChanged", true);
       }
-      evaluative[field] = value;
+      if (evaluative){
+        evaluative[field] = value;
+      }
     },
     setEvaluativePublishedAt(state, [id, publishedAt]) {
       const evaluative = state.evaluatives.find(c => c.id == id);
@@ -1074,8 +1076,8 @@ const main = {
         id: n - 1,
         input: "",
         expected: "",
-        type: "",
-        subtype: "",
+        type: null,
+        subtype: null,
         output: "",
         show: false
       });
@@ -1252,13 +1254,15 @@ const main = {
           .filter(e => e.contentType == "code")
           .flatMap(e => e.contexts)
           .find(t => t.id == id);
-      } else {
+      } else if (state.evaluatives.length>0){
         context = state.evaluatives[0].contexts.find(c => c.id == id)
       }
-      if (context[field] != value) {
+      if (context && context[field] != value) {
         this.commit("main/setChanged", true);
       }
-      context[field] = value;
+      if (context){
+        context[field] = value;
+      }
     },
 
     //-------Occurrence
@@ -1387,9 +1391,12 @@ const main = {
     },
     deleteStructure(state) {
       this.commit("main/setChanged", false);
+      //state.BUTTONSTYLE=false
       state.courses = [];
       state.expositives = [];
+      //state.evaluatives.splice(0, state.evaluatives.length);
       state.evaluatives = [];
+      state.questions = [];
       state.occurrences = [];
       state.statuses = [];
       state.classes = [];
@@ -1471,7 +1478,7 @@ const main = {
       this.commit("main/setCourses", [
         {
           new: true,
-          id: 1,
+          id: -1,
           idMenu: 1,
           contentType: "course",
           name: "",
@@ -1480,22 +1487,22 @@ const main = {
           children: [
             {
               new: true,
-              id: 2,
+              id: -1,
               idMenu: 2,
               contentType: "module",
               name: "",
-              condition: { id: 1 },
+              condition: { id: -1 },
               children: [
                 {
                   new: true,
-                  id: 3,
+                  id: -1,
                   idMenu: 3,
                   contentType: "lesson",
                   name: "",
                   description: "",
                   evaluatives: [],
                   expositives: [],
-                  condition: { id: 2 }
+                  condition: { id: -2 }
                 }
               ]
             }
@@ -1595,7 +1602,7 @@ const main = {
       if (collectionType == "expositives") {
         state.dispatch("prepareExpositive", [resp, true])
       } else if (collectionType == "evaluatives") {
-        state.dispatch("prepareEvaluative", resp)
+        state.dispatch("prepareEvaluative", [resp, true])
       } else if (collectionType == "questions") {
         state.dispatch("prepareQuestion", [resp, true])
       } else if (collectionType == "occurrences") {
@@ -1628,7 +1635,7 @@ const main = {
       } else if (collectionType == "expositives") {
         state.dispatch("prepareExpositive", [resp, false])
       } else if (collectionType == "evaluatives") {
-        state.dispatch("prepareEvaluative", resp)
+        state.dispatch("prepareEvaluative", [resp, false])
       } else if (collectionType == "questions") {
         state.dispatch("prepareQuestion", [resp, false])
       } else if (collectionType == "occurrences") {
@@ -1652,8 +1659,8 @@ const main = {
       const expositive = await this.dispatch("convert/prepareExpositive", [resp, isCopy])
       this.commit("main/setExpositives", [expositive])
     },
-    async prepareEvaluative(state, resp) {
-      const evaluative = await this.dispatch("convert/prepareEvaluative", resp)
+    async prepareEvaluative(state, [resp, isCopy]) {
+      const evaluative = await this.dispatch("convert/prepareEvaluative", [resp, isCopy])
       this.commit("main/setEvaluatives", [evaluative])
     },
     async prepareQuestion(state, [resp, isCopy]) {
@@ -1846,7 +1853,7 @@ const main = {
     async addExistingEvaluatives(state, [lessonId, evalutaiveIds]) {
       for (let evaluativeId of evalutaiveIds) {
         let evaluative = await this.dispatch("main/fetchCollectionType", [evaluativeId, "evaluatives"]);
-        evaluative = await this.dispatch("convert/prepareEvaluative", evaluative)
+        evaluative = await this.dispatch("convert/prepareEvaluative", [evaluative, false])
         let lesson = state.getters.getCourse.children.flatMap(m => m.children).find(l => l.id == lessonId)
         lesson.evaluatives.push((evaluative))
       }

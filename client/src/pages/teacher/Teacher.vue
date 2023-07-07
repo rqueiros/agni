@@ -17,28 +17,47 @@
       <div style="margin-right: 5%;" class="mb-8 min_height" :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'">
         <Resource :resource="resource" />
       </div>
+
+      <Snackbar 
+        :snackbar="snackbar.open" 
+        :timeout="snackbar.timeout" 
+        :color="snackbar.color" 
+        :icon="snackbar.icon"
+        :text="snackbar.text" 
+      />
     </v-main>
   </v-app>
 </template>
 
 <script>
 import { bus } from "@/main.js";
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import AppBar from "./components/appBar/AppBar.vue";
 import Resource from "./components/resources/Resource.vue";
 import Menu from "./components/Menu.vue";
+import Snackbar from "./../../components/gerneral/Snackbar.vue"
 
 export default {
   components: {
     Resource,
     Menu,
-    AppBar
+    AppBar,
+    Snackbar
   },
   data: () => ({
     resource: "home,Home",
-    header: "home"
+    header: "home",
+
+    snackbar: {
+        open: false,
+        text: "",
+        icon: "",
+        color: "",
+        timeout: 2000,
+      },
   }),
+
   methods: {
     ...mapActions("main", ["fetchEmptyCourse"]),
     setPage(payload) {
@@ -51,6 +70,7 @@ export default {
       this.header = payload;
     }
   },
+
   created() {
     bus.$on("changePage", payload => {
       this.setPage(payload);
@@ -61,9 +81,23 @@ export default {
     bus.$on("changeHeader", payload => {
       this.setHeader(payload);
     });
-  }
+    bus.$on("successSnackbar", payload => {
+      this.snackbar = this.getSuccessSnackbar(payload)
+    });
+    bus.$on("errorSnackbar", payload => {
+      this.snackbar = this.getErrorSnackbar(payload)
+    });
+  },
+  
+  computed: {
+    ...mapGetters("style", [
+      "getErrorSnackbar", 
+      "getSuccessSnackbar", 
+    ]),
+  },
 };
 </script>
+
 
 <style>
 .min_height{

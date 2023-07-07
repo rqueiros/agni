@@ -16,14 +16,6 @@
       ],
       "required": true
     },
-    "language": {
-      "type": "enumeration",
-      "enum": [
-        "JavaScript",
-        "Python"
-      ],
-      "required": true
-    },
     "statement": {
       "type": "richtext",
       "required": true

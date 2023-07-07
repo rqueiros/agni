@@ -34,7 +34,7 @@ export default {
   }),
 
   created() {
-    this.updateParentDivWidth = this.updateParentDivWidth.bind(this); //TODO fuck shit i dont konw
+    this.updateParentDivWidth = this.updateParentDivWidth.bind(this);
     bus.$on("changeIt", payload => {
       this.setResource(payload[0], payload[1]);
     });

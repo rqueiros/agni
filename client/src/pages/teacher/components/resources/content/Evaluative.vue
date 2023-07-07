@@ -1,8 +1,21 @@
 <template>
-  <div id="evaluative" class="ma-n3" ref="eval">
-    <NewEval v-if="getEvaluative.contentType==''"/>
-    <Code :resource="resource" :isEvaluative="true" v-if="getEvaluative.contentType=='code'"/>
-    <Quiz :resource="resource" :isEvaluative="true" v-if="getEvaluative.contentType=='quiz'"/>
+  <div id="evaluative" ref="eval">
+    <NewEval 
+      v-if="getEvaluative && getEvaluative.contentType==''" 
+      class="ma-n3" 
+    />
+    <Code 
+      :resource="getEvaluative" 
+      :isEvaluative="true" 
+      v-if="getEvaluative && getEvaluative.contentType=='code'" 
+      class="ma-n3" 
+    />
+    <Quiz 
+      :resource="getEvaluative" 
+      :isEvaluative="true" 
+      v-if="getEvaluative && getEvaluative.contentType=='quiz'" 
+      class="ma-n3" 
+    />
   </div>
 </template>
 
@@ -29,7 +42,7 @@ export default {
   },
 
   created(){
-    this.setItems()
+    this.updateParentDivWidth = this.updateParentDivWidth.bind(this);
   },
 
   mounted() {
@@ -52,9 +65,6 @@ export default {
 
   methods:{
     ...mapMutations("style",["setScreenSize"]),
-    setItems(){
-      this.resource = this.getEvaluative;
-    },
     updateParentDivWidth() {
       clearTimeout(this.updateParentDivWidthTimeout);
       this.updateParentDivWidthTimeout = setTimeout(() => {

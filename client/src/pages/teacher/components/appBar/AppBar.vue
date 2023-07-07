@@ -60,7 +60,7 @@ export default {
   computed: {
     getTitle() {
       if (this.resource.includes("StudentDashboard")) {
-        return "COURSE SESSIONS";
+        return "OCCURRENCES";
       } else if (this.resource.includes("Course")) {
         return "COURSE";
       }  else if (this.resource.includes("Expositive")) {
@@ -72,7 +72,7 @@ export default {
       } else if (this.resource.includes("content")) {
         return "CONTENT";
       } else if (this.resource.includes("Occurrence")) {
-        return "COURSE SESSION";
+        return "OCCURRENCE";
       } else if (this.resource.includes("Student")) {
         return "STUDENT";
       } else if (this.resource.includes("Home")) {

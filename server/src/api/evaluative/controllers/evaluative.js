@@ -37,6 +37,8 @@ module.exports = createCoreController(uid, () => {
       async create(ctx) {
          let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
 
+         console.log(data)
+
          if (data.publishedAt == null && "publishedAt" in data) {
             data.author = ctx.state.user.id
             const course = await strapi.db.query("api::evaluative.evaluative").create({
@@ -56,7 +58,9 @@ module.exports = createCoreController(uid, () => {
          data = (Array.isArray(data) == false) ? [data] : data
          for (const key of Array(data.length).keys()) {
             const ctx2 = await prepareCtx(ctx, images, data[key], "create")
+            console.log(ctx2.request.body)
             const r = await super.create(ctx2)
+            console.log(r)
             result.push(r)
          }
          return (result.length == 1) ? result[0] : result
@@ -182,8 +186,8 @@ function checkTests(data) {
    const tests = data.filter(d => d.content[0]["__component"] == "base.programming-exercise").flatMap(e => e.content[0].tests)
    for (const key of Array(tests.length).keys()) {
       const test = tests[key]
-      if (!(test.type == "log" && !("subtype" in test) ||
-         test.type == "expression" && !("subtype" in test) ||
+      if (!(test.type == "log" && !("subtype" in test && test.subtype != null) ||
+         test.type == "expression" && !("subtype" in test && test.subtype != null) ||
          test.type == "expression" && test.subtype == "error" ||
          test.type == "metric" && test.subtype == "occurrences" ||
          test.type == "metric" && test.subtype == "lines" ||

@@ -50,6 +50,9 @@ const convert = {
             } else {
               newModule.condition = module.condition
             }
+            if (module.condition.type == ""){
+              newModule.condition.type = null
+            }
           }
           if ("children" in module) {
             newModule.lessons = [];
@@ -239,8 +242,10 @@ const convert = {
       if ("image" in question && "name" in question.image) {
         newQuestion.image = question.image.name
         files.push({type:"image",file:question.image})
-      } else if ("image" in question && "id" in question.image.data){
+      } else if ("image" in question && question.image.data != null){
         newQuestion.image = question.image.data.id
+      } else {
+        newQuestion.image = null
       }
       if ("answers" in question) {
         newQuestion.answers = [];
@@ -347,7 +352,7 @@ const convert = {
           }
           lesson.evaluatives = lesson.evaluatives.data;
           for (let i = 0; i < lesson.evaluatives.length; i++) {
-            let evalu = await this.dispatch("convert/prepareEvaluative", lesson.evaluatives[i])
+            let evalu = await this.dispatch("convert/prepareEvaluative", [lesson.evaluatives[i], false])
             newEvaluatives.push(evalu)
           }
           lesson.expositives = newExpositives
@@ -377,6 +382,7 @@ const convert = {
     },
     prepareExpositive(state, [resp, isCopy]) {
       let expositive = resp;
+      expositive.id = resp.id
       //expositive.name=resp.attributes.name
       Object.keys(expositive.attributes).forEach(key => {
         expositive[key] = expositive.attributes[key];
@@ -391,11 +397,8 @@ const convert = {
       }
       return expositive;
     },
-    prepareEvaluative(state, resp) {
-      
+    prepareEvaluative(state, [resp, isCopy]) {
       let evaluative = {}
-      //evaluative = resp;
-      //evaluative.name = resp.attributes.name
       evaluative.id= resp.id
       
       Object.keys(resp.attributes).forEach(key => {
@@ -403,6 +406,7 @@ const convert = {
       });
       
       if (resp.attributes.content) {
+        let testsCount = -1
         Object.keys(resp.attributes.content[0]).forEach(async key => {
           if (key == "__component") {
             if (resp.attributes.content[0]["__component"] == "base.quiz") {
@@ -411,16 +415,27 @@ const convert = {
             } else {
               evaluative.contentType = "code";
             }
-          } else if (key == "id") {
+          } else if (key == "id" && !isCopy) {
             evaluative.compId = resp.attributes.content[0].id
           } else if (key == "questions") {
             //evaluative.questions = resp.attributes.content[0]["questions"];
             evaluative.questions = []
+            //let newQuestions = []
             for (var i = 0; i < resp.attributes.content[0].questions.data.length; i++) {
               let que = await this.dispatch("convert/prepareQuestion", [resp.attributes.content[0].questions.data[i],false])
               evaluative.questions.push(que)
+              //newQuestions.push(que)
             }
             //evaluative.questions = newQuestions
+            //evaluative.questions = newQuestions
+          } else if (key == "tests" && isCopy){
+            let newTests = resp.attributes.content[0].tests
+            newTests.forEach(test => {
+              test.id = testsCount
+              test.new = true
+              --testsCount
+            })
+            evaluative[key] = newTests
           } else if (key != "id") {
             evaluative[key] = resp.attributes.content[0][key];
           }
@@ -436,24 +451,27 @@ const convert = {
     },
     prepareQuestion(state, [resp, isCopy]) {
       let question = {}
-      //let question = resp;
       question.id = resp.id
       Object.keys(resp.attributes).forEach(key2 => {
         if (key2 == "answers"){
-          let newAnswers = []
+          question.answers = []
+          //let newAnswers = []
           for (let i = 0; i < resp.attributes.answers.length;i++){
-            newAnswers.push(resp.attributes.answers[i])
+            //newAnswers.push(resp.attributes.answers[i])
+            question.answers.push(resp.attributes.answers[i])
           }
-          question.answers = newAnswers
+          //question.answers = newAnswers
         } else {
           question[key2] = resp.attributes[key2];
         }
       });
-      //delete question.attributes;
       question.correctAnswer = JSON.parse(question.correctAnswer)
+      let answerCount = -1
       if(isCopy && "answers" in question){
         question.answers.forEach(answer => {
-          delete answer.id
+          answer.id = answerCount
+          answer.new = true
+          --answerCount
         })
       }
       return question;

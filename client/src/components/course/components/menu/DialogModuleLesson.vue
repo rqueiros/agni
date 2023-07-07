@@ -49,7 +49,7 @@
                         dialogItem.condition.id,
                         selected.value
                       )" 
-                    @clear="val => setType(dialogItem.condition.id, '')"
+                    @clear="val => setType(dialogItem.condition.id, null)"
                     :value="dialogItem.condition.type == null ? '' : 
                       dialogItem.condition.type"
                   />

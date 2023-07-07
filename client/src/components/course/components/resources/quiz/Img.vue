@@ -17,7 +17,7 @@
       </v-list-item>
 
       <div 
-        v-if="'image' in question && question.image!=null &&
+        v-if="question && 'image' in question && question.image!=null &&
           (question.image.data != null || 'name' in question.image)"
         class="pa-2"
       >
@@ -71,6 +71,7 @@ export default {
     };
   },
 
+  
   watch: {
     file(newV) {
       const obj = {
@@ -112,7 +113,7 @@ export default {
     ]),
     loadImage() {
       this.imageData = null
-      if ("image" in this.question) {
+      if (this.question && "image" in this.question) {
         const file = this.question.image;
         if (file != null && "data" in file && file.data != null) {
           this.imageData =

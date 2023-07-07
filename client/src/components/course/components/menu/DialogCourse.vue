@@ -15,6 +15,7 @@
                 <vue-cascader-select 
                   :options="options" 
                   @select="selected => setType(dialogItem.id, selected.value)"
+                  @clear="val => setType(dialogItem.id, null)"
                   :value="dialogItem.type" 
                   v-if="isAuthor" 
                 />

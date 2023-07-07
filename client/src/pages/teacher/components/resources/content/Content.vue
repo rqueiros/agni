@@ -23,20 +23,33 @@
             </v-radio-group>
           </v-card>
         </v-col>
-      </v-row>
 
-      <v-row dense>
-        <v-col cols="12" style="max-width: 400px;">
+        <v-col cols="12" style="max-width: 330px;">
           <v-text-field v-model="search" style="background-color: white;" prepend-inner-icon="mdi-magnify" label="Search"
             single-line class="pa-0 ma-0" outlined dense hide-details></v-text-field>
         </v-col>
       </v-row>
 
+      <!--
+      <v-row dense>
+        <v-col cols="12" style="max-width: 400px;">
+          <v-text-field v-model="search" style="background-color: white;" prepend-inner-icon="mdi-magnify" label="Search"
+            single-line class="pa-0 ma-0" outlined dense hide-details></v-text-field>
+        </v-col>
+      </v-row>-->
+
       <v-row dense>
         <v-col>
           <v-card width="100%" outlined style="border-color: #C3C3C3;">
-            <v-data-table class="" :itemsPerPage="itemsPerPage" :headers="headers[collectionType]" :items="items"
-              :search="search" @click:row="openCollectionType" :loading="loading">
+            <v-data-table 
+              class="" 
+              :itemsPerPage="itemsPerPage" 
+              :headers="headers[collectionType]" 
+              :items="items"
+              :search="search" 
+              @click:row="openCollectionType" 
+              :loading="loading"
+            >
               <template v-slot:item.my="{ item }">
                 <v-chip :color="color.my" outlined v-if="item.my">
                   My
@@ -90,9 +103,6 @@
 
     <DeleteDialog :dialog="deleteDialog" :collectionType="collectionType" />
 
-    <Snackbar :snackbar="snackbar.open" :timeout="snackbar.timeout" :color="snackbar.color" :icon="snackbar.icon"
-      :text="snackbar.text" />
-
   </div>
 </template>
 
@@ -101,14 +111,12 @@ import { bus } from "@/main.js";
 
 import { mapActions, mapGetters } from "vuex";
 
-import Snackbar from "../../../../../components/gerneral/Snackbar.vue";
 import DeleteDialog from "../../../../../components/gerneral/DeleteDialog.vue";
 
 export default {
   name: "Content",
 
   components: {
-    Snackbar,
     DeleteDialog
   },
 
@@ -119,7 +127,7 @@ export default {
       loading: true,
       items: [],
       checkboxes: [],
-      itemsPerPage: 5,
+      itemsPerPage: 7,
 
       cloneItems: [],
       cloneSelection: [],
@@ -162,14 +170,6 @@ export default {
         ]
       },
 
-      snackbar: {
-        open: false,
-        text: "",
-        icon: "",
-        color: "",
-        timeout: 2000,
-      },
-
       color: {
         Published: "green",
         Draft: "primary",
@@ -190,12 +190,12 @@ export default {
             await this.deleteCollectionType([this.toDeleteItem.id, this.collectionType]);
             await this.setItems();
             this.toDeleteItem = "";
-            this.snackbar = this.getSuccessSnackbar(this.collectionType + " deleted")
+            bus.$emit("successSnackbar", this.collectionType + " deleted")
           }
         } catch (error) {
           console.log(error)
           this.toDeleteItem = "";
-          this.snackbar = this.getErrorSnackbar("Something went wrong deleting the "+this.collectionType)
+          bus.$emit("errorSnackbar", "Something went wrong deleting the "+this.collectionType)
         }
       }
     });
@@ -258,7 +258,7 @@ export default {
       } catch (error) {
         console.log(error)
         this.loading = false;
-        this.snackbar = this.getErrorSnackbar("Something went wrong fetching the " + this.collectionType)
+        bus.$emit("errorSnackbar", "Something went wrong fetching the "+this.collectionType)
       }
     },
 
@@ -281,7 +281,7 @@ export default {
         }
       } catch (error) {
         console.log(error)
-        this.snackbar = this.getErrorSnackbar("Something went wrong fetching the "+this.collectionType)
+        bus.$emit("errorSnackbar", "Something went wrong fetching the "+this.collectionType)
       }
     },
 
@@ -293,7 +293,7 @@ export default {
         cloneBody = await this.fetchCloneBody(item.id);
       } catch (error) {
         console.log(error)
-        this.snackbar = this.getErrorSnackbar("Something went wrong fetching the Clone Menu")
+        bus.$emit("errorSnackbar", "Something went fetching deleting the Clone Menu")
       }
       this.cloneItems = cloneBody;
     },
@@ -349,11 +349,11 @@ export default {
       this.cloneOpen = []
       try {
         await this.fetchClone(cloneData);
-        this.snackbar = this.getSuccessSnackbar("Course copied")
+        bus.$emit("successSnackbar", "Course copied")
         bus.$emit("changePage", ["content,Course", "content"]);
       } catch (error) {
         console.log(error)
-        this.snackbar = this.getErrorSnackbar("Something went wrong copying the course")
+        bus.$emit("errorSnackbar", "Something went wrong copying the course")
       }
     },
     findParentofCloneBody(idMenu) {
@@ -402,7 +402,7 @@ export default {
         }
       } catch (error) {
         console.log(error)
-        this.snackbar = this.getErrorSnackbar("Something went wrong copying the "+this.collectionType)
+        bus.$emit("errorSnackbar", "Something went wrong copying the "+this.collectionType)
       }
     },
 

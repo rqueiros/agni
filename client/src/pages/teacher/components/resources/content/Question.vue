@@ -1,6 +1,6 @@
 <template>
-  <div id="question" class="ma-n3" ref="ques">
-    <Quiz :resource="{questions:[getQuestion]}" :isQuestion="true"/>
+  <div id="question" ref="ques">
+    <Quiz :resource="{questions:[getQuestion]}" :isQuestion="true" class="ma-n3" v-if="getQuestion"/>
   </div>
 </template>
 
@@ -19,25 +19,12 @@ export default {
   data(){
     return{
       resource:{},
-      selected:[],
     };
   },
 
   created(){
+    this.updateParentDivWidth = this.updateParentDivWidth.bind(this);
     this.setItems()
-    this.selected = this.resource.correctAnswer.map(v=>v-1)
-  },
-
-  watch: {
-    selected(newS) {
-      const obj = {
-        value: newS.map(v => v+1),
-        type: "question",
-        field: "correctAnswer",
-        id: this.resource.id
-      };
-      this.editableInput(obj);
-    },
   },
 
   mounted() {
@@ -63,10 +50,6 @@ export default {
     ...mapMutations("main", ["addAnswerByQuestionId", "editableInput", "deleteAnswer"]),
     setItems(){
       this.resource = this.getQuestion;
-    },
-    del(id) {
-      this.deleteAnswer(id);
-      this.selected = this.resource.correctAnswer.map(v=>v-1);
     },
     updateParentDivWidth() {
       clearTimeout(this.updateParentDivWidthTimeout);

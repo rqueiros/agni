@@ -28,6 +28,7 @@
             class="overflow-y-auto mb-3 elevation-1" 
             :search="search"
             dense
+            :items-per-page="items.length"
           >
             <template v-slot:item.check="{ item }">
               <v-checkbox 

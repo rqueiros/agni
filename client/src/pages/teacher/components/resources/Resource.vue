@@ -5,6 +5,7 @@
 <script>
 export default {
   name: "Resource",
+
   props: {
     resource: {
       type: String,

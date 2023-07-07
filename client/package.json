@@ -24,6 +24,7 @@
     "vue-pdf": "4.2.0",
     "vue-router": "^3.2.0",
     "vue-youtube-iframe-api": "^0.1.2",
+    "vue2-editor": "^2.10.3",
     "vuedraggable": "^2.24.3",
     "vuejs-ace-editor": "^1.0.1",
     "vuelidate": "^0.7.6",
