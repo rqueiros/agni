@@ -19,8 +19,16 @@ const uid = 'api::question.question'
 module.exports = createCoreController(uid, () => {
    return {
       async find(ctx) {
+         const author = ctx.state.user
+         const params = {"$or":[{author:{id:{"$eq":author.id}}},{publishedAt:{"$null":null}}]}
+         let filters;
+         if (Object.keys(ctx.query).length == 0){
+            filters = {filters: params}
+         } else {
+            filters = {filters : {"$and":[params,ctx.query.filters]}}
+         }
          const entity = await strapi.entityService.findMany(uid, {
-            ...ctx.query,
+            ...filters,
             populate: questionStructure,
          })
          const sanitizedEntity = await this.sanitizeOutput(entity, ctx)

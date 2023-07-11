@@ -74,8 +74,8 @@
             <v-col cols="2" class="pr-1" >
               <Editable
                 type="milestone"
-                :value="(typeof(milestone.frame) == 'string') ? 
-                  milestone.frame : JSON.stringify(milestone.frame)"
+                :value="milestone.frame != null ? 
+                  String(milestone.frame) : ''"
                 :id="milestone.id"
                 field="frame"
                 placeholder="Frame"

@@ -36,8 +36,7 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          const result = []
-         let data = JSON.parse(JSON.stringify(ctx.request.body.data))
-         console.log(data)
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
          data = (Array.isArray(data) == false) ? [data] : data
          for (const index of Array(data.length).keys()) {
             const ctx2 = await prepareCtx(ctx, data[index], "create")
@@ -56,7 +55,7 @@ module.exports = createCoreController(uid, () => {
          if (!permission) {
             return ctx.badRequest("You are not allowed to update this occurrence")
          }
-         const data = JSON.parse(JSON.stringify(ctx.request.body.data))
+         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
 
          const ctx2 = await prepareCtx(ctx, data, "update")
          const result = await super.update(ctx2)
@@ -86,7 +85,7 @@ async function prepareCtx(ctx, data, type) {
    }
    ctx.params = parm
    data.author = ctx.state.user.id
-   ctx.request.body = {data:data}
+   ctx.request.body = {data:JSON.stringify(data)}
    return ctx
 }
 
@@ -101,13 +100,13 @@ async function prepareStudents(ctx, students, type) {
          if (student.new || type == "create") {
             delete student.new
             let ctx2 = ctx
-            ctx2.request.body = {data:student}
+            ctx2.request.body = {data:JSON.stringify(student)}
             resp = await strapi.controller("api::student.student").create(ctx2)
          } else if (type=="update"){
             let id = student.id
             delete student.id
             let ctx2 = ctx
-            ctx2.request.body = {data:student}
+            ctx2.request.body = {data:JSON.stringify(student)}
             ctx2.request.params = {id:JSON.stringify(id)}
             ctx2.params = {id:JSON.stringify(id)}
             resp = await strapi.controller("api::student.student").update(ctx2)

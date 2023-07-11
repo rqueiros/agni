@@ -1,8 +1,8 @@
 <template>
   <div id="profile" class="resource" v-if="isStudent">
     <v-container fluid>
-      <v-row>
-        <v-col :cols="this.screenSmall ? 12 : 7">
+      <v-row class="mb-1 mt-0">
+        <v-col :cols="isSMsmaller ? 12 : 7" class="py-0">
           <!--Profile-->
           <v-card class="mx-auto mb-2" max-width="100%" outlined>
             <div class="header">
@@ -86,12 +86,16 @@
           </v-card>
         </v-col>
 
-        <v-col cols="5" class="right_box">
+        <v-col
+          cols="5"
+          class="py-0 pl-0"
+          :class="isSMsmaller ? 'd-none' : 'd-block'"
+        >
           <Gamification class="p-gamification" />
         </v-col>
       </v-row>
 
-      <v-row>
+      <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
         <v-col cols="12">
           <Gamification class="p-gamification_XS" />
         </v-col>
@@ -121,8 +125,7 @@ export default {
     Gamification
   },
   created() {
-    this.role = this.getRole;
-    if (this.role == "student") {
+    if (this.isStudent) {
       let lessons;
       if (this.type == "course") {
         lessons = this.getLessonsByCourse(this.resource);
@@ -158,8 +161,6 @@ export default {
         { text: "Actions", value: "action" }
       ],
       sheets: [],
-      screenWidth: 0,
-      role: ""
     };
   },
   methods: {
@@ -175,9 +176,6 @@ export default {
     play2(value) {
       bus.$emit("changeIt", [value.rid, "lesson"]);
     },
-    handleResize() {
-      this.screenWidth = window.innerWidth;
-    }
   },
   computed: {
     ...mapGetters("main",[
@@ -185,29 +183,19 @@ export default {
       "getCompletationStatusByLesson",
       "getModuleByLesson",
       "getLessonsByModule",
-      "getRole"
+      "getRole",
+      "isStudent",
+      "isTeacher"
     ]),
-    screenSmall() {
-      return this.screenWidth <= 768;
-    },
-    isStudent() {
-      return this.role == "student";
-    },
-    isTeacher() {
-      return this.role == "teacher";
-    }
+    ...mapGetters("style", ["isSMsmaller"]),
   },
-  mounted() {
-    this.screenWidth = window.innerWidth;
-    window.addEventListener("resize", this.handleResize);
-  },
-  beforeUnmount() {
-    window.removeEventListener("resize", this.handleResize);
-  }
 };
 </script>
 
 <style scoped>
+.resource {
+  padding: 0 0 0 25% !important;
+}
 .p-gamification {
   display: block;
 }

@@ -307,13 +307,13 @@ export default {
     return {
       content: "<h1>Some initial content</h1>",
       customToolbar: [
-        ["bold", "italic", "underline", "strike"],
+        ["bold", "italic", "underline"],
         [
           { align: "" },
           { align: "center" },
         ],
         ["code-block"],
-        [{ list: "ordered" }, { list: "bullet" }],
+        [{ list: "bullet" }],
         [{ color: [] }, { background: [] }],
       ],
 
@@ -389,7 +389,7 @@ export default {
   },
 
   beforeDestroy(){
-    this.dataSumit();
+    this.saveDate();
     clearInterval(this.saveHandler);
   },
 
@@ -523,6 +523,25 @@ export default {
       } else if (this.isTeacher) {
         this.code = this.resource.solution.split(" ")[0];
         this.code1 = this.resource.skeleton.split(" ")[0];
+      }
+    },
+    saveDate(){
+      const obj = {
+        id: this.resource.id,
+        value: this.code,
+        field: "solution",
+        type: "evaluative"
+      };
+      this.editableInput(obj);
+      const obj2 = {
+        id: this.resource.id,
+        value: this.code1,
+        field: "skeleton",
+        type: "evaluative"
+      };
+      this.editableInput(obj2);
+      if (this.tab != undefined && this.resource.contexts.length>0){
+        this.saveContext(this.resource.contexts[this.tab].id, this.code2)
       }
     },
     async dataSumit() {

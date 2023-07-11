@@ -8,7 +8,7 @@
           outlined
           style="border-color: #C3C3C3;"
         >
-          something
+          In Progress
         </v-card>
       </v-list-item-content>
     </v-list-item>
@@ -20,7 +20,7 @@
           outlined
           style="border-color: #C3C3C3;"
         >
-          something2
+          ...
         </v-card>
       </v-list-item-content>
     </v-list-item>
@@ -32,7 +32,7 @@
           outlined
           style="border-color: #C3C3C3;"
         >
-          something3
+          ...
         </v-card>
       </v-list-item-content>
     </v-list-item>
@@ -44,7 +44,7 @@
           outlined
           style="border-color: #C3C3C3;"
         >
-          something4
+          ...
         </v-card>
       </v-list-item-content>
     </v-list-item>

@@ -42,14 +42,14 @@
       </v-stepper-header>
 
       <v-stepper-items>
-        <v-stepper-content class="py-2" 
+        <v-stepper-content :class="isAuthor ? 'px-3 py-1' : 'py-2'"
           v-for="n in resource.questions.length" 
           :step="n" 
           :key="n+'c'"
         >
           <v-list :class="getSmallTextClass">
-            <v-list-item class="pb-2" style="min-height:0">
-              <v-list-item-content class="pb-0"> 
+            <v-list-item class="pb-2" style="min-height:0" :class="isAuthor ? 'px-0' : ''">
+              <v-list-item-content class="pb-0 pt-1"> 
                 <!--Student & Viewer-->
                 <div
                   v-if="isStudent || isViewer"
@@ -82,7 +82,7 @@
                 v-if="isAuthor & !isQuestion"
                 min-height="0"  
                 height="fit-content"
-                class="my-0 ml-0 d-flex align-self-end justify-end"
+                class="my-0 ml-0 d-flex align-self-start justify-end pt-1"
               >
                 <v-btn 
                   icon
@@ -291,13 +291,13 @@ export default {
       ],
 
       customToolbar: [
-        ["bold", "italic", "underline", "strike"],
+        ["bold", "italic", "underline"],
         [
           { align: "" },
           { align: "center" },
         ],
         ["code-block"],
-        [{ list: "ordered" }, { list: "bullet" }],
+        [{ list: "bullet" }],
         [{ color: [] }, { background: [] }],
       ],
     };

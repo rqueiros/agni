@@ -186,7 +186,6 @@ module.exports = createCoreController(uid, () => {
 
 async function prepareCtx(ctx, data, type) {
    let parm = ctx.params
-   console.log(data)
    if ("classes" in data && data.classes != null) {
       data.classes = await prepareClasses(ctx, data.classes, type)
    }
@@ -207,13 +206,13 @@ async function prepareClasses(ctx, classes, type) {
          if (classe.new || type == "create") {
             delete classe.new
             let ctx2 = ctx
-            ctx2.request.body = {data:classe}
+            ctx2.request.body = {data:JSON.stringify(classe)}
             resp = await strapi.controller("api::class.class").create(ctx2)
          } else if (type=="update"){
             let id = classe.id
             delete classe.id
             let ctx2 = ctx
-            ctx2.request.body = {data:classe}
+            ctx2.request.body = {data:JSON.stringify(classe)}
             ctx2.request.params = {id:JSON.stringify(id)}
             ctx2.params = {id:JSON.stringify(id)}
             resp = await strapi.controller("api::class.class").update(ctx2)
@@ -221,7 +220,6 @@ async function prepareClasses(ctx, classes, type) {
          newClasses.push(resp.data.id)
       }
    }
-   console.log(newClasses)
    return newClasses
 }
 

@@ -16,8 +16,16 @@ const uid = 'api::evaluative.evaluative'
 module.exports = createCoreController(uid, () => {
    return {
       async find(ctx) {
+         const author = ctx.state.user
+         const params = {"$or":[{author:{id:{"$eq":author.id}}},{publishedAt:{"$null":null}}]}
+         let filters;
+         if (Object.keys(ctx.query).length == 0){
+            filters = {filters: params}
+         } else {
+            filters = {filters : {"$and":[params,ctx.query.filters]}}
+         }
          const entity = await strapi.entityService.findMany(uid, {
-            ...ctx.query,
+            ...filters,
             populate: evaluativeStructure,
          })
          const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
@@ -36,8 +44,6 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
-
-         console.log(data)
 
          if (data.publishedAt == null && "publishedAt" in data) {
             data.author = ctx.state.user.id

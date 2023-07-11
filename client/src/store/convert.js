@@ -269,9 +269,21 @@ const convert = {
         if (classe.new) {
           delete classe.id
         }
+        if (typeof(classe.delay)!="number"){
+          classe.delay = parseInt(classe.delay)
+          if (isNaN(classe.delay)){
+            classe.delay = null
+          }
+        }
         classe.students.forEach(student => {
           if (student.new) {
             delete student.id
+          }
+          if (typeof(student.delay)!="number"){
+            student.delay = parseInt(student.delay)
+            if (isNaN(student.delay)){
+              student.delay = null
+            }
           }
         })
       })
@@ -327,7 +339,7 @@ const convert = {
       delete course.attributes;
       return course;
     },
-    async prepareCourse(state, resp) {
+    async prepareCourse(state, [resp, isCopy]) {
       let course = resp;
 
       let moduleCount = 1;
@@ -341,6 +353,9 @@ const convert = {
         module.idMenu = count;
         count++;
         module.lessons.forEach(async lesson => {
+          lesson.contentType = "lesson";
+          lesson.internalId = "L" + lessonCount;
+          lessonCount++;
           lesson.idMenu = count;
           count++;
           let newExpositives = []
@@ -357,10 +372,6 @@ const convert = {
           }
           lesson.expositives = newExpositives
           lesson.evaluatives = newEvaluatives
-
-          lesson.contentType = "lesson";
-          lesson.internalId = "L" + lessonCount;
-          lessonCount++;
         });
         module.children = module.lessons;
         module.contentType = "module";
@@ -371,6 +382,19 @@ const convert = {
       Object.keys(course.attributes).forEach(key => {
         if (key == "modules") {
           course.children = course.attributes[key];
+        } else if (key =="goals") {
+          let goalsCount = -1
+          course.goals = []
+          course.attributes.goals.forEach(goal => {
+            if (isCopy){
+              goal.id = goalsCount
+              --goalsCount
+              goal.new = true
+              course.goals.push(goal)
+            } else {
+              course.goals.push(goal)
+            }
+          })
         } else {
           course[key] = course.attributes[key];
         }
@@ -583,43 +607,63 @@ const convert = {
       return occ;
     },
 
-    prepareOccurrence(state, resp) {
-      let occ = resp.attributes;
+    prepareOccurrence(state, [resp, isCopy]) {
+      let occ = {}
+      //let occ = resp.attributes;
       occ.id = resp.id;
 
-      occ.classes.data.forEach(c => {
-        c.attributes.students.data.forEach(student => {
-          student.attributes.statuses.data.forEach(status => {
-            Object.keys(status.attributes).forEach(key => {
-              status[key] = status.attributes[key];
+      Object.keys(resp.attributes).forEach(key => {
+        if (key == "courses"){
+          occ.courses=[]
+          resp.attributes.courses.data.forEach(course => {
+            let newCourse = {}
+            newCourse.id = course.id
+            Object.keys(course.attributes).forEach(key => {
+              newCourse[key] = course.attributes[key];
             });
-            delete status.attributes;
+            occ.courses.push(newCourse)
           });
-          Object.keys(student.attributes).forEach(key => {
-            student[key] = student.attributes[key];
-          });
-          student.statuses = student.statuses.data;
-          delete student.attributes;
-        });
-        Object.keys(c.attributes).forEach(key => {
-          c[key] = c.attributes[key];
-        });
-        c.students = c.students.data;
-        delete c.attributes;
+          occ.courses = occ.courses[0];
+        } else if (key == "classes"){
+          if (!isCopy){
+            occ.classes = []
+            resp.attributes.classes.data.forEach(c => {
+              let newClass = {}
+              newClass.id = c.id
+              newClass.students = []
+              c.attributes.students.data.forEach(student => {
+                let newStudent = {}
+                newStudent.id = student.id
+                /* TODO
+                student.attributes.statuses.data.forEach(status => {
+                  Object.keys(status.attributes).forEach(key => {
+                    status[key] = status.attributes[key];
+                  });
+                  delete status.attributes;
+                });*/
+                Object.keys(student.attributes).forEach(key => {
+                  newStudent[key] = student.attributes[key];
+                });
+                newClass.students.push(newStudent)
+                //student.statuses = student.statuses.data;
+              });
+              Object.keys(c.attributes).forEach(key => {
+                if (key != "students"){
+                  newClass[key] = c.attributes[key];
+                }
+              });
+              occ.classes.push(newClass)
+            });
+          } else {
+            occ.classes = []
+          }
+        } else {
+          occ[key] = resp.attributes[key];
+        }
       });
-
-      occ.classes = occ.classes.data;
-      delete occ.attributes;
-
-      occ.courses.data.forEach(course => {
-        Object.keys(course.attributes).forEach(key => {
-          course[key] = course.attributes[key];
-        });
-        delete course.attributes;
-      });
-      occ.courses = occ.courses.data[0];
       return occ;
-    } /*
+    } 
+    /*
       prepareClass(resp){
     
       },

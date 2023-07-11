@@ -1,10 +1,8 @@
 <template>
-  <div id="occurrence">
+  <div id="occurrence" v-if="getOccurrence">
     <v-container fluid class="pa-0">
-      
       <v-row dense>
-    
-        <v-col cols="2">
+        <v-col style="max-width:180px" cols="12">
           <v-card 
             width="100%" 
             height="100%" 
@@ -15,16 +13,16 @@
             <Editable 
               :type="'occurrence'" 
               placeholder="Year" 
-              :value="occurrence.year.toString()" 
-              :id="occurrence.id"
+              :value="getOccurrence.year.toString()" 
+              :id="getOccurrence.id"
               :field="'year'" 
               @input="editableInput" 
             />
-            <span v-if="false">{{ occurrence.year }}</span>
+            <span v-if="false">{{ getOccurrence.year }}</span>
           </v-card>
         </v-col>
 
-        <v-col cols="2">
+        <v-col style="max-width:180px" cols="12">
           <v-card 
             width="100%" 
             outlined 
@@ -59,7 +57,7 @@
           </v-card>
         </v-col>
 
-        <v-col cols="2">
+        <v-col style="max-width:180px" cols="12">
           <v-card 
             width="100%" 
             outlined 
@@ -89,19 +87,19 @@
           </v-card>
         </v-col>
 
-        <v-col cols="2">
+        <v-col style="max-width:180px" cols="12">
           <v-card 
-            v-if="occurrence.courses != null" 
+            v-if="getOccurrence.courses != null" 
             width="180px" 
             height="50px" 
             outlined style="border-color: #C3C3C3;"
             class="pl-0 pr-4 mr-0 d-flex justify-center align-center"
           >
             <v-icon>
-              {{ getIcon(occurrence.courses.type) }}
+              {{ getIcon(getOccurrence.courses.type) }}
             </v-icon>
             <span class="ml-1">
-              {{ occurrence.courses.name }}
+              {{ getOccurrence.courses.name }}
             </span>
             <v-badge 
               tile 
@@ -126,6 +124,181 @@
           >
             <v-icon>mdi-plus</v-icon><span>Course</span>
           </v-card>
+        </v-col>
+      </v-row>
+  
+      <v-row dense>
+        <template v-for="(cla, index) in getOccurrence.classes">
+          <v-col :key="index" v-if="true" style="max-width:500px">
+            <v-card 
+              width="100%" 
+              outlined 
+              style="border-color: #C3C3C3;" 
+              min-height="320px" 
+              max-width="600px"
+            >
+              <v-list-item>
+                <v-list-item-content>
+                  <v-row class="text-body-1" dense>
+                    <v-col class="d-flex align-center">
+                      <span class="mr-1">Class:</span>
+                      <Editable 
+                        style="width: 80px;" 
+                        :type="'class'" 
+                        placeholder="Name" 
+                        :value="cla.name" 
+                        :id="cla.id"
+                        :field="'name'" 
+                        @input="editableInput" 
+                      />
+                    </v-col>
+                    <v-col class="d-flex align-center">
+                      <span class="mr-1">Delay:</span>
+                      <Editable 
+                        style="width: 80px;" 
+                        :type="'class'" 
+                        placeholder="Delay" 
+                        :value="cla.delay != null ? cla.delay.toString() : cla.delay" 
+                        :id="cla.id"
+                        :field="'delay'" 
+                        @input="editableInput" />
+                    </v-col>
+                    <v-col>
+                      <v-text-field 
+                        v-model="cla.search" 
+                        prepend-inner-icon="mdi-magnify" 
+                        single-line
+                        class="pa-0 ma-0 mr-2 text-field smallSearch" 
+                        dense 
+                        hide-details
+                      />
+                    </v-col>
+                    <!--
+                    <v-col>
+                      <v-btn small @click="addStudentByClassId(cla.id)">
+                        <v-icon>mdi-plus</v-icon>St
+                      </v-btn>
+                    </v-col>-->
+                  </v-row>
+                </v-list-item-content>
+                <!--
+                <v-btn icon small>
+                    <v-icon size="large">
+                      mdi-chart-bar
+                    </v-icon>
+                  </v-btn>-->
+                <v-btn icon small @click="deleteClass(cla.id)">
+                  <v-icon size="large"> mdi-delete </v-icon>
+                </v-btn>
+              </v-list-item>
+              <v-data-table 
+                dense 
+                :headers="studentHeader" 
+                :items="cla.students" 
+                :search="cla.search"
+                :loading="loading"
+                :itemsPerPage="itemsPerPage"
+                class="d-flex flex-column"
+                style="min-height:270px"
+              >
+                <template v-slot:item.name="{ item }">
+                  <Editable 
+                    :type="'student'" 
+                    placeholder="Name" 
+                    :value="item.name" 
+                    :id="item.id" 
+                    :field="'name'"
+                    @input="editableInput" 
+                    onclick="event.stopPropagation()" 
+                  />
+                </template>
+                <template v-slot:item.active="{ item }">
+                  <v-icon :color="getActiveColor(item)">
+                    {{ getActive(item) }}
+                  </v-icon>
+                </template>
+                <template v-slot:item.delay="{ item }">
+                  <Editable 
+                    :type="'student'" 
+                    placeholder="Delay" 
+                    :value="item.delay != null ? item.delay.toString() : item.delay" 
+                    :id="item.id" 
+                    :field="'delay'"
+                    @input="editableInput" 
+                    onclick="event.stopPropagation()" 
+                  />
+                </template>
+                <template v-slot:item.actions="{ item }">
+                  <!--
+                  <v-btn 
+                    icon 
+                    small
+                    onclick="event.stopPropagation()" 
+                  >
+                    <v-icon size="large">
+                      mdi-chart-bar
+                    </v-icon>
+                  </v-btn>-->
+                  <v-btn 
+                    icon 
+                    small
+                    onclick="event.stopPropagation()" 
+                    @click="deleteStudent(item.id)"
+                  >
+                    <v-icon size="large">
+                      mdi-delete
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <template v-slot:footer>
+                  <v-spacer></v-spacer>
+                  <div 
+                    class="px-2" 
+                    style="border-top:thin solid rgba(0, 0, 0, 0.12)"
+                  >
+                    <v-btn 
+                      small 
+                      @click="addStudentByClassId(cla.id)" 
+                      width="100%" 
+                      class="mt-1"
+                    >
+                      <v-icon>mdi-plus</v-icon>Student
+                    </v-btn>
+                  </div>
+                </template>
+              </v-data-table>
+            </v-card>
+          </v-col>    
+        </template>
+        <v-col style="width:50px;flex-grow: 0;">
+          <v-btn 
+            style="min-width:0"
+            :height="getOccurrence.classes.length>0 ? '100%' : '36px'"
+            :width="getOccurrence.classes.length>0 ? '36px' : '710px'"
+            @click="addClassByOccurrenceId(getOccurrence.id)"
+          >
+            <div 
+              :style="getOccurrence.classes.length>0 ? 'transform: rotate(90deg);' : ''"
+            >
+              <v-icon>mdi-plus</v-icon>
+              Class
+            </div>
+          </v-btn>
+        </v-col>
+      </v-row>
+
+      <v-row dense v-if="new Date(startDate) < new Date()">
+        <v-col cols=12>
+          <v-expansion-panels>
+            <v-expansion-panel>
+              <v-expansion-panel-header>
+                Statistics
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                In Progress ...
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
         </v-col>
       </v-row>
 
@@ -259,6 +432,7 @@
           </v-card>
         </v-col>
         
+        
         <v-col cols="7">
           <v-card 
             height="100%" 
@@ -269,151 +443,7 @@
             Statistics
           </v-card>
         </v-col>
-      </v-row>
-    -->
-
-      <v-row dense>
-        <template v-for="(cla, index) in occurrence.classes">
-          <v-col :key="index" v-if="true">
-            <v-card width="100%" outlined style="border-color: #C3C3C3;" min-height="320px" max-width="600px">
-              <v-list-item>
-                <v-list-item-content>
-                  <v-row class="text-body-1" dense>
-                    <v-col class="d-flex align-center">
-                      <span class="mr-1">Class:</span>
-                      <Editable 
-                        style="width: 80px;" 
-                        :type="'class'" 
-                        placeholder="Name" 
-                        :value="cla.name" 
-                        :id="cla.id"
-                        :field="'name'" 
-                        @input="editableInput" 
-                      />
-                    </v-col>
-                    <v-col class="d-flex align-center">
-                      <span class="mr-1">Delay:</span>
-                      <Editable 
-                        style="width: 80px;" 
-                        :type="'class'" 
-                        placeholder="Delay" 
-                        :value="cla.delay != null ? cla.delay.toString() : cla.delay" :id="cla.id"
-                        :field="'delay'" 
-                        @input="editableInput" />
-                    </v-col>
-                    <v-col>
-                      <v-text-field 
-                        v-model="cla.search" 
-                        prepend-inner-icon="mdi-magnify" 
-                        single-line
-                        class="pa-0 ma-0 mr-2 text-field smallSearch" 
-                        dense 
-                        hide-details
-                      />
-                    </v-col>
-                    <!--
-                    <v-col>
-                      <v-btn small @click="addStudentByClassId(cla.id)">
-                        <v-icon>mdi-plus</v-icon>St
-                      </v-btn>
-                    </v-col>-->
-                  </v-row>
-                </v-list-item-content>
-                <!--
-                <v-btn icon small>
-                    <v-icon size="large">
-                      mdi-chart-bar
-                    </v-icon>
-                  </v-btn>-->
-                <v-btn icon small @click="deleteClass(cla.id)">
-                  <v-icon size="large"> mdi-delete </v-icon>
-                </v-btn>
-              </v-list-item>
-              <v-data-table 
-                dense 
-                :headers="studentHeader" 
-                :items="cla.students" 
-                :search="cla.search"
-                :loading="loading"
-                :itemsPerPage="itemsPerPage"
-                class="d-flex flex-column"
-                style="min-height:270px"
-              >
-                <template v-slot:item.name="{ item }">
-                  <Editable 
-                    :type="'student'" 
-                    placeholder="Name" 
-                    :value="item.name" 
-                    :id="item.id" 
-                    :field="'name'"
-                    @input="editableInput" 
-                    onclick="event.stopPropagation()" 
-                  />
-                </template>
-                <template v-slot:item.active="{ item }">
-                  <v-icon :color="getActiveColor(item)">
-                    {{ getActive(item) }}
-                  </v-icon>
-                </template>
-                <template v-slot:item.delay="{ item }">
-                  <Editable 
-                    :type="'student'" 
-                    placeholder="Delay" 
-                    :value="item.delay != null ? item.delay.toString() : item.delay" 
-                    :id="item.id" 
-                    :field="'delay'"
-                    @input="editableInput" 
-                    onclick="event.stopPropagation()" 
-                  />
-                </template>
-                <template v-slot:item.actions="{ item }">
-                  <!--
-                  <v-btn 
-                    icon 
-                    small
-                    onclick="event.stopPropagation()" 
-                  >
-                    <v-icon size="large">
-                      mdi-chart-bar
-                    </v-icon>
-                  </v-btn>-->
-                  <v-btn 
-                    icon 
-                    small
-                    onclick="event.stopPropagation()" 
-                    @click="deleteStudent(item.id)"
-                  >
-                    <v-icon size="large">
-                      mdi-delete
-                    </v-icon>
-                  </v-btn>
-                </template>
-                <template v-slot:footer>
-                  <v-spacer></v-spacer>
-                  <div class="px-2" style="border-top:thin solid rgba(0, 0, 0, 0.12)">
-                    <v-btn small @click="addStudentByClassId(cla.id)" width="100%" class="mt-1">
-                      <v-icon>mdi-plus</v-icon>Student
-                    </v-btn>
-                  </div>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </template>
-        <div class="pa-1">
-          <v-btn 
-            style="min-width:0"
-            :height="occurrence.classes.length>0 ? '100%' : '36px'"
-            :width="occurrence.classes.length>0 ? '36px' : '100%'"
-            @click="addClassByOccurrenceId(occurrence.id)"
-          >
-            <div :style="occurrence.classes.length>0 ? 'transform: rotate(90deg);' : ''">
-              <v-icon>mdi-plus</v-icon>
-              Class
-            </div>
-          </v-btn>
-        </div>
-      </v-row>
+      </v-row>-->
     </v-container>
 
     <v-dialog v-model="dialog" max-width="500">
@@ -466,14 +496,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <Snackbar 
-      :snackbar="snackbar.open" 
-      :timeout="snackbar.timeout" 
-      :color="snackbar.color" 
-      :icon="snackbar.icon"
-      :text="snackbar.text" 
-    />
   </div>
 </template>
 
@@ -482,14 +504,12 @@ import { bus } from "@/main.js";
 import { mapActions, mapGetters, mapMutations } from "vuex";
 
 import Editable from "../../../../../components/gerneral/Editable.vue";
-import Snackbar from "../../../../../components/gerneral/Snackbar.vue";
 
 export default {
   name: "Occurrence",
 
   components: {
     Editable,
-    Snackbar,
   },
 
   data() {
@@ -512,14 +532,6 @@ export default {
       tableHeaders: [{ text: "Name", value: "name" }],
       courses: [],
       checkboxes: [],
-
-      snackbar: {
-        open: false,
-        text: "",
-        icon: "",
-        color: "",
-        timeout: 2000,
-      },
 
       datePicker:[],
       events: [],
@@ -551,7 +563,7 @@ export default {
     },
     startDate(newV) {
       const obj = {
-        id: this.occurrence.id,
+        id: this.getOccurrence.id,
         value: newV,
         field: "startDate",
         type: "occurrence"
@@ -560,7 +572,7 @@ export default {
     },
     endDate(newV) {
       const obj = {
-        id: this.occurrence.id,
+        id: this.getOccurrence.id,
         value: newV,
         field: "endDate",
         type: "occurrence"
@@ -571,6 +583,11 @@ export default {
       if(newV.length>1){
         this.datePicker = [newV[1]]
       }
+    },
+    dialog(newV){
+      if (!newV){
+        this.checkboxes = []
+      }
     }
   },
 
@@ -579,8 +596,12 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main", ["getOccurrence"]),
-    ...mapGetters("style", ["getIcon", "getErrorSnackbar", "getSuccessSnackbar"]),
+    ...mapGetters("main", [
+      "getOccurrence"
+    ]),
+    ...mapGetters("style", [
+      "getIcon", 
+    ]),
   },
 
   methods: {
@@ -591,12 +612,9 @@ export default {
       "deleteClass",
       "deleteStudent"
     ]),
-    ...mapActions("main", ["fetchCollectionTypes"]),
-    ...mapMutations("main", ["setStudents"]),
-    openCollectionType(item) {
-      this.setStudents([item]);
-      bus.$emit("changePage", ["student,Student", "student"]);
-    },
+    ...mapActions("main", [
+      "fetchCollectionTypes"
+    ]),
     setItems() {
       this.loading = true;
       this.occurrence = this.getOccurrence;
@@ -629,6 +647,8 @@ export default {
         this.endDate = new Date(this.occurrence.endDate);
         this.endDate = this.endDate.toISOString().substring(0, 10);
       }
+
+      this.loading = false;
 
       /*
       let newEvents = {modules:[], lessons:[]}
@@ -759,15 +779,16 @@ export default {
       })*/
       
       
-      this.loading = false;
     },
+
     async chooseCourse() {
       try {
         this.courses = await this.fetchCollectionTypes({ collectionType: "courses" })
         this.dialog = true
       } catch(error) {
         console.log(error)
-        this.getErrorSnackbar("Something went wrong fetching the courses")
+        bus.$emit("errorSnackbar", "Something went wrong fetching the Courses")
+
       }
     },
     addCourses() {
@@ -780,16 +801,19 @@ export default {
       };
       this.editableInput(obj);
       this.dialog = false;
+      this.setItems()
     },
     removeCourse() {
       const obj = {
-        id: this.occurrence.id,
+        id: this.getOccurrence.id,
         value: null,
         field: "courses",
         type: "occurrence"
       };
       this.editableInput(obj);
+      this.setItems()
     },
+
     getActiveColor(item){ //TODO
       if (item.delay == 1){
         return "error"
@@ -808,6 +832,7 @@ export default {
         return "mdi-arrow-top-right"
       }
     },
+
     clickDate(date){
       if (this.datePicker.length>0){
         if (this.datePicker[0]=="Start Date"){
@@ -869,12 +894,6 @@ export default {
       }
     },
 
-
-
-    viewDay ({ date }) {
-        this.focus = date
-        this.type = 'day'
-    },
     getEventColor (event) {
       return event.color
     },

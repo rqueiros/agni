@@ -10,11 +10,21 @@
     <!--Main-->
     <v-main class="px-0 pt-6">
       <Menu />
-      <v-card style="margin-right:5%; background-color: #F7F8F9;" class="mt-3 mb-5"
-        :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'" tile elevation="0">
+      <v-card 
+        style="margin-right:5%; 
+        background-color: #F7F8F9;" 
+        class="mt-3 mb-5"
+        :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'" 
+        tile 
+        elevation="0"
+      >
         <AppBar :resource="resource" />
       </v-card>
-      <div style="margin-right: 5%;" class="mb-8 min_height" :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'">
+      <div 
+        style="margin-right: 5%;" 
+        class="mb-8 min_height" 
+        :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'"
+      >
         <Resource :resource="resource" />
       </div>
 
@@ -47,45 +57,35 @@ export default {
   },
   data: () => ({
     resource: "home,Home",
-    header: "home",
 
     snackbar: {
-        open: false,
-        text: "",
-        icon: "",
-        color: "",
-        timeout: 2000,
-      },
+      open: false,
+      text: "",
+      icon: "",
+      color: "",
+      timeout: 2000,
+    },
   }),
 
   methods: {
     ...mapActions("main", ["fetchEmptyCourse"]),
-    setPage(payload) {
-      this.resource = payload[0];
-    },
-    setResource(payload) {
-      this.resource = payload;
-    },
-    setHeader(payload) {
-      this.header = payload;
-    }
   },
 
   created() {
     bus.$on("changePage", payload => {
-      this.setPage(payload);
+      this.resource = payload;
     });
     bus.$on("changeResource", payload => {
-      this.setResource(payload);
-    });
-    bus.$on("changeHeader", payload => {
-      this.setHeader(payload);
+      this.resource = payload;
     });
     bus.$on("successSnackbar", payload => {
       this.snackbar = this.getSuccessSnackbar(payload)
     });
     bus.$on("errorSnackbar", payload => {
       this.snackbar = this.getErrorSnackbar(payload)
+    });
+    bus.$on("snackbarChange", payload => {
+      this.snackbar.open = payload
     });
   },
   

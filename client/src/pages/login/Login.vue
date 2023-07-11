@@ -188,6 +188,7 @@ export default {
     },
     async teacherlogin() {
       await this.login(["Teacher Lastname", "123456"]);
+      //await this.login(["EvalUser", "123456"])
     },
     validate() {
       if (this.$refs.loginForm.validate()) {

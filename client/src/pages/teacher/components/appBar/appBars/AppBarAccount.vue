@@ -1,5 +1,5 @@
 <template>
-  <div id="appBarHome">
+  <div id="appBarAccount">
     <v-app-bar 
       rounded 
       elevation="2" 
@@ -36,7 +36,7 @@
   
 <script>
 export default {
-  name: "AppBarHome",
+  name: "AppBarAccount",
 
   components: {},
 

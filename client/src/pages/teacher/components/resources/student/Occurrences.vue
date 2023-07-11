@@ -1,10 +1,10 @@
 <template>
-  <div id="studentDashboard" style="width:100%" class="min_height">
+  <div id="occurrences" style="width:100%" class="min_height">
     <v-container fluid class="pa-0 mb-4 min_height d-flex flex-column">
 
       <v-row dense style="flex-grow: 100;">
-        <template v-for="occ in currentOcc">
-          <v-col :key="occ.id" v-if="true" >
+        <template v-for="occ in currentOcc" >
+          <v-col :key="occ.id" v-if="currentOcc.length>0">
             <v-hover
               v-slot="{ hover }"
             >
@@ -100,6 +100,17 @@
             </v-hover>
           </v-col>
         </template>
+        <v-col v-if="!currentOcc.length>0">
+          <v-card 
+            width="100%" 
+            height="100%"
+            outlined 
+            style="border-color: #C3C3C3;" 
+            class="py-4 px-8 text-h6 font-weight-regular d-flex justify-center align-center"
+          >
+            There are no current Occurrences!
+          </v-card>
+        </v-col>
       </v-row>
 
       <v-row>
@@ -114,7 +125,7 @@
             <v-card-title class="py-0 mb-2">
               <v-row no-gutters>
                 <v-col class="text-body-1 font-weight-medium" cols="5">
-                  Draft Occurrences
+                  Draft/Future
                 </v-col>
                 <v-col class="text-body-1">
                   <v-text-field 
@@ -137,6 +148,8 @@
               :search="draftSearch" 
               @click:row="openCollectionType" 
               :loading="loading"
+              class="d-flex flex-column justify-space-between"
+              style="min-height:201px"
             >
               <template v-slot:item.courseType="{ item }">
                 <v-icon>
@@ -181,7 +194,7 @@
             <v-card-title class="py-0 mb-2">
               <v-row no-gutters>
                 <v-col class="text-body-1 font-weight-medium" cols="5">
-                  Past Occurrences
+                  Past
                 </v-col>
                 <v-col class="text-body-1">
                   <v-text-field 
@@ -205,6 +218,8 @@
               :search="pastSearch" 
               @click:row="openCollectionType" 
               :loading="loading"
+              class="d-flex flex-column justify-space-between"
+              style="min-height:201px"
             >
               <template v-slot:item.courseType="{ item }">
                 <v-icon>
@@ -255,7 +270,7 @@ import { mapActions, mapGetters } from "vuex";
 import DeleteDialog from "../../../../../components/gerneral/DeleteDialog.vue";
 
 export default {
-  name: "Class",
+  name: "Occurrences",
 
   components: {
     DeleteDialog,
@@ -288,6 +303,8 @@ export default {
   },
 
   created() {
+    this.setItems();
+
     bus.$on("deleteDialog", payload => {
       this.deleteDialog = payload;
     });
@@ -308,14 +325,11 @@ export default {
         }
       }
     });
-    this.setItems();
   },
 
   computed:{
     ...mapGetters("style", [
       "getIcon", 
-      "getErrorSnackbar", 
-      "getSuccessSnackbar"
     ])
   },
 
@@ -352,23 +366,26 @@ export default {
         bus.$emit("errorSnackbar", "Something went wrong fetching the occurrences")
       }
     },
+
     async openCollectionType(item) {
       try {
         await this.fetchPrepareCollectionType([item.id, "occurrences"]);
-        bus.$emit("changePage", ["student,Occurrence", "occurrence"]);
+        bus.$emit("changePage", "student,Occurrence");
       } catch (error) {
         bus.$emit("errorSnackbar", "Something went wrong fetching the occurrence")
       }
     },
+
     remove(id) {
       this.toDeleteItem = id;
       this.deleteDialog = true;
     },
+
     async copy(id){
       try {
         await this.copyCollectionType([id, "occurrences"]);
         bus.$emit("successSnackbar", "Occurrence copied")
-        bus.$emit("changePage", ["student,Occurrence", "occurrence"]);
+        bus.$emit("changePage", "student,Occurrence");
       } catch (error) {
         console.log(error)
         bus.$emit("errorSnackbar", "Something went wrong copying the occurrence")
@@ -378,53 +395,54 @@ export default {
 };
 </script>
 
+
 <style scoped>
 
-#studentDashboard>>>.v-data-footer__select {
+#occurrences>>>.v-data-footer__select {
   height: 40px;
 }
 
-#studentDashboard>>>.v-text-field>.v-input__control>.v-input__slot:before {
+#occurrences>>>.v-text-field>.v-input__control>.v-input__slot:before {
   border-style: none !important;
 }
 
 
 
 
-#studentDashboard>>>.v-text-field--outlined.v-input--dense .v-label {
+#occurrences>>>.v-text-field--outlined.v-input--dense .v-label {
   top: 2px;
   font-size: smaller;
 }
 
-#studentDashboard>>>.v-text-field--outlined fieldset {
+#occurrences>>>.v-text-field--outlined fieldset {
   /*height: 28px;*/
 }
 
-#studentDashboard>>>.v-text-field.v-text-field--enclosed:not(.v-text-field--rounded)>.v-input__control>.v-input__slot,
+#occurrences>>>.v-text-field.v-text-field--enclosed:not(.v-text-field--rounded)>.v-input__control>.v-input__slot,
 .v-text-field.v-text-field--enclosed .v-text-field__details {
   min-height: 0 !important;
   /*height: 28px;*/
 }
 
-#studentDashboard>>>.v-text-field--enclosed.v-input--dense:not(.v-text-field--solo).v-text-field--outlined .v-input__prepend-inner {
+#occurrences>>>.v-text-field--enclosed.v-input--dense:not(.v-text-field--solo).v-text-field--outlined .v-input__prepend-inner {
   margin-top: 1px;
 }
 
 
-#studentDashboard>>>.v-text-field input {
+#occurrences>>>.v-text-field input {
   padding: 0px;
   font-size: smaller;
 }
 
 
-#studentDashboard>>>.v-text-field>.v-input__control>.v-input__slot>.v-text-field__slot {
+#occurrences>>>.v-text-field>.v-input__control>.v-input__slot>.v-text-field__slot {
   display: block;
   /*height: 28px;*/
 }
 
 
 /*
-#studentDashboard>>>.v-text-field--outlined fieldset{
+#occurrences>>>.v-text-field--outlined fieldset{
   border-color: rgb(195, 195, 195);
 }*/
 
@@ -437,7 +455,7 @@ export default {
 .smallSearch>>>.v-text-field--outlined fieldset{
   border-color: none !important;
 }
-#studentDashboard>>>.v-text-field.v-input--dense{
+#occurrences>>>.v-text-field.v-input--dense{
   margin-top:0px;
 }
 </style>

@@ -1,14 +1,25 @@
 <template>
-  <div id="appBarStudentDashboard">
-    <v-app-bar rounded elevation="1" height="auto" outlined style="background-color: #F7F8F9;" class="pa-2">
+  <div id="appBarSettings">
+    <v-app-bar 
+      rounded 
+      elevation="2" 
+      height="auto" 
+      outlined 
+      style="background-color: #F7F8F9;" 
+      class="pa-2"
+    >
 
+      <span class="mx-4"> {{ title }}
+      </span>
+      
+      <!--
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <span class="mx-4" v-bind="attrs" v-on="on"> {{ title }}
           </span>
         </template>
         <span>{{ description }}</span>
-      </v-tooltip>
+      </v-tooltip>-->
 
       <v-spacer></v-spacer>
 
@@ -17,21 +28,15 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn elevation="1" rounded color="primary" @click="addOccurrence">
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
+    
 
     </v-app-bar>
   </div>
 </template>
   
 <script>
-import { bus } from "@/main.js";
-
-import { mapActions } from "vuex";
-
 export default {
-  name: "AppBarStudentDashboard",
+  name: "AppBarSettings",
 
   components: {},
 
@@ -46,20 +51,11 @@ export default {
     }
   },
 
-  data() {
-    return {
-    };
-  },
+  data() {return {};},
 
   computed: {},
 
-  methods: {
-    ...mapActions("main", ["fetchEmptyOccurrence"]),
-    addOccurrence() {
-      this.fetchEmptyOccurrence();
-      bus.$emit("changePage", ["student,Occurrence", "occurrence"]);
-    },
-  }
+  methods: {},
 }
 </script>
   

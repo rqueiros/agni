@@ -9,7 +9,7 @@
           <v-btn color="darken-1" text @click="cancel" width="84px">
             Cancel
           </v-btn>
-          <v-btn color="darken-1" text @click="ok" width="84px">
+          <v-btn color="error" text @click="ok" width="84px">
             DELETE
           </v-btn>
           <v-spacer></v-spacer>

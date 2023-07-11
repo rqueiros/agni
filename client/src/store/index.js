@@ -28,11 +28,8 @@ const main = {
     students: [],
     maxId: 0,
     changed: false,
-
-    BUTTONSTYLE:false
   },
   getters: {
-    getBUTTONSTYLE: state => state.BUTTONSTYLE,
     //------------------------Authentication----------------------------------
     isLogged: state => state.login,
     getJWT: state => state.jwt,
@@ -1144,7 +1141,7 @@ const main = {
       expositive.milestones.push({
         id: i - 1,
         new: true,
-        frame: "",
+        frame: 0,
         label: ""
       });
       this.commit("main/setChanged", true);
@@ -1178,11 +1175,15 @@ const main = {
       }
       if (field == "frame" && typeof (value) == "string") {
         try {
-          let newV = JSON.parse(value)
+          let newV = parseInt(value)
           if (milestone[field] != newV) {
             this.commit("main/setChanged", true);
           }
-          milestone[field] = newV
+          if (isNaN(newV)){
+            milestone[field] = 0
+          } else {
+            milestone[field] = newV
+          }
         } catch(err){
           console.log(err) //TODO not allow numbers to input
         }
@@ -1441,6 +1442,7 @@ const main = {
     async setProgress(state, payload) {
       const auth = "Bearer " + state.getters.getJWT;
       const evaluative = state.getters.getEvaluativeByStatus(payload);
+
       const url =
         serverData.domain + serverData.statuses + "/" + evaluative.status.id;
       axios.put(
@@ -1467,7 +1469,7 @@ const main = {
         .then(response => {
           resp = response.data.data[0]; //TODO resp is list [idMenu:0, {}]
         });
-      const course = await this.dispatch("convert/prepareCourse", resp)
+      const course = await this.dispatch("convert/prepareCourse", [resp, false])
       this.commit("main/setCourses", [course])
     },
 
@@ -1606,7 +1608,7 @@ const main = {
       } else if (collectionType == "questions") {
         state.dispatch("prepareQuestion", [resp, true])
       } else if (collectionType == "occurrences") {
-        state.dispatch("prepareOccurrence", resp)
+        state.dispatch("prepareOccurrence", [resp, true])
       } else if (collectionType == "classes") {
         state.dispatch("prepareClass", resp)
       } else if (collectionType == "students") {
@@ -1631,7 +1633,7 @@ const main = {
       }
 
       if (collectionType == "courses") {
-        state.dispatch("prepareCourse", resp)
+        state.dispatch("prepareCourse", [resp, false])
       } else if (collectionType == "expositives") {
         state.dispatch("prepareExpositive", [resp, false])
       } else if (collectionType == "evaluatives") {
@@ -1639,7 +1641,7 @@ const main = {
       } else if (collectionType == "questions") {
         state.dispatch("prepareQuestion", [resp, false])
       } else if (collectionType == "occurrences") {
-        state.dispatch("prepareOccurrence", resp)
+        state.dispatch("prepareOccurrence", [resp, false])
       } else if (collectionType == "classes") {
         state.dispatch("prepareClass", resp)
       } else if (collectionType == "students") {
@@ -1648,8 +1650,8 @@ const main = {
         state.dispatch("prepareStatus", resp)
       }
     },
-    async prepareCourse(state, resp) {
-      const course = await this.dispatch("convert/prepareCourse", resp)
+    async prepareCourse(state, [resp, isCopy]) {
+      const course = await this.dispatch("convert/prepareCourse", [resp, isCopy])
       this.commit("main/setCourses", [course])
       if (state.getters.getRole == "author") {
         this.commit("main/createEditableCourse");
@@ -1667,8 +1669,8 @@ const main = {
       const question = await this.dispatch("convert/prepareQuestion", [resp, isCopy])
       this.commit("main/setQuestions", [question])
     },
-    async prepareOccurrence(state, resp) {
-      const occurrence = await this.dispatch("convert/prepareOccurrence", resp)
+    async prepareOccurrence(state, [resp, isCopy]) {
+      const occurrence = await this.dispatch("convert/prepareOccurrence", [resp, isCopy])
       this.commit("main/setOccurrences", [occurrence])
     },
     async prepareClass(state, resp) {
@@ -1832,16 +1834,14 @@ const main = {
           resp = response.data.data;
         });
       resp.new = true;
-      const course = await this.dispatch("convert/prepareCourse", resp)
-
+      this.commit("main/deleteStructure");
       this.commit("main/setRole", "author");
       this.commit("main/setChanged", true);
-
-      this.commit("main/setCourses", [course])
-      this.commit("main/createEditableCourse");
+      this.dispatch("main/prepareCourse", [resp, true])
     },
 
     async addExistingExpositives(state, [lessonId, expositveIds]) {
+      this.commit("main/setChanged", true);
       for (let expositveId of expositveIds) {
         let expositive = await this.dispatch("main/fetchCollectionType", [expositveId, "expositives"]);
         expositive = await this.dispatch("convert/prepareExpositive", [expositive,false])
@@ -1851,6 +1851,7 @@ const main = {
       //this.commit("main/setChanged", false);
     },
     async addExistingEvaluatives(state, [lessonId, evalutaiveIds]) {
+      this.commit("main/setChanged", true);
       for (let evaluativeId of evalutaiveIds) {
         let evaluative = await this.dispatch("main/fetchCollectionType", [evaluativeId, "evaluatives"]);
         evaluative = await this.dispatch("convert/prepareEvaluative", [evaluative, false])
@@ -1860,6 +1861,7 @@ const main = {
       //this.commit("main/setChanged", false);
     },
     async addExistingQuestions(state, [evaluativeId, questionIds]) {
+      this.commit("main/setChanged", true);
       for (let questionId of questionIds) {
         let question = await this.dispatch("main/fetchCollectionType", [questionId, "questions"]);
         question = await this.dispatch("convert/prepareQuestion", [question, false])

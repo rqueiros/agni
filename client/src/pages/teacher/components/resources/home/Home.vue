@@ -4,112 +4,121 @@
       <v-row class="min_height">
         <v-col cols="8">
           <v-card
+            v-if="occurrences.length>0"
             width="100%"
             outlined
             style="border-color: #C3C3C3;"
             class="fill-height"
           >
-            <template>
-              <v-carousel
-                cycle
-                height="100%"
-                hide-delimiter-background
-                show-arrows-on-hover
+            <v-carousel
+              cycle
+              height="100%"
+              hide-delimiter-background
+              show-arrows-on-hover
+            >
+              <v-carousel-item 
+                v-for="(slide, index) in occurrences" 
+                :key="index"
               >
-                <v-carousel-item 
-                  v-for="(slide, index) in occurrences" 
-                  :key="index"
-                >
-                  <v-row class="fill-height" justify="center" no-gutters>
-                    <v-hover
-                      v-slot="{ hover }"
+                <v-row class="fill-height" justify="center" no-gutters>
+                  <v-hover
+                    v-slot="{ hover }"
+                  >
+                    <v-col 
+                      class="pa-4 occurrence" 
+                      :style="hover ? 'background-color:#eeeeee' : ''"
+                      @click="openCollectionType(slide[0])"
                     >
-                      <v-col 
-                        class="pa-4 occurrence" 
-                        :style="hover ? 'background-color:#eeeeee' : ''"
-                        @click="openCollectionType(slide[0])"
-                      >
-                        <v-row>
-                          <v-col>
-                            <v-icon size="xxx-large" color="primary" class="mr-4">
-                              {{ getIcon(slide[0].course.type) }}
-                            </v-icon> {{ slide[0].year }} - {{ slide[0].course.name }}
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col>
-                            <v-progress-linear 
-                              rounded
-                              height="10"
-                              :value="(new Date() - new Date(slide[0].startDate))/(new Date(slide[0].endDate) - new Date(slide[0].startDate))*100" 
-                            />
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col>
-                            <v-data-table
-                              hide-default-footer
-                              no-data-text="Student Statistics will appear"
-                              style="background-color: transparent;"
-                            >
-                            </v-data-table>
-                            <v-data-table
-                              hide-default-footer
-                              no-data-text="Student Statistics will appear"
-                              style="background-color: transparent;"
-                            >
-                            </v-data-table>
-                          </v-col>
-                        </v-row>
-                      </v-col>
-                    </v-hover>
-                    <v-divider vertical></v-divider>
-                    <v-hover
-                      v-slot="{ hover }"
+                      <v-row>
+                        <v-col>
+                          <v-icon size="xxx-large" color="primary" class="mr-4">
+                            {{ getIcon(slide[0].course.type) }}
+                          </v-icon> {{ slide[0].year }} - {{ slide[0].course.name }}
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-progress-linear 
+                            rounded
+                            height="10"
+                            :value="(new Date() - new Date(slide[0].startDate))/(new Date(slide[0].endDate) - new Date(slide[0].startDate))*100" 
+                          />
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-data-table
+                            hide-default-footer
+                            no-data-text="Student Statistics will appear"
+                            style="background-color: transparent;"
+                          >
+                          </v-data-table>
+                          <v-data-table
+                            hide-default-footer
+                            no-data-text="Student Statistics will appear"
+                            style="background-color: transparent;"
+                          >
+                          </v-data-table>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                  </v-hover>
+                  <v-divider vertical></v-divider>
+                  <v-hover
+                    v-slot="{ hover }"
+                  >
+                    <v-col 
+                      class="pa-4 occurrence" 
+                      :style="hover ? 'background-color:#eeeeee' : ''"
+                      @click="openCollectionType(slide[1])"
                     >
-                      <v-col 
-                        class="pa-4 occurrence" 
-                        :style="hover ? 'background-color:#eeeeee' : ''"
-                        @click="openCollectionType(slide[1])"
-                      >
-                        <v-row>
-                          <v-col>
-                            <v-icon size="xxx-large" color="primary" class="mr-4">
-                              {{ getIcon(slide[1].course.type) }}
-                            </v-icon> {{ slide[1].year }} - {{ slide[1].course.name }}
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col>
-                            <v-progress-linear 
-                              rounded
-                              height="10"
-                              :value="(new Date() - new Date(slide[1].startDate))/(new Date(slide[1].endDate) - new Date(slide[1].startDate))*100" 
-                            />
-                          </v-col>
-                        </v-row>
-                        <v-row>
-                          <v-col>
-                            <v-data-table
-                              hide-default-footer
-                              no-data-text="Student Statistics will appear"
-                              style="background-color: transparent;"
-                            >
-                            </v-data-table>
-                            <v-data-table
-                              hide-default-footer
-                              no-data-text="Student Statistics will appear"
-                              style="background-color: transparent;"
-                            >
-                            </v-data-table>
-                          </v-col>
-                        </v-row>
-                      </v-col>
-                    </v-hover>
-                  </v-row>
-                </v-carousel-item>
-              </v-carousel>
-            </template>
+                      <v-row>
+                        <v-col>
+                          <v-icon size="xxx-large" color="primary" class="mr-4">
+                            {{ getIcon(slide[1].course.type) }}
+                          </v-icon> {{ slide[1].year }} - {{ slide[1].course.name }}
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-progress-linear 
+                            rounded
+                            height="10"
+                            :value="(new Date() - new Date(slide[1].startDate))/(new Date(slide[1].endDate) - new Date(slide[1].startDate))*100" 
+                          />
+                        </v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col>
+                          <v-data-table
+                            hide-default-footer
+                            no-data-text="Student Statistics will appear"
+                            style="background-color: transparent;"
+                          >
+                          </v-data-table>
+                          <v-data-table
+                            hide-default-footer
+                            no-data-text="Student Statistics will appear"
+                            style="background-color: transparent;"
+                          >
+                          </v-data-table>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                  </v-hover>
+                </v-row>
+              </v-carousel-item>
+            </v-carousel>
+
+          </v-card>
+          <v-card
+            v-else
+            width="100%"
+            outlined
+            style="border-color: #C3C3C3;"
+            class="fill-height d-flex justify-center align-center text-h6 font-weight-regular"
+          >
+            There are no current Occurrences!
           </v-card>
         </v-col>
         <v-col cols="4">
@@ -119,6 +128,9 @@
             style="border-color: #C3C3C3;"
             class="fill-height"
           >
+            <div class="mt-2 mb-n2 text-center">
+              -- Not working yet!!! --
+            </div>
             <v-card-title class="text-center d-flex justify-center">
               New Contents! Check it out!
             </v-card-title>
@@ -149,13 +161,9 @@ import { mapGetters, mapActions } from 'vuex';
 export default {
   name:"home",
 
-  components: {},
-
   data: () => ({
-    type: "main",
-    search: "",
-    slides: ["a", "b"],
     occurrences: [],
+
     newContents: [
       {type:"Course", name:"Bla Bla Course"}, 
       {type:"Contest", name:"New Contest Na"},
@@ -200,7 +208,7 @@ export default {
             const pair = [items[i], items[(i + 1) % items.length]];
             newList.push(pair);
           }
-        } else {
+        } else if (items.length >= 1){
           newList = [items]
         }
         this.occurrences = newList;
@@ -208,16 +216,16 @@ export default {
       } catch (error) {
         this.loading = false;
         console.log(error)
-        //this.snackbar = this.getErrorSnackbar("Something went wrong fetching the occurrences")
+        bus.$emit("errorSnackbar", "Something went wrong fetching the Occurrences")
       }
     },
     async openCollectionType(item) {
       try {
         await this.fetchPrepareCollectionType([item.id, "occurrences"]);
-        bus.$emit("changePage", ["student,Occurrence", "occurrence"]);
+        bus.$emit("changePage", "student,Occurrence");
       } catch (error) {
         console.log(error)
-        //this.snackbar = this.getErrorSnackbar("Something went wrong fetching the occurrence")
+        bus.$emit("errorSnackbar", "Something went wrong fetching the Occurrence")
       }
     },
   },

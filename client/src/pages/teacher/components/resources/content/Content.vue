@@ -5,7 +5,13 @@
       <v-row dense>
         <v-col style="max-width: 500px;" cols="12">
           <v-card outlined style="border-color: #C3C3C3;" class="pa-2">
-            <v-radio-group v-model="collectionType" row hide-details inline class="ma-0 pa-0">
+            <v-radio-group 
+              v-model="collectionType" 
+              row 
+              hide-details 
+              inline 
+              class="ma-0 pa-0"
+            >
               <v-radio label="Course" value="courses"></v-radio>
               <v-radio label="Expositive" value="expositives"></v-radio>
               <v-radio label="Evaluative" value="evaluatives"></v-radio>
@@ -15,18 +21,42 @@
         </v-col>
 
         <v-col style="max-width: 190px;" cols="12">
-          <v-card width="100%" outlined style="border-color: #C3C3C3;" class="pa-2">
+          <v-card 
+            width="100%" 
+            outlined 
+            style="border-color: #C3C3C3;" 
+            class="pa-2"
+          >
             <v-radio-group row hide-details inline class="ma-0 pa-0">
-              <v-checkbox v-model="checkboxes" label="My" value="my" hide-details class="ma-0 pa-0 mr-4"></v-checkbox>
-              <v-checkbox v-model="checkboxes" label="Draft" value="draft" hide-details
-                class="ma-0 pa-0 mr-4"></v-checkbox>
+              <v-checkbox 
+                v-model="checkboxes" 
+                label="My" 
+                value="my" 
+                hide-details 
+                class="ma-0 pa-0 mr-4"/>
+              <v-checkbox 
+                v-model="checkboxes" 
+                label="Draft" 
+                value="draft" 
+                hide-details
+                class="ma-0 pa-0 mr-4"
+              />
             </v-radio-group>
           </v-card>
         </v-col>
 
         <v-col cols="12" style="max-width: 330px;">
-          <v-text-field v-model="search" style="background-color: white;" prepend-inner-icon="mdi-magnify" label="Search"
-            single-line class="pa-0 ma-0" outlined dense hide-details></v-text-field>
+          <v-text-field 
+            v-model="search" 
+            style="background-color: white;" 
+            prepend-inner-icon="mdi-magnify" 
+            label="Search"
+            single-line 
+            class="pa-0 ma-0" 
+            outlined 
+            dense
+            hide-details
+          />
         </v-col>
       </v-row>
 
@@ -67,17 +97,37 @@
               </template>
               <template v-slot:item.actions="{ item }">
 
-                <v-menu offset-y auto :close-on-content-click="false" v-if="collectionType=='courses'">
+                <v-menu 
+                  offset-y 
+                  :nudge-width="350"
+                  :close-on-content-click="false" 
+                  v-if="collectionType=='courses'"
+                >
                   <template v-slot:activator="{ on, attrs }">
-                    <v-icon size="large" v-bind="attrs" v-on="on" class="mr-2" @click="copyMenu(item)"
-                      onclick="event.stopPropagation()">
-                      mdi-content-copy
-                    </v-icon>
+                    <v-btn 
+                      v-bind="attrs" 
+                      v-on="on" 
+                      @click="copyMenu(item)"
+                      onclick="event.stopPropagation()"
+                      icon
+                      small
+                    >
+                      <v-icon size="large">
+                        mdi-content-copy
+                      </v-icon>
+                    </v-btn>
                   </template>
                   <v-list>
                     <v-list-item>
-                      <v-treeview selectable dense selection-type="independent" v-model="cloneSelection"
-                        :items="cloneItems.children" :open="cloneOpen" :item-key="'idMenu'"></v-treeview>
+                      <v-treeview 
+                        selectable 
+                        dense 
+                        selection-type="independent" 
+                        v-model="cloneSelection"
+                        :items="cloneItems.children" 
+                        :open.sync="cloneOpen" 
+                        :item-key="'idMenu'"
+                      />
                     </v-list-item>
                     <v-list-item>
                       <v-btn width="100%" @click="copy()">
@@ -87,13 +137,29 @@
                   </v-list>
                 </v-menu>
 
-                <v-icon v-else size="large" @click="copy2(item)" onclick="event.stopPropagation()" class="mr-2">
-                  mdi-content-copy
-                </v-icon>
+                <v-btn 
+                  v-else 
+                  @click="copy2(item)" 
+                  onclick="event.stopPropagation()" 
+                  icon
+                  small
+                >
+                  <v-icon size="large">
+                    mdi-content-copy
+                  </v-icon>
+                </v-btn>
 
-                <v-icon size="large" v-if="item.my" @click="remove(item)" onclick="event.stopPropagation()">
-                  mdi-delete
-                </v-icon>
+                <v-btn 
+                  v-if="item.my" 
+                  @click="remove(item)" 
+                  onclick="event.stopPropagation()"
+                  icon
+                  small
+                >
+                  <v-icon size="large">
+                    mdi-delete
+                  </v-icon>
+                </v-btn>
               </template>
             </v-data-table>
           </v-card>
@@ -190,16 +256,24 @@ export default {
             await this.deleteCollectionType([this.toDeleteItem.id, this.collectionType]);
             await this.setItems();
             this.toDeleteItem = "";
-            bus.$emit("successSnackbar", this.collectionType + " deleted")
+            bus.$emit("successSnackbar", this.collTypeName() + " deleted")
           }
         } catch (error) {
           console.log(error)
           this.toDeleteItem = "";
-          bus.$emit("errorSnackbar", "Something went wrong deleting the "+this.collectionType)
+          bus.$emit("errorSnackbar", "Something went wrong deleting the "+this.collTypeName())
         }
       }
     });
+    let contentCollType = localStorage.getItem("contentCollType") || "";
+    if (contentCollType != ""){
+      this.collectionType = contentCollType
+    }
     this.setItems();
+  },
+
+  beforeDestroy(){
+    localStorage.setItem('contentCollType', this.collectionType);
   },
 
   watch: {
@@ -213,8 +287,8 @@ export default {
       if (newV.length > oldV.length) {
         const newItem = newV.find(v => !oldV.includes(v));
         const parent = this.findParentofCloneBody(newItem);
-        let addIds = [];
         if (parent != null) {
+          let addIds = [];
           parent.forEach(v => {
             if (!newV.includes(v)) {
               addIds.push(v);
@@ -222,6 +296,12 @@ export default {
           });
           this.cloneSelection.push(...addIds);
         }
+        let addIds = this.findChilrens(newItem)
+        this.cloneSelection.push(...addIds)
+      } else if (newV.length < oldV.length){
+        const remItem = oldV.find(v => !newV.includes(v));
+        let remIds = this.findChilrens(remItem)
+        this.cloneSelection = this.cloneSelection.filter(id => !remIds.includes(id))
       }
     }
   },
@@ -258,7 +338,7 @@ export default {
       } catch (error) {
         console.log(error)
         this.loading = false;
-        bus.$emit("errorSnackbar", "Something went wrong fetching the "+this.collectionType)
+        bus.$emit("errorSnackbar", "Something went wrong fetching the "+this.collTypeName())
       }
     },
 
@@ -267,21 +347,21 @@ export default {
         await this.fetchPrepareCollectionType([item.id, this.collectionType]);
         switch (this.collectionType) {
           case "courses":
-            bus.$emit("changePage", ["content,Course", "content"]);
+            bus.$emit("changePage", "content,Course");
             break;
           case "expositives":
-            bus.$emit("changePage", ["content,Expositive", "content"]);
+            bus.$emit("changePage", "content,Expositive");
             break;
           case "evaluatives":
-            bus.$emit("changePage", ["content,Evaluative", "content"]);
+            bus.$emit("changePage", "content,Evaluative");
             break;
           case "questions":
-            bus.$emit("changePage", ["content,Question", "content"]);
+            bus.$emit("changePage", "content,Question");
             break;
         }
       } catch (error) {
         console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong fetching the "+this.collectionType)
+        bus.$emit("errorSnackbar", "Something went wrong fetching the "+this.collTypeName())
       }
     },
 
@@ -293,7 +373,7 @@ export default {
         cloneBody = await this.fetchCloneBody(item.id);
       } catch (error) {
         console.log(error)
-        bus.$emit("errorSnackbar", "Something went fetching deleting the Clone Menu")
+        bus.$emit("errorSnackbar", "Something went wrong fetching the Clone Menu")
       }
       this.cloneItems = cloneBody;
     },
@@ -350,10 +430,10 @@ export default {
       try {
         await this.fetchClone(cloneData);
         bus.$emit("successSnackbar", "Course copied")
-        bus.$emit("changePage", ["content,Course", "content"]);
+        bus.$emit("changePage", "content,Course");
       } catch (error) {
         console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong copying the course")
+        bus.$emit("errorSnackbar", "Something went wrong copying the Course")
       }
     },
     findParentofCloneBody(idMenu) {
@@ -382,33 +462,56 @@ export default {
       }
       return null;
     },
+    findChilrens(idMenu){
+      const items = this.cloneItems.children;
+      let array = []
+      if (items.find(i => i.idMenu == idMenu)){
+        let item = items.find(i => i.idMenu == idMenu)
+        item.children.forEach(c => {
+          array.push(c.idMenu)
+          c.children.forEach(ch => {
+            array.push(ch.idMenu)
+          })
+        })
+      } else if (items.flatMap(i => i.children).find(i => i.idMenu == idMenu)){
+        let item = items.flatMap(i => i.children).find(i => i.idMenu == idMenu)
+        item.children.forEach(c => {
+          array.push(c.idMenu)
+        })
+      }
+      return array
+    },
 
     async copy2(item){
       try {
         await this.copyCollectionType([item.id,this.collectionType])
         switch (this.collectionType) {
-          case "courses":
-            bus.$emit("changePage", ["content,Course", "content"]);
-            break;
           case "expositives":
-            bus.$emit("changePage", ["content,Expositive", "content"]);
+            bus.$emit("changePage", "content,Expositive");
+            bus.$emit("successSnackbar", "Expositive copied")
             break;
           case "evaluatives":
-            bus.$emit("changePage", ["content,Evaluative", "content"]);
+            bus.$emit("changePage", "content,Evaluative");
+            bus.$emit("successSnackbar", "Evaluative copied")
             break;
           case "questions":
-            bus.$emit("changePage", ["content,Question", "content"]);
+            bus.$emit("changePage", "content,Question");
+            bus.$emit("successSnackbar", "Question copied")
             break;
         }
       } catch (error) {
         console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong copying the "+this.collectionType)
+        bus.$emit("errorSnackbar", "Something went wrong copying the "+this.collTypeName())
       }
     },
 
     remove(item) {
       this.toDeleteItem = item;
       this.deleteDialog = true;
+    },
+
+    collTypeName(){
+      return this.collectionType.charAt(0).toUpperCase() + this.collectionType.slice(1,-1)
     },
   },
 };

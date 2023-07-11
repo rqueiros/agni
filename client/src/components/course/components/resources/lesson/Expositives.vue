@@ -139,6 +139,7 @@
     </v-card>
 
     <SelectDialog 
+    v-if="isAuthor"
     :dialog="dialog" 
     :type="'expositives'" 
     :already="resource.expositives.map(e => e.id)"

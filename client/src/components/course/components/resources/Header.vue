@@ -188,13 +188,13 @@ export default {
   data() {
     return {
       customToolbar: [
-        ["bold", "italic", "underline", "strike"],
+        ["bold", "italic", "underline"],
         [
           { align: "" },
           { align: "center" },
         ],
         ["code-block"],
-        [{ list: "ordered" }, { list: "bullet" }],
+        [{ list: "bullet" }],
         [{ color: [] }, { background: [] }],
       ],
     }
