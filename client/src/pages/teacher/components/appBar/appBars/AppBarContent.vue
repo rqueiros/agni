@@ -55,6 +55,11 @@
             v-bind="attrs" 
             v-on="on"
           >
+            <v-progress-circular 
+              :size="20"
+              v-if="loading.save"
+              indeterminate
+            ></v-progress-circular>
             <v-icon>mdi-content-save</v-icon>
           </v-btn>
         </template>
@@ -74,6 +79,11 @@
             v-on="on"
             :disabled="isNew"
           >
+            <v-progress-circular 
+              :size="20"
+              v-if="loading.publish"
+              indeterminate
+            ></v-progress-circular>
             <v-icon v-if="isDraft">mdi-publish</v-icon>
             <v-icon v-if="!isDraft">mdi-publish-off</v-icon>
           </v-btn>
@@ -124,6 +134,11 @@
                 @click="copyCourseMenu()"
                 :disabled="isNew"
               >
+                <v-progress-circular 
+                  :size="20"
+                  v-if="loading.copy"
+                  indeterminate
+                ></v-progress-circular>
                 <v-icon>mdi-content-copy</v-icon>
               </v-btn>
             </template>
@@ -162,6 +177,11 @@
             @click="copy()"
             :disabled="isNew"
           >
+            <v-progress-circular 
+              :size="20"
+              v-if="loading.delete"
+              indeterminate
+            ></v-progress-circular>
             <v-icon>mdi-content-copy</v-icon>
           </v-btn>
         </template>
@@ -247,6 +267,13 @@ export default {
       question: "",
       buttons: [],
     },
+
+    loading: {
+      save:false,
+      publish:false,
+      copy:false,
+      delete:false
+    }
   }),
 
   watch: {
@@ -298,7 +325,9 @@ export default {
       if (this.toDeleteItem != 0) {
         try {
           if (payload == "ok") {
+            this.loading.delete = true
             await this.deleteCollectionType([this.toDeleteItem.id, this.collectionType]);
+            this.loading.delete = false
             this.toDeleteItem = 0;
             bus.$emit("successSnackbar", this.collTypeName() + " deleted")
             bus.$emit("changePage", "content,Content");
@@ -386,7 +415,9 @@ export default {
 
     async publish() {
       try {
+        this.loading.publish = true
         let res = await this.publishCollectionType(this.title.toLowerCase() + "s");
+        this.loading.publish = false
         bus.$emit("successSnackbar", this.collTypeName() + " " + res)
       } catch (error) {
         console.log(error)
@@ -411,7 +442,9 @@ export default {
     async save() {
       //TODO check if all fields are declared
       try {
+        this.loading.save = true
         await this.saveCollectionType(this.collectionType)
+        this.loading.save = false
         bus.$emit("successSnackbar", this.collTypeName() + " saved")
       } catch (error) {
         console.log(error)
@@ -441,7 +474,9 @@ export default {
       }
 
       try {
+        this.laoding.copy = true
         await this.copyCollectionType([id, this.collectionType])
+        this.loading.copy = false
         bus.$emit("successSnackbar", this.collTypeName() + " copied")
       } catch (error) {
         console.log(error)
