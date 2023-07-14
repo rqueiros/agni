@@ -474,7 +474,7 @@ export default {
       }
 
       try {
-        this.laoding.copy = true
+        this.loading.copy = true
         await this.copyCollectionType([id, this.collectionType])
         bus.$emit("successSnackbar", this.collTypeName() + " copied")
       } catch (error) {
