@@ -500,113 +500,6 @@ const convert = {
       }
       return question;
     },
-
-    cleanCourseData({ rootGetters }, resp) {
-      let newResp = [];
-      resp.forEach(course => {
-        let newCourse = {};
-        newCourse.id = course.id;
-        newCourse.name = course.attributes.name;
-        newCourse.type = course.attributes.type;
-        newCourse.state =
-          course.attributes.publishedAt == null ? "Draft" : "Published";
-        if (course.attributes.author.data != null) {
-          newCourse.my = rootGetters["main/getUserEmail"] ==
-            course.attributes.author.data.attributes.email;
-        } else {
-          newCourse.my = false;
-        }
-        newResp.push(newCourse);
-      });
-      return newResp;
-    },
-    cleanExpositiveData({ rootGetters }, resp) {
-      let newResp = [];
-      resp.forEach(expositive => {
-        let newExpositive = {};
-        newExpositive.id = expositive.id;
-        newExpositive.name = expositive.attributes.name;
-        newExpositive.type = expositive.attributes.type;
-        newExpositive.my =
-          rootGetters["main/getUserEmail"] ==
-          expositive.attributes.author.data.attributes.email;
-        newExpositive.state =
-          expositive.attributes.publishedAt == null ? "Draft" : "Published";
-        newResp.push(newExpositive);
-      });
-      return newResp;
-    },
-    cleanEvaluativeData({ rootGetters }, resp) {
-      let newResp = [];
-      resp.forEach(evaluative => {
-        let newEvaluative = {};
-        newEvaluative.id = evaluative.id;
-        newEvaluative.name = evaluative.attributes.name;
-        newEvaluative.type = evaluative.attributes.content[0].__component.split(
-          "."
-        )[1];
-        newEvaluative.my =
-          rootGetters["main/getUserEmail"] ==
-          evaluative.attributes.author.data.attributes.email;
-        newEvaluative.state =
-          evaluative.attributes.publishedAt == null ? "Draft" : "Published";
-        newResp.push(newEvaluative);
-      });
-      return newResp;
-    },
-    cleanQuestionData({ rootGetters }, resp) {
-      let newResp = [];
-      resp.forEach(question => {
-        let newQuestion = {};
-        newQuestion.id = question.id;
-        newQuestion.question = question.attributes.question;
-        newQuestion.my =
-          rootGetters["main/getUserEmail"] ==
-          question.attributes.author.data.attributes.email;
-        newQuestion.state =
-          question.attributes.publishedAt == null ? "Draft" : "Published";
-        newResp.push(newQuestion);
-      });
-      return newResp;
-    },
-    cleanOccurrenceData(state, resp) {
-      let occ = { currentOcc: [], draftOcc: [], pastOcc: [] };
-      let date = new Date();
-      resp.forEach(occurrence => {
-        let newOcc = {};
-        newOcc.id = occurrence.id;
-        newOcc.year = occurrence.attributes.year;
-        newOcc.startDate = occurrence.attributes.startDate;
-        newOcc.endDate = occurrence.attributes.endDate;
-        newOcc.course = {};
-        if (occurrence.attributes.courses.data.length > 0) {
-          newOcc.course.name =
-            occurrence.attributes.courses.data[0].attributes.name;
-          newOcc.course.type =
-            occurrence.attributes.courses.data[0].attributes.type;
-          newOcc.classes = occurrence.attributes.classes.data.map(
-            c => c.attributes
-          );
-        }
-        let startDate =
-          newOcc.startDate == null ? null : new Date(newOcc.startDate);
-        let endDate = newOcc.endDate == null ? null : new Date(newOcc.endDate);
-        if (date > endDate && endDate != null) {
-          occ.pastOcc.push(newOcc);
-        } else if (
-          startDate < date &&
-          date < endDate &&
-          startDate != null &&
-          endDate != null
-        ) {
-          occ.currentOcc.push(newOcc);
-        } else {
-          occ.draftOcc.push(newOcc);
-        }
-      });
-      return occ;
-    },
-
     prepareOccurrence(state, [resp, isCopy]) {
       let occ = {}
       //let occ = resp.attributes;
@@ -662,17 +555,122 @@ const convert = {
         }
       });
       return occ;
-    } 
-    /*
-      prepareClass(resp){
-    
-      },
-      prepareStudent(resp){
-    
-      },
-      prepareStatuses(resp){
-    
-      }*/
+    },
+
+    cleanCourseData({ rootGetters }, resp) {
+      let newResp = [];
+      resp.forEach(course => {
+        let newCourse = {};
+        newCourse.id = course.id;
+        newCourse.name = course.attributes.name;
+        newCourse.type = course.attributes.type;
+        newCourse.state =
+          course.attributes.publishedAt == null ? "Draft" : "Published";
+        if (course.attributes.author.data != null) {
+          newCourse.my = rootGetters["main/getUserEmail"] ==
+            course.attributes.author.data.attributes.email;
+        } else {
+          newCourse.my = false;
+        }
+        newResp.push(newCourse);
+      });
+      return newResp;
+    },
+    cleanExpositiveData({ rootGetters }, resp) {
+      let newResp = [];
+      resp.forEach(expositive => {
+        let newExpositive = {};
+        newExpositive.id = expositive.id;
+        newExpositive.name = expositive.attributes.name;
+        newExpositive.type = expositive.attributes.type;
+        if(expositive.attributes.author.data != null){
+          newExpositive.my = rootGetters["main/getUserEmail"] ==
+            expositive.attributes.author.data.attributes.email;
+        } else {
+          newExpositive.my = false;
+        }
+        newExpositive.state =
+          expositive.attributes.publishedAt == null ? "Draft" : "Published";
+        newResp.push(newExpositive);
+      });
+      return newResp;
+    },
+    cleanEvaluativeData({ rootGetters }, resp) {
+      let newResp = [];
+      resp.forEach(evaluative => {
+        let newEvaluative = {};
+        newEvaluative.id = evaluative.id;
+        newEvaluative.name = evaluative.attributes.name;
+        newEvaluative.type = evaluative.attributes.content[0].__component.split(
+          "."
+        )[1];
+        if(evaluative.attributes.author.data != null){
+          newEvaluative.my = rootGetters["main/getUserEmail"] ==
+            evaluative.attributes.author.data.attributes.email;
+        } else {
+          newEvaluative.my = false;
+        }
+        newEvaluative.state =
+          evaluative.attributes.publishedAt == null ? "Draft" : "Published";
+        newResp.push(newEvaluative);
+      });
+      return newResp;
+    },
+    cleanQuestionData({ rootGetters }, resp) {
+      let newResp = [];
+      resp.forEach(question => {
+        let newQuestion = {};
+        newQuestion.id = question.id;
+        newQuestion.question = question.attributes.question;
+        if(question.attributes.author.data != null){
+          newQuestion.my = rootGetters["main/getUserEmail"] ==
+            question.attributes.author.data.attributes.email;
+        } else {
+          newQuestion.my = false;
+        }
+        newQuestion.state =
+          question.attributes.publishedAt == null ? "Draft" : "Published";
+        newResp.push(newQuestion);
+      });
+      return newResp;
+    },
+    cleanOccurrenceData(state, resp) {
+      let occ = { currentOcc: [], draftOcc: [], pastOcc: [] };
+      let date = new Date();
+      resp.forEach(occurrence => {
+        let newOcc = {};
+        newOcc.id = occurrence.id;
+        newOcc.year = occurrence.attributes.year;
+        newOcc.startDate = occurrence.attributes.startDate;
+        newOcc.endDate = occurrence.attributes.endDate;
+        newOcc.course = {};
+        if (occurrence.attributes.courses.data.length > 0) {
+          newOcc.course.name =
+            occurrence.attributes.courses.data[0].attributes.name;
+          newOcc.course.type =
+            occurrence.attributes.courses.data[0].attributes.type;
+          newOcc.classes = occurrence.attributes.classes.data.map(
+            c => c.attributes
+          );
+        }
+        let startDate =
+          newOcc.startDate == null ? null : new Date(newOcc.startDate);
+        let endDate = newOcc.endDate == null ? null : new Date(newOcc.endDate);
+        if (date > endDate && endDate != null) {
+          occ.pastOcc.push(newOcc);
+        } else if (
+          startDate < date &&
+          date < endDate &&
+          startDate != null &&
+          endDate != null
+        ) {
+          occ.currentOcc.push(newOcc);
+        } else {
+          occ.draftOcc.push(newOcc);
+        }
+      });
+      return occ;
+    },
   },
 }
 

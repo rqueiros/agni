@@ -277,11 +277,12 @@ const main = {
         new: true,
         contentType: "module",
         name: "",
+        parentId: course.id,
         children: [
           {
             id: 0,
             idMenu: state.maxId + 1,
-            parentId: n + 1,
+            parentId: n - 1,
             type: "add",
             contentType: "lesson",
             name: "add Lesson",
@@ -330,9 +331,7 @@ const main = {
 
     //-------Lesson
     addLessonByModuleId(state, id) {
-      const module = state.courses
-        .flatMap(c => c.children)
-        .find(m => m.id == id);
+      const module = state.courses[0].children.find(m => m.id == id);
       let n = Math.min(...state.courses.flatMap(c => c.children).flatMap(m => m.children).map(l => l.id));
       if (n > 0 || !isFinite(n)) {
         n = 0;
@@ -772,6 +771,10 @@ const main = {
         name: "",
         type: "new",
         contentType: "",
+        tests:[],
+        contexts:[],
+        skeleton:"",
+        questions:[],
       }
       this.commit("main/setEvaluatives", [evaluative])
     },
