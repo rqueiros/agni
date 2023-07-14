@@ -54,6 +54,11 @@
             v-bind="attrs" 
             v-on="on"
           >
+            <v-progress-circular 
+              :size="20"
+              v-if="loading.save"
+              indeterminate
+            ></v-progress-circular>
             <v-icon>mdi-content-save</v-icon>
           </v-btn>
         </template>
@@ -72,6 +77,11 @@
             v-on="on"
             :disabled="isNew"
           >
+            <v-progress-circular 
+              :size="20"
+              v-if="loading.publish"
+              indeterminate
+            ></v-progress-circular>
             <v-icon v-if="isDraft">mdi-publish</v-icon>
             <v-icon v-if="!isDraft">mdi-publish-off</v-icon>
           </v-btn>
@@ -92,6 +102,11 @@
             v-on="on"
             :disabled="isNew"
           >
+            <v-progress-circular 
+              :size="20"
+              v-if="loading.copy"
+              indeterminate
+            ></v-progress-circular>
             <v-icon>mdi-content-copy</v-icon>
           </v-btn>
         </template>
@@ -110,6 +125,11 @@
             @click="remove()"
             :disabled="isNew"
           >
+            <v-progress-circular 
+              :size="20"
+              v-if="loading.delete"
+              indeterminate
+            ></v-progress-circular>
             <v-icon>mdi-delete</v-icon>
           </v-btn>
         </template>
@@ -175,6 +195,13 @@ export default {
       question: "",
       buttons: [],
     },
+
+    loading: {
+      save:false,
+      publish:false,
+      copy:false,
+      delete:false
+    }
   }),
 
   watch: {
@@ -212,6 +239,7 @@ export default {
       if (this.toDeleteItem != 0) {
         try {
           if (payload == "ok") {
+            this.loading.delete = true
             await this.deleteCollectionType([this.toDeleteItem, "occurrences"]);
             bus.$emit("successSnackbar", "Occurrence saved")
             this.toDeleteItem = 0;
@@ -221,6 +249,7 @@ export default {
           this.toDeleteItem = 0;
           bus.$emit("errorSnackbar", "Something went wrong saving the Occurrence")
         }
+        this.loading.delete = false
       }
     });
     bus.$on("yesNoDialogResult", async payload => {
@@ -286,6 +315,7 @@ export default {
 
     async publish() {
       try {
+        this.loading.publish = true
         let res = await this.publishCollectionType("occurrences");
         bus.$emit("successSnackbar", "Occurrence " + res)
       } catch (error) {
@@ -293,6 +323,7 @@ export default {
         const pub = this.isDraft ? "publishing" : "unpublishing"
         bus.$emit("errorSnackbar", "Something went wrong "+ pub +" the Occurrence")
       }
+      this.loading.publish = false
     },
 
     remove() {
@@ -303,16 +334,19 @@ export default {
     async save() {
       //TODO check if all fields are declared
       try {
+        this.loading.save = true
         await this.saveCollectionType("occurrences")
         bus.$emit("successSnackbar", "Occurrence saved")
       } catch (error) {
         console.log(error)
         bus.$emit("errorSnackbar", "Something went wrong saving the Occurrence")
       }
+      this.loading.save = false
     },
 
     async copy(){
       try {
+        this.loading.copy = true
         await this.copyCollectionType([this.getOccurrence.id, "occurrences"]);
         bus.$emit("successSnackbar", "Occurrence copied")
         bus.$emit("changePage", "student,Occurrence");
@@ -320,6 +354,7 @@ export default {
         console.log(error)
         bus.$emit("errorSnackbar", "Something went wrong copying the Cccurrence")
       }
+      this.loading.copy = false
     }
   }
 }

@@ -327,7 +327,6 @@ export default {
           if (payload == "ok") {
             this.loading.delete = true
             await this.deleteCollectionType([this.toDeleteItem.id, this.collectionType]);
-            this.loading.delete = false
             this.toDeleteItem = 0;
             bus.$emit("successSnackbar", this.collTypeName() + " deleted")
             bus.$emit("changePage", "content,Content");
@@ -337,6 +336,7 @@ export default {
           this.toDeleteItem = 0;
           bus.$emit("errorSnackbar", "Something went wrong deleting the "+this.collTypeName())
         }
+        this.loading.delete = false
       }
     });
     bus.$on("yesNoDialogResult", async payload => {
@@ -417,13 +417,13 @@ export default {
       try {
         this.loading.publish = true
         let res = await this.publishCollectionType(this.title.toLowerCase() + "s");
-        this.loading.publish = false
         bus.$emit("successSnackbar", this.collTypeName() + " " + res)
       } catch (error) {
         console.log(error)
         const pub = this.isDraft ? "publishing" : "unpublishing"
         bus.$emit("errorSnackbar", "Something went wrong " + pub + " the " + this.collTypeName())
       }
+      this.loading.publish = false
     },
 
     remove() {
@@ -444,7 +444,6 @@ export default {
       try {
         this.loading.save = true
         await this.saveCollectionType(this.collectionType)
-        this.loading.save = false
         bus.$emit("successSnackbar", this.collTypeName() + " saved")
       } catch (error) {
         console.log(error)
@@ -459,6 +458,7 @@ export default {
         }
         bus.$emit("errorSnackbar", message)
       }
+      this.loading.save = false
     },
 
     async copy() {
@@ -476,12 +476,12 @@ export default {
       try {
         this.laoding.copy = true
         await this.copyCollectionType([id, this.collectionType])
-        this.loading.copy = false
         bus.$emit("successSnackbar", this.collTypeName() + " copied")
       } catch (error) {
         console.log(error)
         bus.$emit("errorSnackbar", "Something went wrong copying the " + this.collTypeName())
       }
+      this.loading.copy = false
     },
     async copyCourseMenu() {
       this.menuOpen = !this.menuOpen
