@@ -25,7 +25,7 @@ module.exports = createCoreController(uid, () => {
    return {
       async find(ctx) {
          const author = ctx.state.user
-         if (author.role.id == 3) {
+         if (author.role.name == "Student") {
             const res = await getStudentCourses(author, ctx)
             return this.transformResponse(res)
          } else {
@@ -429,6 +429,7 @@ async function getStudentCourses(author, ctx) {
       populate: { courses: true },
    })
    const courses = entity4.courses
+   
    let res = []
    for (let i = 0; i < courses.length; i++) {
       let r = await strapi.entityService.findOne(uid, courses[i].id, {
@@ -474,7 +475,7 @@ async function getStudentCourses(author, ctx) {
       let course = res[i]
       for (let j = 0; j < course.modules.length; j++) {
          let module = course.modules[j]
-         if (module.condition) {
+         if (module.condition && (module.condition.type!=null || module.condition.afterPercDone!=null || module.condition.afterWeek!=null)){
             let locked = true
             let afterPercDone = false
             let afterWeek = false
@@ -501,6 +502,7 @@ async function getStudentCourses(author, ctx) {
                }
             }
 
+
             if (module.condition.type == "AND") {
                if (afterPercDone && afterWeek) {
                   locked = false
@@ -520,7 +522,7 @@ async function getStudentCourses(author, ctx) {
          for (let k = 0; k < module.lessons.length; k++) {
             let lesson = module.lessons[k]
 
-            if (lesson.condition) {
+            if (lesson.condition && (lesson.condition.type!=null || lesson.condition.afterPercDone!=null || lesson.condition.afterWeek!=null)) {
                let locked = true
                let afterPercDone = false
                let afterWeek = false

@@ -1,22 +1,21 @@
 <template>
-  <div id="profile" class="resource" v-if="isStudent">
+  <div id="profile" class="resource">
     <v-container fluid>
-      <v-row class="mb-1 mt-0">
-        <v-col :cols="isSMsmaller ? 12 : 7" class="py-0">
-          <!--Profile-->
+      <v-row v-if="isStudent">
+        <v-col :cols="isSMsmaller ? 12 : 7">
           <v-card class="mx-auto mb-2" max-width="100%" outlined>
             <div class="header">
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title class="resource_title">
+                  <v-list-item-title :class="getTitleClass">
                     GUEST
                   </v-list-item-title>
-                  <v-list-item-subtitle class="resource_subtitle">
+                  <v-list-item-subtitle :class="getSmallTextClass">
                     guest@esmad.ipp.pt
                   </v-list-item-subtitle>
                 </v-list-item-content>
-                <v-list-item-avatar tile color="red" class="box">
-                  <v-icon color="white" class="box_icon">
+                <v-list-item-avatar tile color="red" class="box" :size="getAvatarMediumSize">
+                  <v-icon color="white" class="box_icon" :size="getIconBigSize">
                     mdi-card-account-details
                   </v-icon>
                 </v-list-item-avatar>
@@ -32,15 +31,15 @@
             <div class="header">
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title class="resource_title">
+                  <v-list-item-title :class="getTitleClass">
                     COURSE PROGRESSION
                   </v-list-item-title>
-                  <v-list-item-subtitle class="resource_text">
+                  <v-list-item-subtitle :class="getSmallTextClass">
                     Status on the course exercises sheets
                   </v-list-item-subtitle>
                 </v-list-item-content>
-                <v-list-item-avatar tile color="blue" class="box">
-                  <v-icon color="white" class="box_icon">
+                <v-list-item-avatar tile color="blue" class="box" :size="getAvatarMediumSize">
+                  <v-icon color="white" class="box_icon" :size="getIconBigSize">
                     mdi-rocket-launch
                   </v-icon>
                 </v-list-item-avatar>
@@ -88,16 +87,22 @@
 
         <v-col
           cols="5"
-          class="py-0 pl-0"
+          class="pl-0"
           :class="isSMsmaller ? 'd-none' : 'd-block'"
         >
           <Gamification class="p-gamification" />
         </v-col>
       </v-row>
 
-      <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
+      <v-row :class="isSMsmaller ? 'd-block' : 'd-none'" v-if="isStudent">
         <v-col cols="12">
-          <Gamification class="p-gamification_XS" />
+          <Gamification/>
+        </v-col>
+      </v-row>
+
+      <v-row v-if="isTeacher">
+        <v-col cols="12">
+          <Gamification />
         </v-col>
       </v-row>
     </v-container>
@@ -187,7 +192,13 @@ export default {
       "isStudent",
       "isTeacher"
     ]),
-    ...mapGetters("style", ["isSMsmaller"]),
+    ...mapGetters("style", [
+      "getTitleClass",
+      "getSmallTextClass",
+      "getAvatarMediumSize",
+      "getIconBigSize",
+      "isSMsmaller"
+    ]),
   },
 };
 </script>

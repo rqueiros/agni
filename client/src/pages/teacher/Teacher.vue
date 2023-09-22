@@ -1,41 +1,43 @@
 <template>
-  <v-app id="inspire1" style="background-color: #F7F8F9;">
-    <!--System bar-->
-    <v-system-bar id="teacher_bar" app dark style="z-index: 10;">
-      <div>TEACHER</div>
-      <v-spacer></v-spacer>
-      <div class="mr-2"><v-icon>mdi-school</v-icon>learnJS v0.7.7</div>
-    </v-system-bar>
+  <v-app>
+    <v-card flat color="background" height="100%">
+      <v-system-bar app dark style="z-index: 10;" color="teacherSystemBar">
+        <div>TEACHER</div>
+        <v-spacer></v-spacer>
+        <div class="mr-2">
+          <v-icon>mdi-school</v-icon>learnJS v0.7.7
+        </div>
+      </v-system-bar>
 
-    <!--Main-->
-    <v-main class="px-0 pt-6">
-      <Menu />
-      <v-card 
-        style="margin-right:5%; 
-        background-color: #F7F8F9;" 
-        class="mt-3 mb-5"
-        :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'" 
-        tile 
-        elevation="0"
-      >
-        <AppBar :resource="resource" />
-      </v-card>
-      <div 
-        style="margin-right: 5%;" 
-        class="mb-8 min_height" 
-        :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'"
-      >
-        <Resource :resource="resource" />
-      </div>
+      <v-main class="px-0 pt-3">
+        <Menu />
+        <v-card 
+          color="background"
+          tile
+          elevation="1"
+          style="padding-right: 5%; padding-left:22px;"
+          class="mt-3 mb-5 py-1"
+          :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig2' : 'barMarginSmall2'" 
+        >
+          <AppBar :resource="resource" />
+        </v-card>
+        <div 
+          style="margin-right: 5%;" 
+          class="mb-8 min_height" 
+          :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'"
+        >
+          <Resource :resource="resource" />
+        </div>
 
-      <Snackbar 
-        :snackbar="snackbar.open" 
-        :timeout="snackbar.timeout" 
-        :color="snackbar.color" 
-        :icon="snackbar.icon"
-        :text="snackbar.text" 
-      />
-    </v-main>
+        <Snackbar 
+          :snackbar="snackbar.open" 
+          :timeout="snackbar.timeout" 
+          :color="snackbar.color" 
+          :icon="snackbar.icon"
+          :text="snackbar.text" 
+        />
+      </v-main>
+    </v-card>
   </v-app>
 </template>
 
@@ -100,12 +102,14 @@ export default {
 
 
 <style>
-.min_height{
-  min-height:calc(100vh - 150px);
+.shadow{
+  /*box-shadow: 0px 0px 5px rgb(219, 219, 219) !important;*/
+  box-shadow: 0px 0px 5px rgb(184, 184, 184) !important;
 }
 
-#teacher_bar {
-  background-color: #454444;
+
+.min_height{
+  min-height:calc(100vh - 150px);
 }
 
 .v-navigation-drawer,
@@ -124,8 +128,14 @@ export default {
 .barMarginBig {
   margin-left: 202px;
 }
+.barMarginBig2 {
+  margin-left: 180px;
+}
 
 .barMarginSmall {
   margin-left: 92px;
+}
+.barMarginSmall2 {
+  margin-left: 70px;
 }
 </style>

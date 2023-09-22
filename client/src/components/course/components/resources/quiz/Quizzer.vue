@@ -228,6 +228,7 @@
     </div>
 
     <SelectDialog 
+      v-if="isAuthor"
       :dialog="dialog" 
       :type="'questions'" 
       :already="resource.questions.map(e => e.id)"
@@ -418,18 +419,17 @@ export default {
       }
     },
     async finish() {
-      let i = 0,
-        cont = 0;
+      let i = 0;
+      let cont = 0;
       const wrongQuestions = [];
       this.resource.questions.forEach(question => {
-        let studentAnswer = this.studentAnswers[i].map(v => v+1)
+        let studentAnswer = i in this.studentAnswers ? this.studentAnswers[i].map(v => v+1) : []
         if (studentAnswer.length != question.correctAnswer.length){
           wrongQuestions.push(i);
           i++;
           return
         }
         for (let j =0; j<question.correctAnswer.length; j++){
-          console.log(question.correctAnswer[j],studentAnswer[j])
           if (question.correctAnswer[j]!=studentAnswer[j]){
             wrongQuestions.push(i);
             i++;
@@ -445,21 +445,27 @@ export default {
         return { question: q.id };
       });
       for (let i = 0; i < ques.length; i++) {
-        ques[i].answer = JSON.stringify(this.studentAnswers[i].map(v=>v+1))
+        ques[i].answer = JSON.stringify(this.studentAnswers[i].map(v => v+1))
       }
+      console.log(ques)
 
       let htmlMsg = `${cont} from ${this.resource.questions.length} (${status}%) answers correct!`;
       if (wrongQuestions.length > 0) {
-        htmlMsg += `<br>Questions wrong: ${wrongQuestions}`;
+        htmlMsg += `<br>Questions wrong: ${wrongQuestions.map(v => v+1)}`;
       }
 
-      Swal.fire({
+      await Swal.fire({
         title: "<strong>QUIZ RESULT</strong>",
         icon: "success",
         html: htmlMsg,
         focusConfirm: false,
         confirmButtonText: "OK"
       });
+
+      const lesson = this.getLessonByResourceId(this.resource.id); //TODO problem with contentType
+      console.log(lesson)
+
+      bus.$emit("changeIt", [lesson.id, lesson.contentType]);
 
       await this.setProgress({
         id: this.resource.id,
@@ -469,9 +475,6 @@ export default {
         }
       });
 
-      const lesson = this.getLessonByResourceId(this.resource.id); //TODO problem with contentType
-
-      bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
     addQuestion(type, id) {
       if (type == "NEW") {

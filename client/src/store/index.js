@@ -28,6 +28,7 @@ const main = {
     students: [],
     maxId: 0,
     changed: false,
+    accountEditable:false,
   },
   getters: {
     //------------------------Authentication----------------------------------
@@ -44,6 +45,8 @@ const main = {
     isViewer: state => state.role == "viewer",
 
     getDomain: () => serverData.domain,
+
+    getAccountEditable: state => state.accountEditable,
 
     //--------------------------Student---------------------------------------
 
@@ -122,7 +125,7 @@ const main = {
     //-------Status
     getStatusByResourceId: state => id => {
       return state.courses[0].children.flatMap(m => m.children).flatMap(l => l.evaluatives)
-        .find(evaluative => evaluative.status.id == id).status;
+        .find(evaluative => evaluative.id == id).status;
     },
     getCompletationStatusByLesson: state => id => {
       if (id == "0") {
@@ -172,6 +175,17 @@ const main = {
     },
     setRole(state, role) {
       state.role = role;
+    },
+    logout(state) {
+      state.login = false
+      state.user = {}
+      state.role = ""
+      state.jwt = ""
+      state.changed = false
+      this.commit("main/deleteStructure");
+    },
+    setAccountEditable(state, value){
+      state.accountEditable = value
     },
 
     //-----------------------Teacher------------------------------------------
@@ -658,6 +672,23 @@ const main = {
         tests: [],
       };
       lesson.evaluatives.push(evaluative);
+      this.commit("main/setChanged", true);
+    },
+    addExternalExByLessonId(state, [id, exercises]) {
+      const lesson = state.courses
+        .flatMap(c => c.children)
+        .flatMap(m => m.children)
+        .find(l => l.id == id);
+      let n = Math.min(...state.courses[0].children.flatMap(c => c.children).flatMap(l => l.evaluatives).map(l => l.id));
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
+      }
+      for(let i = 0; i++; i<exercises.length){
+        exercises[i].id = n-(i+1)
+      }
+      exercises.forEach(ex => {
+        lesson.evaluatives.push(ex);
+      })
       this.commit("main/setChanged", true);
     },
     changeEvaluativeTypeById(state, list) {
@@ -1304,6 +1335,31 @@ const main = {
       });
       this.commit("main/setChanged", true);
     },
+    addClassByOccurrenceId2(state, [id, classe]) {
+      const occ = state.occurrences.find(o => o.id == id)
+      const classes = state.occurrences.flatMap(o => o.classes).map(c => c.id)
+      let n = Math.min(...classes);
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
+      }
+      const students = state.occurrences.flatMap(o => o.classes).flatMap(c => c.students).map(c => c.id)
+      let n2 = Math.min(...students);
+      if (n2 > 0 || !isFinite(n2)) {
+        n2 = 0;
+      }
+
+      let c2 = 1
+      classe.new = true
+      classe.id = n - 1
+      classe.students.forEach(student => {
+        student.new = true,
+        student.id = n2 - c2
+        c2++
+      })
+    
+      occ.classes.push(classe);
+      this.commit("main/setChanged", true);
+    },
     setClassField(state, [id, field, value]) {
       const classe = state.occurrences.flatMap(o => o.classes).find(c => c.id == id)
       if (classe[field] != value) {
@@ -1336,6 +1392,23 @@ const main = {
       });
       this.commit("main/setChanged", true);
     },
+    addStudentByClassName(state, [name,students]) {
+      const classe = state.occurrences.flatMap(o => o.classes).find(c => c.name == name)
+      const allStudents = state.occurrences.flatMap(o => o.classes).flatMap(c => c.students).map(c => c.id)
+      let n = Math.min(...allStudents);
+      if (n > 0 || !isFinite(n)) {
+        n = 0;
+      }
+      
+      let c = 1
+      students.forEach(student => {
+        student.new = true
+        student.id = n-c
+        c++
+      })
+      classe.students.push(...students)
+      this.commit("main/setChanged", true);
+    },
     setStudentField(state, [id, field, value]) {
       const student = state.occurrences.flatMap(o => o.classes).flatMap(c => c.students).find(s => s.id == id)
       if (student[field] != value) {
@@ -1353,6 +1426,14 @@ const main = {
     //-------Status
     setStatuses(state, statuses) {
       state.statuses = statuses
+    },
+
+    setUserField(state, [field, value]) {
+      const us = state.user
+      if (us[field] != value) {
+        this.commit("main/setChanged", true);
+      }
+      us[field] = value;
     },
 
     //-------Etc
@@ -1391,6 +1472,8 @@ const main = {
         this.commit("main/setClassField", [id, field, value]);
       } else if (type == "student") {
         this.commit("main/setStudentField", [id, field, value]);
+      } else if (type == "user") {
+        this.commit("main/setUserField", [field, value]);
       }
     },
     deleteStructure(state) {
@@ -1431,6 +1514,7 @@ const main = {
         })
         .then(resp => {
           role = resp.data.role.type;
+          this.commit("main/setUser", resp.data);
         });
       this.commit("main/setRole", role);
       role = role.charAt(0).toUpperCase() + role.slice(1);
@@ -1441,11 +1525,119 @@ const main = {
       router.push({ name: role });
     },
 
+    async updateUser(state){
+      const auth = "Bearer " + state.getters.getJWT;
+      let url = serverData.domain + serverData.users;
+      let data = state.getters.getUser
+      url += "/" + data.id;
+      await axios
+        .put(
+          url,
+          data,
+          {
+            headers: {
+              Authorization: auth,
+            }
+          }
+        )
+    },
+    async changePW(state){
+      const auth = "Bearer " + state.getters.getJWT;
+      let url = serverData.domain + serverData.changePW;
+      let data2 = state.getters.getUser
+      let data = {
+        currentPassword:data2.currentPW,
+        password:data2.newPW,
+        passwordConfirmation:data2.newPW2
+      }
+      await axios
+        .post(
+          url,
+          data,
+          {
+            headers: {
+              Authorization: auth,
+            }
+          }
+        )
+    },
+    async sendEmail(state,message){
+      const auth = "Bearer " + state.getters.getJWT;
+      let url = serverData.domain + serverData.sendEmail;
+      await axios
+        .post(
+          url,
+          {data : message},
+          {
+            headers: {
+              Authorization: auth,
+            }
+          }
+        ).then(resp => {
+          console.log(resp.data)
+        })
+    },
+    async getTeachersContent(state){
+      const auth = "Bearer " + state.getters.getJWT;
+      let url = serverData.domain + serverData.me;
+      let resp
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          }
+        })
+        .then(response => {
+          resp = response.data;
+        });
+      return resp
+    },
+    async updateUserImage(state, image){
+      const auth = "Bearer " + state.getters.getJWT;
+      let url = serverData.domain + serverData.users;
+      let data = state.getters.getUser
+      url += "/" + data.id;
+
+      let data2 = {}
+      if (image == null || ("data" in image && image.data == null)){
+        data2.image = null
+      } else {
+        let url2 = serverData.domain + serverData.upload;
+        let id
+        const formData = new FormData();
+        formData.append("files", image)
+        await axios
+          .post(
+            url2,
+            formData,
+            {
+              headers: {
+                Authorization: auth,
+                'Content-Type': 'multipart/form-data'
+              }
+            }
+          ).then(resp => {
+            id = resp.data[0].id
+            data2.image = id
+          })
+      }
+      await axios
+        .put(
+          url,
+          data2,
+          {
+            headers: {
+              Authorization: auth,
+            }
+          }
+        )
+    },
+
     //--------------------------Student---------------------------------------
     async setProgress(state, payload) {
+      console.log(payload)
       const auth = "Bearer " + state.getters.getJWT;
       const evaluative = state.getters.getEvaluativeByStatus(payload);
-
       const url =
         serverData.domain + serverData.statuses + "/" + evaluative.status.id;
       axios.put(
@@ -1531,6 +1723,41 @@ const main = {
       ]);
     },
 
+    async fetchContents(state, parameters){
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      let url = serverData.domain + serverData.content;
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          },
+          params: parameters
+        })
+        .then(response => {
+          resp = response.data;
+        });
+      return resp
+    },
+
+    async fetchNewContents(state){
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      let url = serverData.domain + serverData.content;
+      let params = { populate: "newContents" };
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          },
+          params: params
+        })
+        .then(response => {
+          resp = response.data;
+        });
+      return resp
+    },
+
     async fetchCollectionTypes(state, parameters) {
       const auth = "Bearer " + state.getters.getJWT;
       let resp;
@@ -1584,6 +1811,58 @@ const main = {
         })
         .then(response => {
           resp = response.data.data;
+        });
+      return resp
+    },
+
+    async fetchStudentStat(state, id){
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      let url = serverData.domain + serverData.students + "/" + id;
+      let params = { populate: "stat" };
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          },
+          params: params
+        })
+        .then(response => {
+          resp = response.data;
+        });
+      return resp
+    },
+    async fetchClassStat(state, id){
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      let url = serverData.domain + serverData.classes + "/" + id;
+      let params = { populate: "stat" };
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          },
+          params: params
+        })
+        .then(response => {
+          resp = response.data;
+        });
+      return resp
+    },
+    async fetchOccStat(state, id){
+      const auth = "Bearer " + state.getters.getJWT;
+      let resp;
+      let url = serverData.domain + serverData.occurrences + "/" + id;
+      let params = { populate: "stat" };
+      await axios
+        .get(url, {
+          headers: {
+            Authorization: auth
+          },
+          params: params
+        })
+        .then(response => {
+          resp = response.data;
         });
       return resp
     },
@@ -1883,11 +2162,15 @@ const main = {
 };
 
 const serverData = {
-  domain: "https://agni.dcc.fc.up.pt/strapi",
-  //domain: "http://localhost:1337",
+  //domain: "https://agni.dcc.fc.up.pt/strapi",
+  domain: "http://localhost:1337",
   authentication: "/api/auth/local",
   register: "/api/auth/local/register",
   me: "/api/users/me?populate=*",
+  users: "/api/users",
+  changePW : "/api/auth/change-password",
+  sendEmail : "/api/sendEmail",
+  upload: "/api/upload",
   courses: "/api/courses",
   expositives: "/api/expositives",
   evaluatives: "/api/evaluatives",
@@ -1895,7 +2178,8 @@ const serverData = {
   statuses: "/api/statuses",
   occurrences: "/api/occurrences",
   classes: "/api/classes",
-  students: "/api/students"
+  students: "/api/students",
+  content: "/api/content"
 };
 
 export default new Vuex.Store({

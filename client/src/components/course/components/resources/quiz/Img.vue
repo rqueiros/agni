@@ -2,7 +2,7 @@
   <div id="img" v-if="('image' in question && question.image!=null &&
           (question.image.data != null || 'name' in question.image)) || 
           isAuthor">
-    <v-card outlined>
+    <v-card :outlined="!isEvaluative" :class="isEvaluative || isQuestion ? 'shadow' : ''">
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
         <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">
@@ -62,6 +62,14 @@ export default {
       type: Object,
       default: () => { }
     },
+    isEvaluative:{
+      type:Boolean,
+      default: () => false
+    },
+    isQuestion:{
+      type:Boolean,
+      default: () => false
+    }
   },
 
   data() {

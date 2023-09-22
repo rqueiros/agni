@@ -187,7 +187,7 @@ export default {
       await this.login(["Student Lastname", "123456"]);
     },
     async teacherlogin() {
-      await this.login(["Teacher Lastname", "123456"]);
+      await this.login(["teachertest@gmail.com", "1234567"]);
       //await this.login(["EvalUser", "123456"])
     },
     validate() {

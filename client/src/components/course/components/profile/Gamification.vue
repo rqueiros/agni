@@ -2,22 +2,25 @@
   <v-card class="mx-auto" outlined>
     <v-list-item>
       <v-list-item-content>
-        <v-list-item-title class="resource_title">
+        <v-list-item-title :class="getTitleClass">
           GAMIFICATION
         </v-list-item-title>
-        <v-list-item-subtitle class="resource_text"
+        <v-list-item-subtitle :class="getSmallTextClass"
           >Leaderboards, badges and much more!</v-list-item-subtitle
         >
       </v-list-item-content>
 
-      <v-list-item-avatar tile size="5.5vw" color="green">
-        <v-icon color="white" style="font-size: 2.5vw">
+      <v-list-item-avatar tile :size="getAvatarMediumSize" color="green">
+        <v-icon color="white" :size="getIconBigSize">
           mdi-gamepad-variant
         </v-icon>
       </v-list-item-avatar>
     </v-list-item>
-    <v-card-text class="resource_text">
+    <v-card-text class="resource_text" v-if="isStudent">
       <code>Gamification data will appear here in future versions</code>
+    </v-card-text>
+    <v-card-text class="resource_text" v-if="isTeacher">
+      Gamification features will appear here in future versions
     </v-card-text>
   </v-card>
 </template>
@@ -57,6 +60,16 @@ export default {
   }),
 
   computed: {
+    ...mapGetters("main", [
+      "isStudent",
+      "isTeacher"
+    ]),
+    ...mapGetters("style", [
+      "getTitleClass",
+      "getSmallTextClass",
+      "getAvatarMediumSize",
+      "getIconBigSize"
+    ]),
     formTitle() {
       return this.editedIndex === -1 ? "New Test" : "Edit Test";
     },

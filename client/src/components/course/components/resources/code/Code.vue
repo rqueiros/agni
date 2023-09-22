@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-row>
         <v-col :cols="isSMsmaller ? 12 : 7">
-          <v-card outlined>
+          <v-card :outlined="!isEvaluative" :class="isEvaluative ? 'shadow' : ''">
             <Header :resource="resource" v-if="!isEvaluative" />
             
             <Editor
@@ -115,6 +115,7 @@
           :class="isSMsmaller ? 'd-none' : 'd-block'"
         >
           <Tests
+            :isEvaluative="isEvaluative"
             :resource="resource"
             :errors="errors"
             :logs="logs"
@@ -125,6 +126,7 @@
       <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
         <v-col cols="12">
           <Tests
+            :isEvaluative="isEvaluative"
             :resource="resource"
             :errors="errors"
             :logs="logs"

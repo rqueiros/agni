@@ -4,7 +4,17 @@
       :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" 
       class="align-start"
     >
+      <v-btn 
+        @click="backToSheet"
+        color="error" 
+        class="mt-2 mr-3" 
+        style="height:68px; width:10px" min-width="10px" 
+        v-if="resource.contentType != 'lesson'"
+      >
+          <v-icon>mdi-arrow-left</v-icon>
+      </v-btn>
       <v-list-item-content class="py-2">
+        
         <v-list-item-title :class="getTitleClass">
           <!--Student + Viewer-->
           <div v-if="isStudent || isViewer">
@@ -55,9 +65,26 @@
             @input="editableInput"
           />
         </v-list-item-subtitle>
+        <v-list-item-subtitle :class="getSubtitleClass" v-if="resource.contentType =='lesson'">
+          <div v-if="(isStudent || isViewer) && resource.contentType=='lesson'">
+            {{ resource.internalId }}.
+            {{ resource.name }}
+          </div>
+          <Editable
+            v-if="isAuthor"
+            placeholder="Lesson name"
+            type="lesson"
+            :value="resource.name"
+            :id="resource.id"
+            field="name"
+            @input="editableInput"
+          />
+        </v-list-item-subtitle>
 
+        
+        <!--
         <v-list-item-subtitle :class="getSubtitleClass">
-          <!--Student + Viewer-->
+
           <div v-if="(isStudent || isViewer) && resource.contentType=='lesson'">
             {{ resource.internalId }}.
             {{ resource.name }}
@@ -65,7 +92,6 @@
           <div v-if="(isStudent || isViewer) && resource.contentType!='lesson'">
             {{ resource.name }}
           </div>
-          <!--Author-->
           <Editable
             v-if="isAuthor && resource.contentType == 'lesson'"
             placeholder="Lesson name"
@@ -84,7 +110,7 @@
             field="name"
             @input="editableInput"
           />
-        </v-list-item-subtitle>
+        </v-list-item-subtitle>-->
       </v-list-item-content>
       <v-list-item-avatar 
         tile 
@@ -98,6 +124,29 @@
         </v-icon>
       </v-list-item-avatar>
     </v-list-item>
+
+    <v-card-text class="pa-0" v-if="resource.contentType!='lesson'">
+      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" style="min-height:0px">
+        <v-list-item-content class="pb-2 pt-0">
+          <v-list-item-subtitle :class="getSubtitleClass">
+            <!--Student + Viewer-->
+            <div v-if="(isStudent || isViewer)">
+              {{ resource.name }}
+            </div>
+            <!--Author-->
+            <Editable
+              v-if="isAuthor"
+              placeholder="Exercise name"
+              type="evaluative"
+              :value="resource.name"
+              :id="resource.id"
+              field="name"
+              @input="editableInput"
+            />
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </v-card-text>
 
     <!--Student + Viewer-->
     <v-card-text
@@ -165,6 +214,8 @@
 </template>
 
 <script>
+import { bus } from "@/main.js";
+
 import { mapGetters, mapMutations } from "vuex";
 import Editable from "../../../gerneral/Editable.vue";
 
@@ -239,7 +290,11 @@ export default {
       const lines = html_str.split("\n");
       return lines;
     },*/
-  }
+    backToSheet() {
+      const lesson = this.getLessonByResourceId(this.resource.id);
+      bus.$emit("changeIt", [lesson.id, lesson.contentType]);
+    },
+  },
 };
 </script>
 

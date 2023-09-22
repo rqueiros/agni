@@ -39,8 +39,12 @@ const style = {
         case "buggy": return "mdi-bug";
         case "delete": return "mdi-delete";
         case "edit": return "mdi-pencil";
-        case "lesson": return "mdi-note-text-outline"  
-        case "question": return "mdi-chat-question-outline"
+        case "lesson": return "mdi-note-text-outline";
+        case "question": return "mdi-chat-question-outline";
+        case "courses": return "mdi-book-open-page-variant";
+        case "occurrence": return "mdi-school";
+        case "class": return "mdi-domain";
+        case "students": return "mdi-account";
         default: return "";
       }
     },

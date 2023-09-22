@@ -1,6 +1,7 @@
 <template>
   <div id="evaluative" ref="eval">
     <NewEval 
+      :isEvaluative="true" 
       v-if="getEvaluative && getEvaluative.contentType==''" 
       class="ma-n3" 
     />

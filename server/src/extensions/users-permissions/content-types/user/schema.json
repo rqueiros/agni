@@ -110,6 +110,13 @@
       "relation": "oneToMany",
       "target": "api::class.class",
       "mappedBy": "author"
+    },
+    "image": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

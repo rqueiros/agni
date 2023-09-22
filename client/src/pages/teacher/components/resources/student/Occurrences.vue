@@ -3,123 +3,135 @@
     <v-container fluid class="pa-0 mb-4 min_height d-flex flex-column">
 
       <v-row dense style="flex-grow: 100;">
-        <template v-for="occ in currentOcc" >
-          <v-col :key="occ.id" v-if="currentOcc.length>0">
-            <v-hover
-              v-slot="{ hover }"
-            >
-              <v-card 
-                width="100%" 
-                height="100%"
-                outlined 
-                style="border-color: #C3C3C3;" 
-                class="py-4 px-8 text-h6  font-weight-regular"
-                @click="openCollectionType(occ)"
-                :color="hover ? '#eeeeee' : ''"
-              >
-                <v-list-item three-line class="pa-0">
-                  <v-list-item-content>
-                    <div class="mb-2">
-                      <v-icon size="xxx-large" color="primary">
-                        {{ getIcon(occ.course.type) }}
-                      </v-icon>
-                    </div>
-                    <div class="mt-4">
-                      {{ occ.year }} - {{ occ.course.name }}
-                    </div>
-                    <!--
-                    <div class="mt-3">
-                      {{ occ.classes.map(c => c.name).toString() }}
-                    </div>-->
-                  </v-list-item-content>
-                  <div style="align-self: baseline;">
-                    <v-btn 
-                      icon
-                      small
-                      @click="copy(occ.id)" 
-                      onclick="event.stopPropagation()" 
-                    >
-                      <v-icon size="large">
-                        mdi-content-copy
-                      </v-icon>
-                    </v-btn>
-                    <v-btn 
-                      icon
-                      small
-                      @click="remove(occ.id)"
-                      onclick="event.stopPropagation()" 
-                    >
-                      <v-icon size="large">
-                        mdi-delete
-                      </v-icon>
-                    </v-btn>
-                  </div>
-                </v-list-item>
-                <v-card class="mt-4" outlined style="background-color: transparent;">
-                  <v-row class="pa-2 align-center" >
-                    <v-col class="d-flex justify-center">
-                      <v-progress-circular
-                        :rotate="-90"
-                        :size="40"
-                        :width="15"
-                        :value="(new Date() - new Date(occ.startDate))/(new Date(occ.endDate) - new Date(occ.startDate))*100" 
-                        color="primary"
-                      >
-                      </v-progress-circular>
-                    </v-col>
-                    <v-divider vertical class="my-4"/>
-                    <v-col class="d-flex justify-center">
-                      <v-icon size="xx-large" color="primary">
-                        mdi-human-male-board
-                      </v-icon>
-                      <span class="ml-1">
-                        {{ "classes" in occ && occ.classes != null ? occ.classes.length : '0' }}
-                      </span>
-                    </v-col>
-                    <v-divider vertical class="my-4" />
-                    <v-col class="d-flex justify-center">
-                      <v-icon size="xx-large" color="primary">
-                        mdi-account-group
-                      </v-icon>
-                      <span class="ml-1">
-                        {{ "classes" in occ && occ.classes != null ? occ.classes.flatMap(c => c.students.data).length : "0" }}
-                      </span>
-                    </v-col>
-                  </v-row>
-                </v-card>
-
-                <!--
-                  <v-progress-linear 
-                    color="primary" 
-                    height="10" 
-                    :value="(new Date() - new Date(occ.startDate))/(new Date(occ.endDate) - new Date(occ.startDate))*100" 
-                    rounded
-                  ></v-progress-linear>-->
-                
-              </v-card>
-            </v-hover>
-          </v-col>
-        </template>
-        <v-col v-if="!currentOcc.length>0">
-          <v-card 
+        <v-col>
+          <v-card
             width="100%" 
             height="100%"
-            outlined 
-            style="border-color: #C3C3C3;" 
-            class="py-4 px-8 text-h6 font-weight-regular d-flex justify-center align-center"
-          >
-            There are no current Occurrences!
+            class="text-h6 font-weight-regular shadow">
+              <v-row no-gutters style="height: 100%;">
+                <template v-for="(occ, index) in currentOcc" >
+                  <v-col :key="occ.id" v-if="currentOcc.length>0">
+                    <v-hover
+                      v-slot="{ hover }"
+                    >
+                      <v-card 
+                        width="100%" 
+                        height="100%"
+                        class="py-4 px-8 text-h6  font-weight-regular"
+                        flat
+                        @click="openCollectionType(occ)"
+                        :color="hover ? 'hover' : ''"
+                      >
+                        <v-list-item three-line class="pa-0">
+                          <v-list-item-content>
+                            <div class="mb-2">
+                              <v-icon size="xxx-large" color="primary">
+                                {{ getIcon(occ.course.type) }}
+                              </v-icon>
+                            </div>
+                            <div class="mt-4">
+                              {{ occ.year }} - {{ occ.course.name }}
+                            </div>
+                            <!--
+                            <div class="mt-3">
+                              {{ occ.classes.map(c => c.name).toString() }}
+                            </div>-->
+                          </v-list-item-content>
+                          <div style="align-self: baseline;">
+                            <v-btn 
+                              icon
+                              small
+                              @click="copy(occ.id)" 
+                              onclick="event.stopPropagation()" 
+                            >
+                              <v-icon size="large">
+                                mdi-content-copy
+                              </v-icon>
+                            </v-btn>
+                            <v-btn 
+                              icon
+                              small
+                              @click="remove(occ.id)"
+                              onclick="event.stopPropagation()" 
+                            >
+                              <v-icon size="large">
+                                mdi-delete
+                              </v-icon>
+                            </v-btn>
+                          </div>
+                        </v-list-item>
+                        <v-card class="mt-4" outlined style="background-color: transparent;">
+                          <v-row class="pa-2 align-center" >
+                            <v-col class="d-flex justify-center">
+                              <v-progress-circular
+                                :rotate="-90"
+                                :size="40"
+                                :width="15"
+                                :value="(new Date() - new Date(occ.startDate))/(new Date(occ.endDate) - new Date(occ.startDate))*100" 
+                                color="primary"
+                              >
+                              </v-progress-circular>
+                            </v-col>
+                            <v-divider vertical class="my-4"/>
+                            <v-col class="d-flex justify-center">
+                              <v-icon size="xx-large" color="primary">
+                                mdi-human-male-board
+                              </v-icon>
+                              <span class="ml-1">
+                                {{ "classes" in occ && occ.classes != null ? occ.classes.length : '0' }}
+                              </span>
+                            </v-col>
+                            <v-divider vertical class="my-4" />
+                            <v-col class="d-flex justify-center">
+                              <v-icon size="xx-large" color="primary">
+                                mdi-account-group
+                              </v-icon>
+                              <span class="ml-1">
+                                {{ "classes" in occ && occ.classes != null ? occ.classes.flatMap(c => c.students.data).length : "0" }}
+                              </span>
+                            </v-col>
+                          </v-row>
+                        </v-card>
+
+                        <!--
+                          <v-progress-linear 
+                            color="primary" 
+                            height="10" 
+                            :value="(new Date() - new Date(occ.startDate))/(new Date(occ.endDate) - new Date(occ.startDate))*100" 
+                            rounded
+                          ></v-progress-linear>-->
+                        
+                      </v-card>
+                    </v-hover>
+                  </v-col>
+                  <v-divider 
+                    :key="occ.id" 
+                    vertical 
+                    style="z-index:10" 
+                    v-if="index < currentOcc.length-1">
+                  </v-divider>
+                </template>
+                <v-col v-if="!currentOcc.length>0">
+                  <v-card 
+                    width="100%" 
+                    height="100%"
+                    class="py-4 px-8 text-h6 font-weight-regular d-flex justify-center align-center shadow"
+                  >
+                    There are no current Occurrences!
+                  </v-card>
+                </v-col>
+              </v-row>
           </v-card>
         </v-col>
+
+            
       </v-row>
 
       <v-row>
         <v-col cols="6">
           <v-card 
             width="100%" 
-            outlined 
-            style="border-color: #C3C3C3;" 
-            class="pt-3"
+            class="pt-3 shadow"
             min-height="247px"
           >
             <v-card-title class="py-0 mb-2">
@@ -148,7 +160,7 @@
               :search="draftSearch" 
               @click:row="openCollectionType" 
               :loading="loading"
-              class="d-flex flex-column justify-space-between"
+              class="d-flex flex-column justify-space-between my-data-table"
               style="min-height:201px"
             >
               <template v-slot:item.courseType="{ item }">
@@ -186,9 +198,7 @@
         <v-col cols="6">
           <v-card 
             width="100%" 
-            outlined 
-            style="border-color: #C3C3C3;" 
-            class="pt-3"
+            class="pt-3 shadow"
             min-height="247px"
           >
             <v-card-title class="py-0 mb-2">
@@ -218,7 +228,7 @@
               :search="pastSearch" 
               @click:row="openCollectionType" 
               :loading="loading"
-              class="d-flex flex-column justify-space-between"
+              class="d-flex flex-column justify-space-between my-data-table"
               style="min-height:201px"
             >
               <template v-slot:item.courseType="{ item }">
@@ -397,6 +407,10 @@ export default {
 
 
 <style scoped>
+
+.my-data-table tbody tr:hover {
+  cursor: pointer;
+}
 
 #occurrences>>>.v-data-footer__select {
   height: 40px;

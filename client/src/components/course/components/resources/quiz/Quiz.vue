@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-row class="mb-1 mt-0">
         <v-col class="py-0" :cols="isSMsmaller ? 12 : 7">
-          <v-card outlined>
+          <v-card :outlined="!isEvaluative" :class="isEvaluative || isQuestion ? 'shadow' : ''">
 
             <Header :resource="resource" v-if="!isEvaluative && !isQuestion"/>
 
@@ -44,12 +44,12 @@
           class="py-0 pl-0"
           :class="isSMsmaller ? 'd-none' : 'd-block'"
         >
-          <Img :question="getQuestion"/>
+          <Img :question="getQuestion" :isEvaluative="isEvaluative" :isQuestion="isQuestion"/>
         </v-col>
       </v-row>
       <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
         <v-col cols="12">
-          <Img :question="getQuestion"/>
+          <Img :question="getQuestion" :isEvaluative="isEvaluative" :isQuestion="isQuestion"/>
         </v-col>
       </v-row>
     </v-container>

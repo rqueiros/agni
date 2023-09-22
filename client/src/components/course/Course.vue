@@ -4,7 +4,7 @@
       <CourseMenu @onResourceClicked="setResource" />
       <Resource v-if="resource" :resource="resource" ref="resource" />
       <div v-else>
-        <Profile v-if="isResource != 0" :resource="isResource" :type="type" />
+        <Profile :resource="isResource" :type="type" />
       </div>
     </v-sheet>
   </div>

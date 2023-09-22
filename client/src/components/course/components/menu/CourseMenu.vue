@@ -195,7 +195,28 @@
           </v-btn>
         </template>
       </v-treeview>
+  
     </v-navigation-drawer>
+
+    <div 
+      v-if="isStudent"
+      class="pa-3 d-flex justify-center" 
+      style="width:24.9%; z-index: 100; position:fixed; bottom:0;background-color: white;">
+      <v-btn icon class="mr-3" large @click="logoutAction">
+        <v-icon>
+          mdi-logout
+        </v-icon>
+      </v-btn>
+      <v-btn icon class="ml-3" large disabled>
+        <v-icon>
+          mdi-white-balance-sunny
+        </v-icon>
+        <!--
+        <v-icon>
+          mdi-moon-waning-crescent
+        </v-icon>-->
+      </v-btn>
+    </div>
 
     <DialogCourse 
       :dialogItem="dialogCourseItem" 
@@ -214,7 +235,7 @@
 
 <script>
 import { bus } from "@/main.js";
-import { mapGetters, mapMutations, mapState } from "vuex";
+import { mapActions, mapGetters, mapMutations, mapState } from "vuex";
 
 import Editable from "../../../gerneral/Editable.vue";
 import DialogCourse from "./DialogCourse.vue";
@@ -292,6 +313,14 @@ export default {
       "editableInput",
       "addConditionByLMId"
     ]),
+    ...mapActions("main", [
+      "logout"
+    ]),
+
+    logoutAction(){
+      this.logout()
+      this.$router.push({ name: "Login" });
+    },
 
     //--------------------------Student-----------------------------------------
     setCourse() {

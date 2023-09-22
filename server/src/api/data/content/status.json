@@ -6,7 +6,16 @@
         "answer": {
             "populate": {
                 "code":true,
-                "questions":true
+                "questions":{
+                    "populate":{
+                        "answer":true,
+                        "question":{
+                            "populate":{
+                                "answers":true
+                            }
+                        }
+                    }
+                }
             }
         },
         "evaluative":true

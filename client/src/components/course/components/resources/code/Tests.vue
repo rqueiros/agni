@@ -1,6 +1,6 @@
 <template>
   <div id="tests">
-    <v-card outlined>
+    <v-card :outlined="!isEvaluative" :class="isEvaluative ? 'shadow' : ''">
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
         <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">
@@ -521,6 +521,10 @@ export default {
     resource: Object,
     errors: Array,
     logs: Array,
+    isEvaluative: {
+      type: Boolean,
+      default: () => false
+    },
   },
 
   data: () => ({
@@ -872,6 +876,10 @@ export default {
 
 
 <style scoped>
+#tests>>>.v-data-table__empty-wrapper {
+  display: none;
+}
+
 #tests >>> td {
   padding: 0 4px;
 }

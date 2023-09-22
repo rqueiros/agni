@@ -37,6 +37,7 @@
         mobile-breakpoint="0" 
         no-data-text="" 
         :hide-default-footer="isAuthor"
+        class="my-data-table"
       >
         <template v-slot:top>
           <v-list-item>
@@ -152,12 +153,65 @@
     </v-card>
 
     <SelectDialog 
+      v-if="isAuthor"
       :dialog="dialog" 
       :type="'evaluatives'" 
       :already="resource.evaluatives.map(e => e.id)"
       @addExistingevaluatives="addExistingEval" 
       @closeSelectDialog="dialog=false"
     />
+
+    <ExternalDialog
+      :dialog="externalDialog"
+      @addExternalExercises="addExternalExercises" 
+      @closeSelectDialog="externalDialog=false"
+    />
+
+    <!--
+    <v-dialog v-model="externalDialog" max-width="500">
+      <v-card>
+        <v-card-title>
+          Choose an external library
+        </v-card-title>
+
+        <v-card-text class="pb-2">
+          <v-container>
+            <v-row>
+              <v-col>
+                <v-hover
+                  v-slot="{ hover }"
+                >
+                  <v-card 
+                    class="d-flex justify-center align-center hover" 
+                    :style="hover ? 'background-color:#eeeeee' : ''"
+                  >
+                    <v-img :src="require('@/assets/authorkit.png')" height="150" contain></v-img>
+                  </v-card>
+                </v-hover>
+              </v-col>
+              <v-col>
+                <v-card style="min-height:100%" class="d-flex justify-center align-center">
+                  Other Repositories will come
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+
+        <v-card-actions class="pt-0">
+          <v-spacer></v-spacer>
+          <v-btn text @click="externalDialog=false">
+            Cancel
+          </v-btn>
+          <v-btn text>
+            Add
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    -->
+
+
   </div>
 
 </template>
@@ -169,13 +223,15 @@ import { mapActions, mapGetters, mapMutations } from "vuex";
 
 import Editable from "../../../../gerneral/Editable.vue";
 import SelectDialog from "../../../../gerneral/SelectDialog.vue";
+import ExternalDialog from "../../../../gerneral/ExternalDialog/ExternalDialog.vue";
 
 export default {
   name: "Evaluatives",
 
   components: {
     Editable,
-    SelectDialog
+    SelectDialog,
+    ExternalDialog
   },
 
   props: {
@@ -188,6 +244,7 @@ export default {
   data() {
     return {
       dialog: false,
+      externalDialog : false,
       headers: {
         student: [
           { text: "#", align: "start", sortable: true, value: "id" },
@@ -211,13 +268,17 @@ export default {
       addEvaluativeMenu: [
         { title: "NEW QUIZ", value: "quiz" },
         { title: "NEW PROG. EX.", value: "prog" },
-        { title: "SELECT", value: "select" }
+        { title: "SELECT", value: "select" },
+        { title: "EXTERNAL", value: "external" }
       ],
     };
   },
 
   created() {
     this.loadResource;
+    bus.$on("addExternalExercises", payload => {
+      this.addExternalExercises(payload);
+    });
   },
 
   computed: {
@@ -286,9 +347,12 @@ export default {
       "deleteEvaluative",
       "editableInput",
       "addQuizByLessonId",
-      "addProgExByLessonId"
+      "addProgExByLessonId",
+      "addExternalExByLessonId"
     ]),
-    ...mapActions("main", ["fetchCollectionTypes", "addExistingEvaluatives"]),
+    ...mapActions("main", [
+      "addExistingEvaluatives"
+    ]),
     addEvaluative(type) {
       if (type == "quiz") {
         this.addQuizByLessonId(this.resource.id)
@@ -296,6 +360,8 @@ export default {
         this.addProgExByLessonId(this.resource.id)
       } else if (type == "select") {
         this.dialog = true;
+      } else if (type == "external"){
+        this.externalDialog = true;
       }
     },
     play(value) {
@@ -305,6 +371,10 @@ export default {
       await this.addExistingEvaluatives([this.resource.id, ids])
       this.dialog=false
     },
+    addExternalExercises(exercises){
+      this.externalDialog = false
+      this.addExternalExByLessonId([this.resource.id, exercises])
+    }, 
     getColor(status) {
       status = +status;
       if (status == 0) return "red";
@@ -316,4 +386,8 @@ export default {
 </script>
 
 
-<style scoped></style>
+<style scoped>
+.my-data-table tbody tr:hover {
+  cursor: pointer;
+}
+</style>

@@ -4,7 +4,7 @@
 
       <v-row dense>
         <v-col style="max-width: 500px;" cols="12">
-          <v-card outlined style="border-color: #C3C3C3;" class="pa-2">
+          <v-card class="pa-2 shadow">
             <v-radio-group 
               v-model="collectionType" 
               row 
@@ -23,9 +23,7 @@
         <v-col style="max-width: 190px;" cols="12">
           <v-card 
             width="100%" 
-            outlined 
-            style="border-color: #C3C3C3;" 
-            class="pa-2"
+            class="pa-2 shadow"
           >
             <v-radio-group row hide-details inline class="ma-0 pa-0">
               <v-checkbox 
@@ -48,12 +46,12 @@
         <v-col cols="12" style="max-width: 330px;">
           <v-text-field 
             v-model="search" 
-            style="background-color: white;" 
+            style="background-color: white; height:100%" 
             prepend-inner-icon="mdi-magnify" 
             label="Search"
             single-line 
-            class="pa-0 ma-0" 
-            outlined 
+            solo
+            class="pa-0 ma-0 shadow"  
             dense
             hide-details
           />
@@ -70,9 +68,9 @@
 
       <v-row dense>
         <v-col>
-          <v-card width="100%" outlined style="border-color: #C3C3C3;">
+          <v-card width="100%" class="shadow">
             <v-data-table 
-              class="" 
+              class="my-data-table" 
               :itemsPerPage="itemsPerPage" 
               :headers="headers[collectionType]" 
               :items="items"
@@ -94,6 +92,9 @@
                 <v-chip :color="color[item.state]" label outlined>
                   {{ item.state }}
                 </v-chip>
+              </template>
+              <template v-slot:item.question="{ item }">
+                {{ item.question.substring(3, item.question.length-4) }}
               </template>
               <template v-slot:item.actions="{ item }">
 
@@ -517,4 +518,11 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.my-data-table tbody tr:hover {
+  cursor: pointer;
+}
+#content>>>.v-text-field.v-text-field--solo:not(.v-text-field--solo-flat) > .v-input__control > .v-input__slot{
+  box-shadow: none;
+}
+</style>

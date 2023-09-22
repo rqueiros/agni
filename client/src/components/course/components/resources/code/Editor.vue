@@ -228,6 +228,7 @@
     </span>
 
     <v-card-actions v-if="isStudent" class="d-flex flex-wrap">
+      <!--
       <v-btn 
         color="error" 
         class="mb-2" 
@@ -236,7 +237,7 @@
         :medium="getButtonMediumSize=='medium'"
       >
         BACK TO SHEET<v-icon right dark> mdi-autorenew </v-icon>
-      </v-btn>
+      </v-btn>-->
       <v-btn
         color="success"
         class="mb-2"

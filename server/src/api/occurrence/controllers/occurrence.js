@@ -75,6 +75,22 @@ const occurrenceStructure = {
                   populate: {
                      condition:true,
                      name: true,
+                     expositives: {
+                        populate: {
+                           name: true,
+                           type: true,
+                        }
+                     },
+                     evaluatives: {
+                        populate: {
+                           name: true,
+                           content: {
+                              populate: {
+                                 type: true,
+                              }
+                           }
+                        }
+                     }
                   }
                }
             }
@@ -121,15 +137,34 @@ module.exports = createCoreController(uid, () => {
 
       async findOne(ctx) {
          const { id } = ctx.request.params
-         const entity = await strapi.entityService.findOne(uid, id, {
-            ...ctx.query,
-            populate: occurrenceStructure,
-         });
-         if (ctx.state.user.id != entity.author.id) {
-            return ctx.badRequest("You are not allowed to see this occurrence")
+         const populate = ctx.query.populate
+         if (typeof (populate) == "string" && populate == "stat"){
+            const occ = await strapi.entityService.findOne(uid, id, {
+               populate: {classes : true},
+            });
+            let evaluatives = []
+            let students = []
+            for (let classe of occ.classes){
+               let ctx2 = ctx
+               ctx2.request.body = {data:JSON.stringify(classe.id)}
+               ctx2.request.params = {id:JSON.stringify(classe.id)}
+               ctx2.params = {id:JSON.stringify(classe.id)}
+               let s = await strapi.controller("api::class.class").findOne(ctx2)
+               students.push(...s.students)
+               evaluatives.push(...s.evaluatives)
+            }
+            return {students:students, evaluatives:evaluatives}
+         } else {
+            const entity = await strapi.entityService.findOne(uid, id, {
+               ...ctx.query,
+               populate: occurrenceStructure,
+            });
+            if (ctx.state.user.id != entity.author.id) {
+               return ctx.badRequest("You are not allowed to see this occurrence")
+            }
+            const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
+            return this.transformResponse(sanitizedEntity)
          }
-         const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
-         return this.transformResponse(sanitizedEntity)
       },
 
       async create(ctx) {

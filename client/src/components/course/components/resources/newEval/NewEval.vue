@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-row>
         <v-col :cols="isSMsmaller ? 12 : 7">
-          <v-card outlined height="200px">
+          <v-card :outlined="!isEvaluative" :class="isEvaluative ? 'shadow' : ''" height="200px">
             <v-row no-gutters style="height: 100%;">
               <v-col cols="6">
                 <v-btn 
@@ -41,6 +41,13 @@ import { mapGetters, mapMutations } from 'vuex';
 
 export default {
   name: "NewEval",
+
+  props: {
+    isEvaluative: {
+      type: Boolean,
+      default: () => false
+    },
+  },
 
   computed: {
     ...mapGetters("main", ["getEvaluative"]),

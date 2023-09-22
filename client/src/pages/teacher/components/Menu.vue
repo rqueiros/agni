@@ -3,7 +3,10 @@
     app
     permanent
     :width="$vuetify.breakpoint.lgAndUp ? '180' : '70'"
-    style="height: 100%; background-color: #DDDDDD;"
+    style="height: 100%;"
+    color="teacherMenu"
+    id="navDrawer"
+    class="elevation-1"
   >
     <v-list nav minimum-height="10" dense>
       <v-list-item-group color="primary">
@@ -14,18 +17,20 @@
           @click="setPage('account,Account')"
         >
           <v-sheet
-            style="background-color: #DDDDDD;"
+            color="teacherMenu"
           >
             <v-avatar 
               color="primary" 
-              class="profile" 
+              class="profile pa-2" 
               :size="$vuetify.breakpoint.lgAndUp ? '45' : '35'"
             >
               <v-icon 
+              v-if="(!'image' in getUser) || getUser.image == null || ('data' in getUser.image &&  getUser.image.data == null)"
                 style="color:white !important"
                 :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'large'"
               >{{ getIcon("account") }}
               </v-icon>
+              <v-img v-else :src="imageData" contain></v-img>
             </v-avatar>
             <div 
               class="mt-1" 
@@ -90,11 +95,28 @@
         <v-divider></v-divider>
       </v-list-item-group>
     </v-list>
+    <v-spacer></v-spacer>
+    <div class="pa-2 d-flex justify-center" :class="$vuetify.breakpoint.lgAndUp ? '' : 'flex-column-reverse align-center'">
+      <v-btn icon class="ma-1" :large="$vuetify.breakpoint.lgAndUp" :medium="!$vuetify.breakpoint.lgAndUp" @click="logoutAction">
+        <v-icon>
+          mdi-logout
+        </v-icon>
+      </v-btn>
+      <v-btn icon class="ma-1" :large="$vuetify.breakpoint.lgAndUp" :medium="!$vuetify.breakpoint.lgAndUp" @click="toggleTheme">
+        <v-icon>
+          mdi-white-balance-sunny
+        </v-icon>
+        <!--
+        <v-icon>
+          mdi-moon-waning-crescent
+        </v-icon>-->
+      </v-btn>
+    </div>
   </v-navigation-drawer>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapMutations, mapState } from "vuex";
 import { bus } from "@/main.js";
 
 export default {
@@ -104,29 +126,70 @@ export default {
 
   data: () => ({
     resource: "home,Home",
+    imageData: null,
   }),
 
   created() {
     bus.$emit("changePage", this.resource);
+    this.loadImage()
+  },
+
+  watch:{
+    'user.image'(){
+      this.loadImage()
+    }
   },
 
   computed: {
-    ...mapGetters("main",["getUsername"]),
+    ...mapState("main", { user: state => state.user }),
+    ...mapGetters("main",["getUsername", "getUser", "getDomain"]),
     ...mapGetters("style",["getIcon"])
   },
 
   methods: {
+    ...mapMutations("main", ["logout"]),
     setPage(resource) {
       localStorage.setItem('contentCollType', "");
       this.resource = resource;
       bus.$emit("changePage", this.resource);
-    }
+    },
+    logoutAction(){
+      this.logout()
+      this.$router.push({ name: "Login" });
+    },
+    loadImage() {
+      this.imageData = null
+      if (this.getUser && "image" in this.getUser) {
+        const file = this.getUser.image;
+        if (file != null && !("data" in file && file.data == null) && "url" in file) {
+          this.imageData =
+            this.getDomain +
+            this.getUser.image.url;
+        } else if (file != null && "name" in file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            this.imageData = reader.result;
+          };
+          if (file) {
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    },
+    toggleTheme() {
+        this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+    },
   }
 };
 </script>
 
-<style>
+<style scoped>
 .menu_links:hover {
   cursor: pointer;
+}
+
+#navDrawer>>>.v-navigation-drawer__content{
+  display: flex;
+  flex-direction: column;
 }
 </style>

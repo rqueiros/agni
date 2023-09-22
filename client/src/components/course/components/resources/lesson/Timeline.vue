@@ -1,6 +1,6 @@
 <template>
   <div id="timeline">
-    <v-card outlined v-if="resource != undefined">
+    <v-card :outlined="!isExpositive" :class="isExpositive ? 'shadow' : ''" v-if="resource != undefined">
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
         <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">
@@ -139,7 +139,11 @@ export default {
     resource: {
       type: Object,
       default: () => {}
-    }
+    },
+    isExpositive: {
+      type: Boolean,
+      default: () => false
+    },
   },
 
   data: () => ({
