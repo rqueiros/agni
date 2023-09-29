@@ -84,19 +84,19 @@ module.exports = {
           label2 += " - Type:" + c.type
         }
         c.goals.forEach(goal => {
-          if (goal.toLowerCase().includes(search.toLowerCase())){
+          if (goal.goal && goal.toLowerCase().includes(search.toLowerCase())){
             label2 += " - Goal:" + goal.goal
           }
         });
         c.modules.forEach(module => {
-          if (module.name.toLowerCase().includes(search.toLowerCase())){
+          if (module.name && module.name.toLowerCase().includes(search.toLowerCase())){
             label2 += " - Module:"+ module.name
           }
           module.lessons.forEach(lesson => {
-            if (lesson.name.toLowerCase().includes(search.toLowerCase())){
+            if (lesson.name && lesson.name.toLowerCase().includes(search.toLowerCase())){
               label2 += " - Lesson:"+ lesson.name
             }
-            if (lesson.description.toLowerCase().includes(search.toLowerCase())){
+            if (lesson.description && lesson.description.toLowerCase().includes(search.toLowerCase())){
               label2 += " - Lesson:"+ lesson.description
             }
           })
@@ -127,7 +127,7 @@ module.exports = {
         e.icon = e.type
         e.label = e.name
         let label2 = ""
-        if (e.type.toLowerCase().includes(search.toLowerCase)){
+        if (e.type && e.type.toLowerCase().includes(search.toLowerCase)){
           label2 += "Type:" + e.type
         }
         e.label2 = label2
@@ -213,11 +213,13 @@ module.exports = {
         let que = q.question.substring(3,q.question.length-4)
         q.label = que.length > 30 ? que.substring(0,30)+" ..." : que
         let label2 = ""
-        q.answers.forEach(answer => {
-          if(answer.answer.toLowerCase().includes(search.toLowerCase())){
-            label2 += " - Answer:"+answer.answer
-          }
-        })
+        if (q.answers){
+          q.answers.forEach(answer => {
+            if(answer.answer && answer.answer.toLowerCase().includes(search.toLowerCase())){
+              label2 += " - Answer:"+answer.answer
+            }
+          })
+        }
         q.label2 = label2.length > 40 ? label2.substring(3,40) + " ..." : label2.substring(3,label2.length)
         return q
       })

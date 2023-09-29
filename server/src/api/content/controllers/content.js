@@ -20,6 +20,7 @@ module.exports = {
           .service("api::content.content")
           .getNewContents();
       } else {
+        console.log("here")
         data = await strapi
           .service("api::content.content")
           .get(ctx.query);

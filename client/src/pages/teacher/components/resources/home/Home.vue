@@ -76,7 +76,7 @@
                                 :headers="headers.evaluatives"
                                 dense
                                 :items="occurrencesStat[slide[0].id].evaluatives.slice(0,3)"
-                              >
+                              > <!--  -->
                                 <template v-slot:header="{ }">
                                   <tr>
                                     <td colspan="2" class="text-caption font-weight-bold" style="color:gray">
@@ -291,8 +291,6 @@ export default {
           dic[occ.id] = data
         }
         this.occurrencesStat = dic
-
-        console.log(this.occurrencesStat)
 
         this.occurrences = newList;
         this.loading = false;

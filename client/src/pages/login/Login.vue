@@ -19,11 +19,42 @@
             <v-tab-item>
               <v-card class="px-4">
                 <v-card-text>
+                  <v-row>
+                    <v-col>
+                      <v-btn
+                        class="ma-2"
+                        outlined
+                        color="black"
+                        @click="studentLogin"
+                        width="100%"
+                      >
+                        Student Guest
+                        <v-icon dark right> mdi-login-variant </v-icon>
+                      </v-btn>
+                    </v-col>
+                    <v-col>
+                      <v-btn
+                        class="ma-2"
+                        outlined
+                        color="black"
+                        @click="teacherlogin"
+                        width="100%"
+                      >
+                        Teacher Guest
+                        <v-icon dark right> mdi-login-variant </v-icon>
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+            <v-tab-item>
+              <v-card class="px-4">
+                <v-card-text>
                   <v-form ref="loginForm" v-model="valid" lazy-validation>
                     <v-row>
                       <v-col cols="12">
                         <v-text-field
-                          disabled
                           v-model="loginEmail"
                           :rules="loginEmailRules"
                           label="E-mail"
@@ -32,7 +63,6 @@
                       </v-col>
                       <v-col cols="12">
                         <v-text-field
-                          disabled
                           v-model="loginPassword"
                           :append-icon="show1 ? 'eye' : 'eye-off'"
                           :rules="[rules.required, rules.min]"
@@ -44,46 +74,20 @@
                           @click:append="show1 = !show1"
                         ></v-text-field>
                       </v-col>
-                      <!--<v-col class="d-flex" cols="12" sm="6" xsm="12"> </v-col>-->
                       <v-spacer></v-spacer>
-
-                      <v-col class="d-flex" cols="12" sm="4" xsm="12">
+                      <v-col class="d-flex" cols="12" xsm="12" align-end>
                         <v-btn
                           class="ma-2"
                           outlined
-                          color="black"
-                          :disabled="!valid"
-                          @click="studentLogin"
-                        >
-                          Student LOGIN
-                          <v-icon dark right> mdi-login-variant </v-icon>
-                        </v-btn>
-                      </v-col>
-
-                      <v-col class="d-flex" cols="12" sm="4" xsm="12">
-                        <v-btn
-                          class="ma-2"
-                          outlined
-                          color="black"
-                          :disabled="!valid"
-                          @click="teacherlogin"
-                        >
-                          Teacher LOGIN
-                          <v-icon dark right> mdi-login-variant </v-icon>
-                        </v-btn>
-                      </v-col>
-
-                      <v-col class="d-flex" cols="12" sm="4" xsm="12" align-end>
-                        <v-btn
-                          class="ma-2"
-                          outlined
-                          color="black"
-                          :disabled="valid"
+                          :color="loginError ? 'error' : 'black'"
                           @click="validate"
                         >
                           LOGIN
                           <v-icon dark right> mdi-login-variant </v-icon>
                         </v-btn>
+                        <div class="d-flex align-center ma-2" style="color:red" v-if="loginError">
+                          Invalid login credentials. Please try again.
+                        </div>
                       </v-col>
                     </v-row>
                   </v-form>
@@ -102,6 +106,7 @@
                           label="First Name"
                           maxlength="20"
                           required
+                          disabled
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" sm="6" md="6">
@@ -111,6 +116,7 @@
                           label="Last Name"
                           maxlength="20"
                           required
+                          disabled
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12">
@@ -119,6 +125,7 @@
                           :rules="emailRules"
                           label="E-mail"
                           required
+                          disabled
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12">
@@ -129,9 +136,10 @@
                           :type="show1 ? 'text' : 'password'"
                           name="input-10-1"
                           label="Password"
-                          hint="At least 8 characters"
+                          hint="At least 6 characters"
                           counter
                           @click:append="show1 = !show1"
+                          disabled
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12">
@@ -145,6 +153,7 @@
                           label="Confirm Password"
                           counter
                           @click:append="show1 = !show1"
+                          disabled
                         ></v-text-field>
                       </v-col>
                       <v-spacer></v-spacer>
@@ -188,12 +197,15 @@ export default {
     },
     async teacherlogin() {
       await this.login(["teachertest@gmail.com", "1234567"]);
-      //await this.login(["EvalUser", "123456"])
     },
-    validate() {
+    async validate() {
       if (this.$refs.loginForm.validate()) {
-        this.setLogin()
-        this.$router.push({ name: "Student" });
+        try {
+          this.loginError=false
+          await this.login([this.loginEmail, this.loginPassword]);
+        } catch(err){
+          this.loginError=true
+        }
       }
     },
     reset() {
@@ -204,9 +216,12 @@ export default {
     }
   },
   data: () => ({
+    loginError:false,
+
     dialog: true,
     tab: 0,
     tabs: [
+      { name: "Guest", icon: "mdi-account-box-multiple"},
       { name: "Login", icon: "mdi-account" },
       { name: "Register", icon: "mdi-account-outline" }
     ],
@@ -217,8 +232,8 @@ export default {
     email: "",
     password: "",
     verify: "",
-    loginPassword: "12345678",
-    loginEmail: "guest@esmad.ipp.pt",
+    loginPassword: "",
+    loginEmail: "",
     loginEmailRules: [
       v => !!v || "Required",
       v => /.+@.+\..+/.test(v) || "E-mail must be valid"
@@ -231,7 +246,7 @@ export default {
     show1: false,
     rules: {
       required: value => !!value || "Required.",
-      min: v => (v && v.length >= 8) || "Min 8 characters"
+      min: v => (v && v.length >= 6) || "Min 6 characters"
     }
   })
 };

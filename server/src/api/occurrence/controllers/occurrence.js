@@ -150,8 +150,21 @@ module.exports = createCoreController(uid, () => {
                ctx2.request.params = {id:JSON.stringify(classe.id)}
                ctx2.params = {id:JSON.stringify(classe.id)}
                let s = await strapi.controller("api::class.class").findOne(ctx2)
+               if (evaluatives.length == 0){
+                  evaluatives.push(...s.evaluatives)
+               } else {
+                  let numStudentsCurrent = students.length
+                  let numStudentsNew = s.students.length
+                  for (let ev of s.evaluatives){
+                     let evaluative = evaluatives.find(e => e.id == ev.id)
+                     let correctPercCurrent = evaluative.correctPerc
+                     let correctPercNew = ev.correctPerc
+                     let correctPerc = (numStudentsCurrent*correctPercCurrent + numStudentsNew*correctPercNew)/(numStudentsCurrent+numStudentsNew)
+                     
+                     evaluative.correctPerc = correctPerc
+                  }
+               }
                students.push(...s.students)
-               evaluatives.push(...s.evaluatives)
             }
             return {students:students, evaluatives:evaluatives}
          } else {

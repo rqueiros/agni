@@ -53,7 +53,7 @@
               </v-expansion-panel-header>
               <v-expansion-panel-content>
                 <v-list dense>
-                  <v-list-group v-model="active" no-action>
+                  <v-list-group v-model="active.active1" no-action>
                     <template v-slot:activator>
                       <v-list-item-content>
                         <v-list-item-title>Question 1</v-list-item-title>
@@ -65,7 +65,7 @@
                       </v-list-item-content>
                     </v-list-item>
                   </v-list-group>
-                  <v-list-group v-model="active" no-action>
+                  <v-list-group v-model="active.active2" no-action>
                     <template v-slot:activator>
                       <v-list-item-content>
                         <v-list-item-title>Question 2</v-list-item-title>
@@ -77,7 +77,7 @@
                       </v-list-item-content>
                     </v-list-item>
                   </v-list-group>
-                  <v-list-group v-model="active" no-action>
+                  <v-list-group v-model="active.active3" no-action>
                     <template v-slot:activator>
                       <v-list-item-content>
                         <v-list-item-title>Question 3</v-list-item-title>
@@ -89,7 +89,7 @@
                       </v-list-item-content>
                     </v-list-item>
                   </v-list-group>
-                  <v-list-group v-model="active" no-action>
+                  <v-list-group v-model="active.active4" no-action>
                     <template v-slot:activator>
                       <v-list-item-content>
                         <v-list-item-title>Question 4</v-list-item-title>
@@ -184,6 +184,12 @@ export default {
       message:"",
       name:"",
       email:"",
+    },
+    active:{
+      active1:false,
+      active2:false,
+      active3:false,
+      active4:false,
     },
     messageSubjects:["Feedback", "Question", "Other"]
   }),
