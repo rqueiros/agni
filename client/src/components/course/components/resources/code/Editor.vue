@@ -17,6 +17,7 @@
         </span>        
       </div>
 
+
       <div v-if="isEvaluative" :class="getSmallTextClass" class="pb-2">
         <!--
         <Editable

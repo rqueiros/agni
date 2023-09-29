@@ -1635,7 +1635,6 @@ const main = {
 
     //--------------------------Student---------------------------------------
     async setProgress(state, payload) {
-      console.log(payload)
       const auth = "Bearer " + state.getters.getJWT;
       const evaluative = state.getters.getEvaluativeByStatus(payload);
       const url =
@@ -2156,7 +2155,60 @@ const main = {
         evaluative.questions.push((question))
       }
       //this.commit("main/setChanged", false);
-    }
+    },
+
+    async generateProgrammingEx(state, [description, id]){
+      const auth = "Bearer " + state.getters.getJWT;
+      const url = serverData.domain + serverData.gpt;
+      axios.post(
+        url,
+        { data: {"description":description} },
+        {
+          headers: {
+            Authorization: auth
+          }
+        })
+        .then(response => {
+          let data = response.data.function_call.arguments
+          let json = JSON.parse(data)
+          console.log(json)
+
+          if (state.getters.getCourses.length>0){
+            let evaluative = state.getters.getCourse.children.flatMap(c => c.children).flatMap(l => l.evaluatives).find(e => e.id == id)
+            evaluative.statement = json.statement
+            evaluative.solution = json.solution
+            let tests = []
+            for (let test of json.tests){
+              test.new = true
+              if (test.input.endsWith(")") && !test.input.startsWith("(")){
+                const firstIndex = test.input.indexOf("(");
+                const lastIndex = test.input.lastIndexOf(")");
+                test.input = test.input.substring(firstIndex + 1, lastIndex);
+              }
+              tests.push(test)
+            }
+            evaluative.tests = tests
+          } else {
+            let evaluative = state.getters.getEvaluative
+            evaluative.name = json.name
+            evaluative.statement = json.statement
+            evaluative.solution = json.solution
+            let tests = []
+            for (let test of json.tests){
+              test.new = true
+              if (test.input.endsWith(")") && !test.input.startsWith("(")){
+                const firstIndex = test.input.indexOf("(");
+                const lastIndex = test.input.lastIndexOf(")");
+                test.input = test.input.str.substring(firstIndex + 1, lastIndex).replace(/,/g, "");
+              }
+              tests.push(test)
+            }
+            evaluative.tests = tests
+          }
+        });
+    },
+
+
   },
   modules: {}
 };
@@ -2179,7 +2231,8 @@ const serverData = {
   occurrences: "/api/occurrences",
   classes: "/api/classes",
   students: "/api/students",
-  content: "/api/content"
+  content: "/api/content",
+  gpt: "/api/gpt",
 };
 
 export default new Vuex.Store({

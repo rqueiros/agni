@@ -184,6 +184,41 @@
       :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
         : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
     >
+      <v-sheet class="mb-2 mt-n4 rounded-lg" :color="openChat ? '#74AA9C' : ''">
+        <div style="font-size: 14px;" class="text-center pt-1" v-if="openChat">
+          Describe the Exercise you want to generate.
+        </div>
+        <div class="d-flex align-center px-1">
+          <v-avatar
+            color="#74AA9C"
+            size="40"
+            class="elevation-1 gptAvater mr-1"
+            @click="openChat = !openChat"
+          >
+            <img
+              :src="require('@/assets/chatgptLogo.png')"
+              contain
+              height="10px" 
+              class="pa-1"
+            >          
+          </v-avatar>
+          <div v-if="openChat" class="flex-grow-1">
+            <v-textarea
+              v-model="chat"
+              dense
+              auto-grow
+              rows="1"
+              outlined
+              hide-details
+              full-width
+              style="font-size: 12px; line-height: 0.5"
+            ></v-textarea>
+          </div>
+        </div>
+        <div v-if="openChat">
+          <v-btn text width="100%" @click="generateExercise">Generate</v-btn>
+        </div>
+      </v-sheet>
       <!--
       <Editable
         placeholder="Exercise statement"
@@ -216,7 +251,7 @@
 <script>
 import { bus } from "@/main.js";
 
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapMutations, mapActions } from "vuex";
 import Editable from "../../../gerneral/Editable.vue";
 
 import { VueEditor } from "vue2-editor";
@@ -238,6 +273,9 @@ export default {
 
   data() {
     return {
+      openChat:false,
+      chat:"",
+
       customToolbar: [
         ["bold", "italic", "underline"],
         [
@@ -286,6 +324,7 @@ export default {
 
   methods: {
     ...mapMutations("main",["editableInput"]),
+    ...mapActions("main", ["generateProgrammingEx"]),
     /*html_escape(html_str) {
       const lines = html_str.split("\n");
       return lines;
@@ -294,11 +333,18 @@ export default {
       const lesson = this.getLessonByResourceId(this.resource.id);
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
+    generateExercise(){
+      this.generateProgrammingEx([this.chat, this.resource.id])
+    },
   },
 };
 </script>
 
 <style scoped>
+.gptAvater:hover{
+  cursor: pointer;
+}
+
 /* Text editor */
 #header>>>.ql-toolbar.ql-snow{
   border:none;

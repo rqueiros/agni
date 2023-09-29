@@ -11,6 +11,15 @@ module.exports = {
     },
     {
       method: 'POST',
+      path: '/gpt',
+      handler: 'content.sendPrompt',
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+    {
+      method: 'POST',
       path: '/sendEmail',
       handler: 'content.sendEmail',
       config: {
