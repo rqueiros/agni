@@ -1,7 +1,11 @@
 <template>
   <div id="tests">
-    <v-card :outlined="!isEvaluative" :class="isEvaluative ? 'shadow' : ''">
-      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
+    <v-card 
+      :outlined="!isEvaluative" 
+      :class="isEvaluative ? 'shadow' : ''" 
+      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+    >
+      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'">
         <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">
             TESTS
@@ -33,6 +37,7 @@
         :hide-default-footer="isTeacher"
         :no-data-text="isTeacher ? '' : 'There are no Tests'"
         disable-sort
+        :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
       >
         <template v-slot:top>
           <div class="py-1 d-flex" :class="!isMDsmaller ? '' : isMD ? 'px-2' : 'px-4'">
@@ -463,6 +468,7 @@
             :small="getButtonMediumSize=='small'" 
             :medium="getButtonMediumSize=='medium'"
             class="mb-2 mt-1"
+            color="button"
           >
             <v-icon>mdi-plus</v-icon> Add Test
           </v-btn>

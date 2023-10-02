@@ -5,7 +5,8 @@
       <v-row dense>
         <v-col cols="12">
           <v-card 
-            outlined 
+            flat
+            color="boxes" 
             class="px-4 py-1 shadow"
           >
             <v-row dense>
@@ -70,6 +71,7 @@
                   height="50px"
                   class="pl-0 pr-4 mr-0 d-flex justify-center align-center" 
                   flat
+                  color="boxes"
                 >
                   <v-icon>
                     {{ getIcon(getOccurrence.courses.type) }}
@@ -93,6 +95,7 @@
                   class="px-2 d-flex justify-center align-center"
                   @click="chooseCourse" 
                   flat
+                  color="boxes"
                 >
                   <v-icon>mdi-plus</v-icon><span>Course</span>
                 </v-card>
@@ -111,7 +114,7 @@
             </v-row>
             <v-row dense v-if="!(getOccurrence.courses == null)">
               <v-col v-if="coursePreview == 'Calender'" class="pb-3">
-                <v-card flat style="height:250px">
+                <v-card flat style="height:250px" color=boxes>
                   <v-calendar 
                     id="calender" 
                     ref="calendar" 
@@ -166,7 +169,12 @@
                 </v-card>
               </v-col>
               <v-col v-if="coursePreview == 'Structure'" class="pb-3">
-                <v-card outlined height="250px" style="overflow-y:auto;">
+                <v-card 
+                  outlined 
+                  height="250px" 
+                  style="overflow-y:auto;" 
+                  color="boxes"
+                >
                   <v-treeview 
                     dense 
                     open-on-click 
@@ -211,6 +219,7 @@
                     width="150px" 
                     style="position:absolute; top:5px; right:5px" 
                     class="pa-1"
+                    color="boxes"
                   >
                     <v-row dense>
                       <v-col cols="2" class="d-flex align-center">
@@ -248,8 +257,15 @@
 
       <v-row dense>
         <v-col cols=12>
-          <v-expansion-panels class="shadow" v-if="getOccurrence.classes.length > 0" v-model="panel">
-            <v-expansion-panel>
+          <v-expansion-panels 
+            class="shadow" 
+            v-if="getOccurrence.classes.length > 0" 
+            v-model="panel" 
+            flat
+          >
+            <v-expansion-panel  
+              :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+            >
               <v-expansion-panel-header>
                 <div>
                   Classes
@@ -264,6 +280,7 @@
                         outlined 
                         min-height="320px" 
                         max-width="600px"
+                        :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
                       >
                         <v-list-item>
                           <v-list-item-content>
@@ -315,7 +332,7 @@
                           :loading="loading"
                           :itemsPerPage="itemsPerPage" 
                           class="d-flex flex-column" 
-                          style="min-height:270px"
+                          style="min-height:270px; background-color:transparent"
                         >
                           <template v-slot:item.name="{ item }">
                             <Editable 
@@ -362,6 +379,7 @@
                                 @click="addStudentByClassId(cla.id)" 
                                 width="100%" 
                                 class="mt-1"
+                                color="button"
                               >
                                 <v-icon>mdi-plus</v-icon>Student
                               </v-btn>
@@ -377,6 +395,7 @@
                       style="min-width:0" 
                       width="36px"
                       height="29%"
+                      color="button"
                     >
                       <v-icon>mdi-import</v-icon>
                     </v-btn>
@@ -386,6 +405,7 @@
                       height="69%"
                       width="36px"
                       @click="addClass"
+                      color="button"
                     >
                       <div style="transform: rotate(90deg)">
                         <v-icon>mdi-plus</v-icon>
@@ -397,7 +417,7 @@
               </v-expansion-panel-content>
             </v-expansion-panel>
           </v-expansion-panels>
-          <v-card v-else class="pa-4 shadow">
+          <v-card v-else class="pa-4 shadow" color="boxes">
             <div class="d-flex">
               <v-btn 
                 @click="importDialog = true"
@@ -422,8 +442,10 @@
 
       <v-row dense v-if="new Date(startDate) < new Date()">
         <v-col cols=12>
-          <v-expansion-panels class="shadow">
-            <v-expansion-panel>
+          <v-expansion-panels class="shadow" flat>
+            <v-expansion-panel 
+              :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+            >
               <v-expansion-panel-header>
                 Statistics
               </v-expansion-panel-header>
@@ -439,7 +461,10 @@
                   <v-container fluid class="pa-0">
                     <v-row>
                       <v-col>
-                        <v-card outlined>
+                        <v-card 
+                          outlined 
+                          :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+                        >
                           <v-data-table 
                             :headers="headers.studentPerf" 
                             :items="studentsStatTable" 
@@ -448,6 +473,7 @@
                             hide-default-footer 
                             dense 
                             height="200px"
+                            style="background-color:transparent"
                           >
                             <template v-slot:top>
                               <div class="pb-1">
@@ -469,7 +495,10 @@
                         </v-card>
                       </v-col>
                       <v-col>
-                        <v-card outlined>
+                        <v-card 
+                          outlined 
+                          :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+                        >
                           <v-data-table 
                             :headers="headers.evaluativesTable" 
                             :items="evaluativesStatTable" 
@@ -478,6 +507,7 @@
                             hide-default-footer 
                             dense 
                             height="200px"
+                            style="background-color:transparent"
                           >
                             <template v-slot:top>
                               <div class="pb-1">
@@ -505,13 +535,29 @@
                   <v-container fluid class="pa-0">
                     <v-row v-if="classeStatTable.length == 1">
                       <v-col>
-                        <v-card outlined>
-                          <v-data-table :headers="headers.studentPerf" :items="classeStatTable[0].students"
-                            item-key="name" :search="search" hide-default-footer dense height="200px">
+                        <v-card 
+                          outlined
+                          :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+                        >
+                          <v-data-table 
+                            :headers="headers.studentPerf" 
+                            :items="classeStatTable[0].students"
+                            item-key="name" 
+                            :search="search" 
+                            hide-default-footer 
+                            dense 
+                            height="200px"
+                            style="background-color:transparent"
+                          >
                             <template v-slot:top>
                               <div class="pb-1">
-                                <v-text-field outlined dense hide-details v-model="search"
-                                  label="Search Students"></v-text-field>
+                                <v-text-field 
+                                  outlined 
+                                  dense 
+                                  hide-details 
+                                  v-model="search"
+                                  label="Search Students"
+                                ></v-text-field>
                               </div>
                             </template>
                             <template v-slot:item.performance="{ item }">
@@ -523,9 +569,20 @@
                         </v-card>
                       </v-col>
                       <v-col>
-                        <v-card outlined>
-                          <v-data-table :headers="headers.evaluativesTable" :items="classeStatTable[0].evaluatives"
-                            item-key="name" :search="search" hide-default-footer dense height="200px">
+                        <v-card 
+                          outlined 
+                          :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+                        >
+                          <v-data-table 
+                            :headers="headers.evaluativesTable" 
+                            :items="classeStatTable[0].evaluatives"
+                            item-key="name" 
+                            :search="search" 
+                            hide-default-footer 
+                            dense 
+                            height="200px"
+                            style="background-color:transparent"
+                          >
                             <template v-slot:top>
                               <div class="pb-1">
                                 <v-text-field outlined dense hide-details v-model="search"
@@ -543,15 +600,30 @@
                     </v-row>
                     <div v-else>
                       <v-row>
-                        <v-col v-for="classe of classeStatTable" :key="classe.id" class="d-flex justify-center text-h6 pb-0">
+                        <v-col 
+                          v-for="classe of classeStatTable" 
+                          :key="classe.id" 
+                          class="d-flex justify-center text-h6 pb-0"
+                        >
                           {{classe.name}}:
                         </v-col>
                       </v-row>
                       <v-row>
                         <v-col v-for="classe of classeStatTable" :key="classe.id">
-                          <v-card outlined>
-                            <v-data-table :headers="headers.studentPerf" :items="classe.students" item-key="name"
-                              :search="search" hide-default-footer height="200px" dense>
+                          <v-card 
+                            outlined 
+                            :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+                          >
+                            <v-data-table 
+                              :headers="headers.studentPerf" 
+                              :items="classe.students" 
+                              item-key="name"
+                              :search="search" 
+                              hide-default-footer 
+                              height="200px" 
+                              dense
+                              style="background-color:transparent"
+                            >
                               <template v-slot:top>
                                 <div class="pb-1">
                                   <v-text-field outlined dense hide-details v-model="search"
@@ -569,13 +641,29 @@
                       </v-row>
                       <v-row>
                         <v-col v-for="classe of classeStatTable" :key="classe.id">
-                          <v-card outlined>
-                            <v-data-table :headers="headers.evaluativesTable" :items="classe.evaluatives" item-key="name"
-                              :search="search" hide-default-footer dense height="200px">
+                          <v-card 
+                            outlined 
+                            :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+                          >
+                            <v-data-table 
+                              :headers="headers.evaluativesTable" 
+                              :items="classe.evaluatives" 
+                              item-key="name"
+                              :search="search" 
+                              hide-default-footer 
+                              dense 
+                              height="200px"
+                              style="background-color:transparent"
+                            >
                               <template v-slot:top>
                                 <div class="pb-1">
-                                  <v-text-field outlined dense hide-details v-model="search"
-                                    label="Search Exercises"></v-text-field>
+                                  <v-text-field 
+                                    outlined 
+                                    dense 
+                                    hide-details 
+                                    v-model="search"
+                                    label="Search Exercises"
+                                  ></v-text-field>
                                 </div>
                               </template>
                               <template v-slot:item.correctPerc="{ item }">
@@ -594,16 +682,20 @@
                   <v-container class="pa-0" fluid>
                     <v-row>
                       <v-col>
-                        <v-card outlined>
+                        <v-card 
+                          outlined 
+                          :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+                          class="pa-1"
+                        >
                           <v-row dense>
                             <v-col class="text-center">
                               Performance:
                             </v-col>
-                            <v-divider vertical></v-divider>
+                            <v-divider vertical class="mt-1"></v-divider>
                             <v-col class="text-center">
                               Exercises correct:
                             </v-col>
-                            <v-divider vertical></v-divider>
+                            <v-divider vertical class="mt-1"></v-divider>
                             <v-col class="text-center">
                               Engagement:
                             </v-col>
@@ -614,13 +706,13 @@
                                 {{ studentStat.performance }}
                               </span>
                             </v-col>
-                            <v-divider vertical></v-divider>
+                            <v-divider vertical class="mb-1"></v-divider>
                             <v-col class="text-center pt-0">
                               <span :style="getColor(studentStat.correctExercises)">
                                 {{ studentStat.correctExercises }}%
                               </span>
                             </v-col>
-                            <v-divider vertical></v-divider>
+                            <v-divider vertical class="mb-1"></v-divider>
                             <v-col class="text-center pt-0">
                               <span :style="getColor(studentStat.engagment)">
                                 {{ studentStat.engagment }}
@@ -632,10 +724,22 @@
                     </v-row>
                     <v-row>
                       <v-col>
-                        <v-card outlined>
-                          <v-data-table :headers="headers.studentStat" :items="studentStat.statuses"
-                            :expanded.sync="expanded" show-expand item-key="id" :search="search" hide-default-footer dense
-                            height="250px">
+                        <v-card 
+                          outlined 
+                          :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+                        >
+                          <v-data-table 
+                            :headers="headers.studentStat" 
+                            :items="studentStat.statuses"
+                            :expanded.sync="expanded" 
+                            show-expand 
+                            item-key="id" 
+                            :search="search" 
+                            hide-default-footer 
+                            dense
+                            height="250px"
+                            style="background-color:transparent"
+                          >
                             <template v-slot:top>
                               <div class="pb-1">
                                 <v-text-field outlined dense hide-details v-model="search"

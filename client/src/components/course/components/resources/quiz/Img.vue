@@ -2,7 +2,11 @@
   <div id="img" v-if="('image' in question && question.image!=null &&
           (question.image.data != null || 'name' in question.image)) || 
           isAuthor">
-    <v-card :outlined="!isEvaluative" :class="isEvaluative || isQuestion ? 'shadow' : ''">
+    <v-card 
+      :outlined="!isEvaluative" 
+      :class="isEvaluative || isQuestion ? 'shadow' : ''"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+    >
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
         <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">

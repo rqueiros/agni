@@ -1,5 +1,9 @@
 <template>
-  <v-card class="mx-auto" outlined>
+  <v-card 
+    class="mx-auto" 
+    :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}" 
+    outlined
+  >
     <v-list-item>
       <v-list-item-content>
         <v-list-item-title :class="getTitleClass">

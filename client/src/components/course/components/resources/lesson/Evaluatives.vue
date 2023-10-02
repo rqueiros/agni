@@ -1,7 +1,10 @@
 <template>
   <div id="evaluatives" v-if="evaluativesNotNull || isAuthor">
 
-    <v-card style="border-left: 0; border-right: 0;">
+    <v-card 
+      style="border-left: 0; border-right: 0;"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+    >
       <!--Author-->
       <v-menu offset-y v-if="!evaluativesNotNull && isAuthor">
         <template v-slot:activator="{ on, attrs }">
@@ -12,6 +15,7 @@
             height="36px"
             :small="getButtonMediumSize=='small'" 
             :medium="getButtonMediumSize=='medium'"
+            color="button"
           >
             <v-icon>mdi-plus</v-icon>Add Exercises
           </v-btn>
@@ -38,6 +42,7 @@
         no-data-text="" 
         :hide-default-footer="isAuthor"
         class="my-data-table"
+        style="background-color: transparent;"
       >
         <template v-slot:top>
           <v-list-item>
@@ -78,6 +83,7 @@
                 :small="getButtonMediumSize=='small'" 
                 :medium="getButtonMediumSize=='medium'"
                 class="mb-2 mt-1"
+                color="button"
               >
                 <v-icon>mdi-plus</v-icon>Add Exercises
               </v-btn>

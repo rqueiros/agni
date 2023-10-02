@@ -4,6 +4,7 @@
       :flat="!expositivesNotNull && isAuthor"
       class="d-flex rounded-0 align-center" 
       style="border-left: 0; border-right: 0;"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
     >
       <!--Author-->
       <v-menu offset-y v-if="!expositivesNotNull && isAuthor">
@@ -15,6 +16,7 @@
             :medium="getButtonMediumSize=='medium'"
             height="36px"
             width="100%" 
+            color="button"
           >
             <v-icon>mdi-plus</v-icon>Add Expositive
           </v-btn>
@@ -32,8 +34,10 @@
         </v-list>
       </v-menu>
 
-      <v-layout column>
-        <v-app-bar flat color="white" class="pa-0" height="40">
+      <v-layout 
+        column 
+      >
+        <v-app-bar flat color="boxes" class="pa-0" height="40">
           <v-tabs
             style="width:calc(100% - 44px)"
             center-active
@@ -105,6 +109,7 @@
                 v-on="on" 
                 :small="getButtonMediumSize=='small'" 
                 :medium="getButtonMediumSize=='medium'"
+                color="button"
               >
                 <v-icon>mdi-plus</v-icon>
               </v-btn>

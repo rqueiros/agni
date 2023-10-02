@@ -7,12 +7,15 @@
             v-if="occurrences.length>0"
             width="100%"
             class="fill-height shadow"
+            color="boxes"
           >
             <v-carousel
               cycle
               height="100%"
               hide-delimiter-background
-              show-arrows-on-hover
+              :show-arrows="occurrences.length>1"
+              :show-arrows-on-hover="occurrences.length>1"
+              :hide-delimiters="!(occurrences.length>1)"
             >
               <v-carousel-item 
                 v-for="(slide, index) in occurrences" 
@@ -26,12 +29,22 @@
                       class="occurrence" 
                       @click="openCollectionType(slide[0])"
                     >
-                      <v-card flat :color="hover ? 'hover' : ''" class="pa-4" height="100%">
-                        <v-row>
-                          <v-col>
-                            <v-icon size="xxx-large" color="primary" class="mr-4">
+                      <v-card 
+                        flat :color="hover ? 'hover' : 'boxes'" 
+                        class="pa-4" 
+                        height="100%"
+                      >
+                        <v-row style="min-height:88px">
+                          <v-col cols="3" class="d-flex align-center">
+                            <v-icon 
+                              size="xxx-large" 
+                              color="primary" 
+                            >
                               {{ getIcon(slide[0].course.type) }}
-                            </v-icon> {{ slide[0].year }} - {{ slide[0].course.name }}
+                            </v-icon> 
+                          </v-col>
+                          <v-col class="text-h6 d-flex align-center">
+                            {{ slide[0].year }} - {{ slide[0].course.name }}
                           </v-col>
                         </v-row>
                         <v-row>
@@ -43,9 +56,12 @@
                             />
                           </v-col>
                         </v-row>
-                        <v-row>
+                        <v-row style="min-height:150px">
                           <v-col>
-                            <v-card outlined class="mb-6" style="background-color: transparent;">
+                            <v-card 
+                              outlined 
+                              style="background-color: transparent;"
+                            >
                               <v-data-table
                                 hide-default-footer
                                 hide-default-header
@@ -57,7 +73,10 @@
                               >
                                 <template v-slot:header="{ }">
                                   <tr>
-                                    <td colspan="2" class="text-caption font-weight-bold" style="color:gray">
+                                    <td 
+                                      colspan="2" 
+                                      class="text-caption font-weight-bold" 
+                                    >
                                       <div class="pa-1 px-3">
                                         Top 3 - Students Performance
                                       </div>
@@ -65,9 +84,26 @@
                                     </td>
                                   </tr>
                                 </template>
+                                <template v-slot:item="{ item }">
+                                  <tr 
+                                    @mouseover="hover = true" 
+                                    @mouseleave="hover = false" 
+                                    :style="{backgroundColor: hover ? 'transparent' : ''}"
+                                  >
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.performance }}</td>
+                                  </tr>
+                                </template>
                               </v-data-table>
                             </v-card>
-                            <v-card outlined class="mt-6" style="background-color: transparent;">
+                          </v-col>
+                        </v-row>
+                        <v-row style="min-height:150px">
+                          <v-col>
+                            <v-card 
+                              outlined 
+                              style="background-color: transparent;"
+                            >
                               <v-data-table
                                 hide-default-footer
                                 hide-default-header
@@ -76,15 +112,28 @@
                                 :headers="headers.evaluatives"
                                 dense
                                 :items="occurrencesStat[slide[0].id].evaluatives.slice(0,3)"
-                              > <!--  -->
+                              >
                                 <template v-slot:header="{ }">
                                   <tr>
-                                    <td colspan="2" class="text-caption font-weight-bold" style="color:gray">
+                                    <td 
+                                      colspan="2" 
+                                      class="text-caption font-weight-bold" 
+                                    >
                                       <div class="pa-1 px-3">
                                         Top 3 - Exercise Correctness
                                       </div>
                                       <v-divider ></v-divider>
                                     </td>
+                                  </tr>
+                                </template>
+                                <template v-slot:item="{ item }">
+                                  <tr 
+                                    @mouseover="hover = true" 
+                                    @mouseleave="hover = false" 
+                                    :style="{backgroundColor: hover ? 'transparent' : ''}"
+                                  >
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.correctPerc }}</td>
                                   </tr>
                                 </template>
                               </v-data-table>
@@ -94,7 +143,10 @@
                       </v-card>
                     </v-col>
                   </v-hover>
-                  <v-divider vertical v-if="occurrences[0].length > 1" style="z-index:10"/>
+                  <v-divider 
+                    vertical 
+                    v-if="occurrences[0].length > 1" style="z-index:10"
+                  />
                   <v-hover v-if="occurrences[0].length > 1"
                     v-slot="{ hover }"
                   >
@@ -102,12 +154,22 @@
                       class="occurrence" 
                       @click="openCollectionType(slide[1])"
                     >
-                      <v-card flat :color="hover ? 'hover' : ''" class="pa-4" height="100%">
-                        <v-row>
-                          <v-col>
-                            <v-icon size="xxx-large" color="primary" class="mr-4">
+                      <v-card 
+                        flat :color="hover ? 'hover' : 'boxes'" 
+                        class="pa-4" 
+                        height="100%"
+                      >
+                        <v-row style="min-height:88px">
+                          <v-col cols="3" class="d-flex align-center">
+                            <v-icon 
+                              size="xxx-large" 
+                              color="primary" 
+                            >
                               {{ getIcon(slide[1].course.type) }}
-                            </v-icon> {{ slide[1].year }} - {{ slide[1].course.name }}
+                            </v-icon> 
+                          </v-col>
+                          <v-col class="text-h6 d-flex align-center">
+                            {{ slide[1].year }} - {{ slide[1].course.name }}
                           </v-col>
                         </v-row>
                         <v-row>
@@ -119,11 +181,13 @@
                             />
                           </v-col>
                         </v-row>
-                        <v-row>
+                        <v-row style="min-height:150px">
                           <v-col>
-                            <v-card outlined class="mb-6" style="background-color: transparent;">
+                            <v-card 
+                              outlined 
+                              style="background-color: transparent;"
+                            >
                               <v-data-table
-                                class="mb-4"
                                 hide-default-footer
                                 hide-default-header
                                 no-data-text="No Students associated"
@@ -134,7 +198,10 @@
                               >
                                 <template v-slot:header="{ }">
                                   <tr>
-                                    <td colspan="2" class="text-caption font-weight-bold" style="color:gray">
+                                    <td 
+                                      colspan="2" 
+                                      class="text-caption font-weight-bold" 
+                                    >
                                       <div class="pa-1 px-3">
                                         Top 3 - Students Performance
                                       </div>
@@ -142,9 +209,26 @@
                                     </td>
                                   </tr>
                                 </template>
+                                <template v-slot:item="{ item }">
+                                  <tr 
+                                    @mouseover="hover = true" 
+                                    @mouseleave="hover = false" 
+                                    :style="{backgroundColor: hover ? 'transparent' : ''}"
+                                  >
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.performance }}</td>
+                                  </tr>
+                                </template>
                               </v-data-table>
                             </v-card>
-                            <v-card outlined class="mt-6" style="background-color: transparent;">
+                          </v-col>
+                        </v-row>
+                        <v-row style="min-height:150px">
+                          <v-col>
+                            <v-card 
+                              outlined 
+                              style="background-color: transparent;"
+                            >
                               <v-data-table
                                 hide-default-footer
                                 hide-default-header
@@ -156,12 +240,25 @@
                               >
                                 <template v-slot:header="{ }">
                                   <tr>
-                                    <td colspan="2" class="text-caption font-weight-bold" style="color:gray">
+                                    <td 
+                                      colspan="2" 
+                                      class="text-caption font-weight-bold" 
+                                    >
                                       <div class="pa-1 px-3">
                                         Top 3 - Exercise Correctness
                                       </div>
                                       <v-divider ></v-divider>
                                     </td>
+                                  </tr>
+                                </template>
+                                <template v-slot:item="{ item }">
+                                  <tr 
+                                    @mouseover="hover = true" 
+                                    @mouseleave="hover = false" 
+                                    :style="{backgroundColor: hover ? 'transparent' : ''}"
+                                  >
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.correctPerc }}</td>
                                   </tr>
                                 </template>
                               </v-data-table>
@@ -177,6 +274,7 @@
 
           </v-card>
           <v-card
+            color="boxes"
             v-else
             width="100%"
             class="fill-height d-flex justify-center align-center text-h6 font-weight-regular shadow"
@@ -188,11 +286,16 @@
           <v-card
             width="100%"
             class="fill-height shadow"
+            color="boxes"
           >
-            <v-card-title class="text-center d-flex justify-center">
-              New Contents! Check it out!
+            <v-card-title class="d-flex justify-center align-center">
+              <v-icon class="mr-2" color="#FFD700" large>
+                mdi-lightbulb-on
+              </v-icon>
+                New Content !!
             </v-card-title>
             <v-data-table
+              style="background-color: transparent;"
               class="px-4 my-data-table"
               :items="newContents"
               :headers="newContentHeaders"
@@ -201,10 +304,20 @@
               item-key="tableKey"
               @click:row="openCollectionType2" 
             >
-              <template v-slot:item.type="{ item }">
-                <v-icon>
-                  {{ getIcon(item.type) }}
-                </v-icon>
+            <template v-slot:item="{ item, index }">
+              <tr 
+                @click="openCollectionType2(item)"
+                @mouseover="setHover(index, true)" 
+                @mouseleave="setHover(index, false)" 
+                :style="{backgroundColor: isHovered[index] ? $vuetify.theme.currentTheme.hover : ''}"
+              >
+                <td>
+                  <v-icon>
+                    {{ getIcon(item.type) }}
+                  </v-icon>
+                </td>
+                <td>{{ item.name }}</td>
+              </tr>
               </template>
             </v-data-table>
           </v-card>
@@ -222,19 +335,13 @@ export default {
   name:"home",
 
   data: () => ({
+    hover: false,
+    isHovered: {}, 
+
     occurrences: [],
     occurrencesStat:{},
 
-    newContents: [
-      {type:"Course", name:"Bla Bla Course"}, 
-      {type:"Contest", name:"New Contest Na"},
-      {type:"quiz", name:"This is a quiz"},
-      {type:"blank", name:"Prog ex"},
-      {type:"blank", name:"Calculator"},
-      {type:"question", name:"Here comes a question that could be longer?"},
-      {type:"pdf", name:"Intro JS"},
-      {type:"blank", name:"Calculator"},
-    ],
+    newContents: [],
     newContentHeaders:[
       { text: "", value: "type", align: "center" },
       { text: "Name", value: "name", align: "start" },
@@ -257,7 +364,7 @@ export default {
   },
 
   computed:{
-    ...mapGetters("style", ["getIcon"])
+    ...mapGetters("style", ["getIcon"]),
   },
 
   methods: {
@@ -267,6 +374,9 @@ export default {
       "fetchNewContents",
       "fetchOccStat"
     ]),
+    setHover(index, value) {
+      this.$set(this.isHovered, index, value);
+    },
     async setItems(){
       const parameters = {
         collectionType: "occurrences"

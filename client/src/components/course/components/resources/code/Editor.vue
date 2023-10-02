@@ -36,7 +36,8 @@
         <vue-editor 
           v-if="isAuthor"
           v-model="resource.statement" 
-          style="background-color: rgb(226, 226, 226); border-radius: 8px;"
+          :style="{backgroundColor : $vuetify.theme.currentTheme.editable}"
+          style="border-radius: 8px;"
           :editor-toolbar="customToolbar"
           placeholder="Evaluative statement"
         />
@@ -83,6 +84,7 @@
         v-if="isAuthor && !showSkeleton && !hasSkeleton"
         @click="showSkeleton = true"
         height="36px"
+        color="button"
       >
         <v-icon>mdi-plus</v-icon>Skeleton
       </v-btn>
@@ -130,6 +132,7 @@
           width="100%"
           v-if="isAuthor && !contextLen"
           @click="addContextByEvaluativeId(resource.id)"
+          color="button"
         >
         <v-icon>mdi-plus</v-icon>Context
       </v-btn>
@@ -192,6 +195,7 @@
               @click="addContextByEvaluativeId(resource.id)"
               :small="getButtonMediumSize=='small'" 
               :medium="getButtonMediumSize=='medium'"
+              color="button"
             >
               <v-icon> mdi-plus </v-icon>
             </v-btn>

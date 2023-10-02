@@ -184,7 +184,7 @@
       :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
         : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
     >
-      <v-sheet class="mb-2 mt-n4 rounded-lg" :color="openChat ? '#74AA9C' : ''">
+      <v-sheet class="mb-2 mt-n4 rounded-lg" :color="openChat ? '#74AA9C' : 'boxes'">
         <div style="font-size: 14px;" class="text-center pt-1" v-if="openChat">
           Describe the Exercise you want to generate.
         </div>
@@ -230,7 +230,8 @@
       />-->
       <vue-editor 
         v-model="resource.statement" 
-        style="background-color: rgb(226, 226, 226); border-radius: 8px;"
+        style="border-radius: 8px;"
+        :style="{backgroundColor : $vuetify.theme.currentTheme.editable}"
         :editor-toolbar="customToolbar"
         placeholder="Evaluative statement"
       />

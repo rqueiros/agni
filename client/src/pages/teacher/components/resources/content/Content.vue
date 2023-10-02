@@ -4,7 +4,7 @@
 
       <v-row dense>
         <v-col style="max-width: 500px;" cols="12">
-          <v-card class="pa-2 shadow">
+          <v-card class="pa-2 shadow" color="boxes">
             <v-radio-group 
               v-model="collectionType" 
               row 
@@ -24,6 +24,7 @@
           <v-card 
             width="100%" 
             class="pa-2 shadow"
+            color="boxes"
           >
             <v-radio-group row hide-details inline class="ma-0 pa-0">
               <v-checkbox 
@@ -46,7 +47,8 @@
         <v-col cols="12" style="max-width: 330px;">
           <v-text-field 
             v-model="search" 
-            style="background-color: white; height:100%" 
+            style="height:100%"
+            :background-color="$vuetify.theme.currentTheme.boxes"
             prepend-inner-icon="mdi-magnify" 
             label="Search"
             single-line 
@@ -68,7 +70,7 @@
 
       <v-row dense>
         <v-col>
-          <v-card width="100%" class="shadow">
+          <v-card width="100%" class="shadow" color="boxes">
             <v-data-table 
               class="my-data-table" 
               :itemsPerPage="itemsPerPage" 
@@ -77,6 +79,7 @@
               :search="search" 
               @click:row="openCollectionType" 
               :loading="loading"
+              style="background-color: transparent;"
             >
               <template v-slot:item.my="{ item }">
                 <v-chip :color="color.my" outlined v-if="item.my">
@@ -525,4 +528,6 @@ export default {
 #content>>>.v-text-field.v-text-field--solo:not(.v-text-field--solo-flat) > .v-input__control > .v-input__slot{
   box-shadow: none;
 }
+
+
 </style>

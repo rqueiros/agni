@@ -9,7 +9,7 @@
     class="elevation-1"
   >
     <v-list nav minimum-height="10" dense>
-      <v-list-item-group color="primary">
+      <v-list-item-group color="primary" v-model="selectedMenu">
         <v-list-item
           class="menu_links pt-2"
           title="Account"
@@ -25,7 +25,7 @@
               :size="$vuetify.breakpoint.lgAndUp ? '45' : '35'"
             >
               <v-icon 
-              v-if="(!'image' in getUser) || getUser.image == null || ('data' in getUser.image &&  getUser.image.data == null)"
+                v-if="(!'image' in getUser) || getUser.image == null || ('data' in getUser.image &&  getUser.image.data == null)"
                 style="color:white !important"
                 :size="$vuetify.breakpoint.lgAndUp ? 'x-large' : 'large'"
               >{{ getIcon("account") }}
@@ -96,20 +96,31 @@
       </v-list-item-group>
     </v-list>
     <v-spacer></v-spacer>
-    <div class="pa-2 d-flex justify-center" :class="$vuetify.breakpoint.lgAndUp ? '' : 'flex-column-reverse align-center'">
-      <v-btn icon class="ma-1" :large="$vuetify.breakpoint.lgAndUp" :medium="!$vuetify.breakpoint.lgAndUp" @click="logoutAction">
+    <div 
+      class="pa-2 d-flex justify-center" 
+      :class="$vuetify.breakpoint.lgAndUp ? '' : 'flex-column-reverse align-center'"
+    >
+      <v-btn 
+        icon 
+        class="ma-1" 
+        :large="$vuetify.breakpoint.lgAndUp" 
+        :medium="!$vuetify.breakpoint.lgAndUp" 
+        @click="logoutAction"
+      >
         <v-icon>
           mdi-logout
         </v-icon>
       </v-btn>
-      <v-btn icon class="ma-1" :large="$vuetify.breakpoint.lgAndUp" :medium="!$vuetify.breakpoint.lgAndUp" @click="toggleTheme">
+      <v-btn 
+        icon 
+        class="ma-1" 
+        :large="$vuetify.breakpoint.lgAndUp" 
+        :medium="!$vuetify.breakpoint.lgAndUp" 
+        @click="toggleTheme"
+      >
         <v-icon>
           mdi-white-balance-sunny
         </v-icon>
-        <!--
-        <v-icon>
-          mdi-moon-waning-crescent
-        </v-icon>-->
       </v-btn>
     </div>
   </v-navigation-drawer>
@@ -127,6 +138,7 @@ export default {
   data: () => ({
     resource: "home,Home",
     imageData: null,
+    selectedMenu:"home",
   }),
 
   created() {
@@ -137,6 +149,13 @@ export default {
   watch:{
     'user.image'(){
       this.loadImage()
+    },
+    selectedMenu(newValue, oldValue){
+      if (newValue == null){
+        this.$nextTick(() => {
+          this.selectedMenu = oldValue
+        })
+      }
     }
   },
 
@@ -150,6 +169,7 @@ export default {
     ...mapMutations("main", ["logout"]),
     setPage(resource) {
       localStorage.setItem('contentCollType', "");
+      localStorage.setItem("menuItem", resource.split(",")[0])
       this.resource = resource;
       bus.$emit("changePage", this.resource);
     },

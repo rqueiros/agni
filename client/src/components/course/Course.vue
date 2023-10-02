@@ -1,6 +1,6 @@
 <template>
   <div id="course" ref="course">
-    <v-sheet class="rounded">
+    <v-sheet class="rounded" color="boxes">
       <CourseMenu @onResourceClicked="setResource" />
       <Resource v-if="resource" :resource="resource" ref="resource" />
       <div v-else>

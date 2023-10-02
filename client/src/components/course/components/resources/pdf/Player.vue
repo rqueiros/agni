@@ -1,12 +1,12 @@
 <template>
-  <div id="player">
+  <div id="player" >
     <div>
       <v-badge 
         tile 
         class="badge"
         v-if="isAuthor" 
         overlap
-        color="#f5f5f5"
+        color="button"
         @click.native="deletePDF" 
         icon="mdi-close" 
       >
@@ -28,7 +28,7 @@
       color="orange"
     ></v-rating>-->
 
-    <div class="text-center pa-1">
+    <div class="text-center pa-1" :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
       <v-pagination 
         v-model="page" 
         :length="pageCount" 

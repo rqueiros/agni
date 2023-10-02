@@ -25,9 +25,10 @@
       v-model="drawer"
       :width="isSMsmaller ? '50%' : '25%'"
       :permanent="!isSMsmaller"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
     >
       <v-sheet 
-        color="grey lighten-4" 
+        color="studentMenuAccout" 
         class="px-4 py-3"
         :class="getSmallTextClass"
       >
@@ -79,6 +80,7 @@
                 @click="addButton(item.contentType, item.parentId)"
                 :small="getButtonMediumSize=='small'"
                 :medium="getButtonMediumSize=='medium'"
+                color="button"
               >
                 <v-icon :label="item">mdi-plus</v-icon>
                 {{ item.name }}

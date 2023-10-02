@@ -7,7 +7,9 @@
           <v-card
             width="100%" 
             height="100%"
-            class="text-h6 font-weight-regular shadow">
+            class="text-h6 font-weight-regular shadow"
+            color=boxes
+          >
               <v-row no-gutters style="height: 100%;">
                 <template v-for="(occ, index) in currentOcc" >
                   <v-col :key="occ.id" v-if="currentOcc.length>0">
@@ -20,7 +22,7 @@
                         class="py-4 px-8 text-h6  font-weight-regular"
                         flat
                         @click="openCollectionType(occ)"
-                        :color="hover ? 'hover' : ''"
+                        :color="hover ? 'hover' : 'boxes'"
                       >
                         <v-list-item three-line class="pa-0">
                           <v-list-item-content>
@@ -116,6 +118,7 @@
                     width="100%" 
                     height="100%"
                     class="py-4 px-8 text-h6 font-weight-regular d-flex justify-center align-center shadow"
+                    color="boxes"
                   >
                     There are no current Occurrences!
                   </v-card>
@@ -133,6 +136,7 @@
             width="100%" 
             class="pt-3 shadow"
             min-height="247px"
+            color="boxes"
           >
             <v-card-title class="py-0 mb-2">
               <v-row no-gutters>
@@ -161,7 +165,7 @@
               @click:row="openCollectionType" 
               :loading="loading"
               class="d-flex flex-column justify-space-between my-data-table"
-              style="min-height:201px"
+              style="min-height:201px; background-color: transparent;"
             >
               <template v-slot:item.courseType="{ item }">
                 <v-icon>
@@ -200,6 +204,7 @@
             width="100%" 
             class="pt-3 shadow"
             min-height="247px"
+            color="boxes"
           >
             <v-card-title class="py-0 mb-2">
               <v-row no-gutters>
@@ -229,7 +234,7 @@
               @click:row="openCollectionType" 
               :loading="loading"
               class="d-flex flex-column justify-space-between my-data-table"
-              style="min-height:201px"
+              style="min-height:201px; background-color: transparent;"
             >
               <template v-slot:item.courseType="{ item }">
                 <v-icon>

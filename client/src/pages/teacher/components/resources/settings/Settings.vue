@@ -4,7 +4,9 @@
       <v-row dense>
         <v-col>
           <v-expansion-panels flat class="shadow">
-            <v-expansion-panel>
+            <v-expansion-panel 
+              :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+            >
               <v-expansion-panel-header>
                 System Information
               </v-expansion-panel-header>
@@ -47,12 +49,14 @@
       <v-row dense>
         <v-col>
           <v-expansion-panels flat class="shadow">
-            <v-expansion-panel>
+            <v-expansion-panel 
+              :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+            >
               <v-expansion-panel-header>
                 Help
               </v-expansion-panel-header>
               <v-expansion-panel-content>
-                <v-list dense>
+                <v-list dense color="boxes">
                   <v-list-group v-model="active.active1" no-action>
                     <template v-slot:activator>
                       <v-list-item-content>
@@ -113,6 +117,7 @@
             width="100%"
             class="pa-4 shadow"
             style="border-color: #C3C3C3;"
+            color="boxes"
           >
             <v-row class="pb-1">
               <v-col>

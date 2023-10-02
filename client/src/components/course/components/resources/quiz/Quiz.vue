@@ -3,7 +3,11 @@
     <v-container fluid>
       <v-row class="mb-1 mt-0">
         <v-col class="py-0" :cols="isSMsmaller ? 12 : 7">
-          <v-card :outlined="!isEvaluative" :class="isEvaluative || isQuestion ? 'shadow' : ''">
+          <v-card 
+            :outlined="!isEvaluative" 
+            :class="isEvaluative || isQuestion ? 'shadow' : ''"
+            :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+          >
 
             <Header :resource="resource" v-if="!isEvaluative && !isQuestion"/>
 

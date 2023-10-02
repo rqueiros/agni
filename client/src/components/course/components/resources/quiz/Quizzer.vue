@@ -27,7 +27,7 @@
       v-if="this.resource.questions.length > 0" 
       elevation="0"
     >
-      <v-stepper-header v-if="!isQuestion" style="height:60px">
+      <v-stepper-header v-if="!isQuestion" style="height:60px" :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
         <template v-for="n in resource.questions.length">
           <v-stepper-step 
             color="error"
@@ -46,9 +46,14 @@
           v-for="n in resource.questions.length" 
           :step="n" 
           :key="n+'c'"
+          :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
         >
-          <v-list :class="getSmallTextClass">
-            <v-list-item class="pb-2" style="min-height:0" :class="isAuthor ? 'px-0' : ''">
+          <v-list :class="getSmallTextClass" :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
+            <v-list-item 
+              class="pb-2" 
+              style="min-height:0" 
+              :class="isAuthor ? 'px-0' : ''"
+            >
               <v-list-item-content class="pb-0 pt-1"> 
                 <!--Student & Viewer-->
                 <div
@@ -70,10 +75,11 @@
                 <vue-editor 
                   v-if="isAuthor"
                   v-model="resource.questions[n - 1].question" 
-                  style="background-color: rgb(226, 226, 226); border-radius: 8px;"
+                  style="border-radius: 8px;"
                   :editor-toolbar="customToolbar"
                   placeholder="Question"
                   @text-change="(delta, oldDelta) => questionChange(delta, oldDelta)"
+                  :style="{backgroundColor : $vuetify.theme.currentTheme.editable}"
                 />
               </v-list-item-content>
 
@@ -105,7 +111,7 @@
                   fluid
                   :class="isAuthor ? 'py-0' : 'py-1'" 
                 >
-                  <v-simple-table>
+                  <v-simple-table :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
                     <tr v-if="isTeacher">
                       <td class="pb-1">
                         <span>Correct:</span>
@@ -162,6 +168,7 @@
                           @click="addAnswerByQuestionId(resource.questions[n - 1].id)"
                           :small="getButtonMediumSize=='small'"
                           :medium="getButtonMediumSize=='medium'"
+                          color="button"
                         >
                           <v-icon> mdi-plus </v-icon>
                           Add Answer
@@ -209,6 +216,7 @@
             class="mb-2"
             :small="getButtonMediumSize=='small'"
             :medium="getButtonMediumSize=='medium'"
+            color="button"
           >
             <v-icon> mdi-plus </v-icon>
             Add Question

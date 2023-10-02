@@ -9,6 +9,7 @@
       :value="valueLocal"
       :class="'editable'"
       style="width: calc(100% - 2px); margin:1px;"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.editable, color : $vuetify.theme.currentTheme.text}"
       @blur="
         valueLocal = $event.target.value;
         func();
@@ -105,7 +106,6 @@ export default {
 
 <style scoped>
 .editable {
-  background-color: rgb(226, 226, 226);
   font-size: inherit;
   padding: 4px;
   border-radius: 5px;

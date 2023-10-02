@@ -1,5 +1,5 @@
 <template>
-  <v-card width="100%" class="min_height shadow">
+  <v-card width="100%" class="min_height shadow" color="boxes">
     <Course outlined />
   </v-card>
 </template>

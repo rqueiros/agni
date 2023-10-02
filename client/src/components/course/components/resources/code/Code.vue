@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-row>
         <v-col :cols="isSMsmaller ? 12 : 7">
-          <v-card :outlined="!isEvaluative" :class="isEvaluative ? 'shadow' : ''">
+          <v-card :outlined="!isEvaluative" :class="isEvaluative ? 'shadow' : ''" :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
             <Header :resource="resource" v-if="!isEvaluative" />
             
             <Editor
@@ -23,7 +23,7 @@
             </v-rating>-->
 
             <v-expansion-panels v-if="isStudent || isAuthor">
-              <v-expansion-panel>
+              <v-expansion-panel :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
                 <v-expansion-panel-header disable-icon-rotate>
                   Errors ({{ errors.length }})
                   <template v-slot:actions>
@@ -41,6 +41,7 @@
                     @click:row="handleClick"
                     sort-by="row"
                     class="elevation-1"
+                    style="background-color: transparent;"
                   >
                     <template v-slot:item.row="{ item }">
                       {{ item.row + 1 }}

@@ -3,7 +3,7 @@
     <v-container fluid class="pa-0">
       <v-row class="mb-1 mt-0">
         <v-col :cols="isSMsmaller ? 12 : 7" class="py-0">
-          <v-card class="shadow">
+          <v-card class="shadow" color="boxes">
             <Expositives :isExpositive="true" :resource="{ expositives: [expositive] }" ref="expositives" />
           </v-card>
         </v-col>

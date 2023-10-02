@@ -7,7 +7,7 @@
             class="pa-2 shadow rounded-xl"
             width="100%"
             height="100%"
-            style="border-color: #C3C3C3;"
+            color="boxes"
           >
             <v-avatar
               class="profile"
@@ -28,6 +28,7 @@
               hide-details
               hide-input
               class="avatarInput"
+              :style="{backgroundColor : $vuetify.theme.currentTheme.button}"
             ></v-file-input>
             <v-badge
               v-else
@@ -60,6 +61,7 @@
               <v-card
                 class="pa-2 shadow"
                 width="100%"
+                color="boxes"
               >
                 <v-row no-gutters style="height:29px" class="d-flex align-center">
                   <v-col cols="2">
@@ -88,6 +90,7 @@
               <v-card
                 class="pa-2 shadow"
                 width="100%"
+                color="boxes"
               >
                 <v-row no-gutters style="height:29px" class="d-flex align-center">
                   <v-col cols="2">
@@ -114,6 +117,7 @@
               <v-card
                 class="pa-2 shadow"
                 width="100%"
+                color="boxes"
               >
               <v-row no-gutters style="min-height:29px" class="d-flex align-center">
                   <v-col cols="2">
@@ -123,7 +127,7 @@
                     <span>******</span>
                   </v-col>
                   <v-col cols="2" class="d-flex justify-end flex-column px-2">
-                    <v-btn small @click="dialog = true">
+                    <v-btn small @click="dialog = true" color="button">
                       New PW
                     </v-btn>
                   </v-col>
@@ -139,6 +143,7 @@
             class="pa-2 shadow"
             width="100%"
             height="100%"
+            color="boxes"
           >
             <v-row>
               <v-col class="d-flex justify-center">
@@ -210,7 +215,7 @@
       <v-row>
         <v-col>
           <v-expansion-panels flat class="shadow">
-            <v-expansion-panel>
+            <v-expansion-panel :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
               <v-expansion-panel-header>
                 Account Settings
               </v-expansion-panel-header>
@@ -443,11 +448,10 @@ export default {
   width:26px;
   height: 26px;
   padding:0px;
-  border-radius: 25px;
-  background-color: #f5f5f5;
+  border-radius: 15px;
   position: absolute;
-  bottom:8px;
-  right:8px;
+  bottom:7px;
+  right:7px;
   box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 
     0px 2px 2px 0px rgba(0, 0, 0, 0.14), 
     0px 1px 5px 0px rgba(0, 0, 0, 0.12)

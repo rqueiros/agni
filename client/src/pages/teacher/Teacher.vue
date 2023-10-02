@@ -12,7 +12,7 @@
       <v-main class="px-0 pt-3">
         <Menu />
         <v-card 
-          color="background"
+          color="appbar"
           tile
           elevation="1"
           style="padding-right: 5%; padding-left:22px;"
@@ -69,6 +69,16 @@ export default {
     },
   }),
 
+  watch: {
+    '$vuetify.theme.currentTheme'() {
+        document.documentElement.style.setProperty('--shadow-color', this.$vuetify.theme.currentTheme.shadowColor);
+    }
+  },
+
+  mounted(){
+    document.documentElement.style.setProperty('--shadow-color', this.$vuetify.theme.currentTheme.shadowColor);
+  },
+
   methods: {
     ...mapActions("main", ["fetchEmptyCourse"]),
   },
@@ -103,8 +113,8 @@ export default {
 
 <style>
 .shadow{
-  /*box-shadow: 0px 0px 5px rgb(219, 219, 219) !important;*/
-  box-shadow: 0px 0px 5px rgb(184, 184, 184) !important;
+  /*box-shadow: 0px 0px 5px rgb(184, 184, 184) !important;*/
+  box-shadow: 0px 0px 5px var(--shadow-color) !important;
 }
 
 

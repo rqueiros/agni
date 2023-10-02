@@ -1,6 +1,10 @@
 <template>
   <div id="timeline">
-    <v-card :outlined="!isExpositive" :class="isExpositive ? 'shadow' : ''" v-if="resource != undefined">
+    <v-card 
+      :outlined="!isExpositive" 
+      :class="isExpositive ? 'shadow' : ''" v-if="resource != undefined"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+    >
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
         <v-list-item-content class="align-self-start" >
           <v-list-item-title :class="getTitleClass">
@@ -112,6 +116,7 @@
             @click="addMilestoneByExpositiveId(resource.id)" 
             :small="getButtonMediumSize=='small'"
             :medium="getButtonMediumSize=='medium'"
+            color="button"
           >
             <v-icon>mdi-plus</v-icon>Add Milestone
           </v-btn>

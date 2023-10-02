@@ -4,17 +4,18 @@
     <v-app-bar 
       rounded 
       height="auto" 
-      color="background"
+      color="appbar"
       class="py-2 px-0"
       flat
     >
       <v-row no-gutters>
-        <v-col cols="3" class="d-flex align-center">
+        <v-col :cols="$vuetify.breakpoint.mdAndUp ? '3' : '4'" class="d-flex align-center">
           
           <v-tooltip bottom v-if="buttonConf2">
             <template v-slot:activator="{ on, attrs }">
               <v-btn 
-                rounded 
+                fab
+                small
                 text 
                 elevation="0" 
                 class="mr-1" 
@@ -71,13 +72,16 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col cols="5" class="d-flex flex-row-reverse align-center">
+        <v-col :cols="$vuetify.breakpoint.mdAndUp ? '5' : '4'" class="d-flex align-center justify-end">
 
+          <!-- Adds -->
           <v-tooltip bottom v-if="buttonConf1 && contentType=='occurrencess'">
             <template v-slot:activator="{ on, attrs }">
               <v-btn 
                 elevation="1" 
-                rounded 
+                :rounded="$vuetify.breakpoint.mdAndUp"
+                :fab="!$vuetify.breakpoint.mdAndUp"
+                :small="!$vuetify.breakpoint.mdAndUp"
                 color="primary" 
                 @click="addCollectionType('Occurrence')" 
                 v-bind="attrs" 
@@ -94,7 +98,9 @@
                 <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
                   <v-btn 
                     elevation="1" 
-                    rounded  
+                    :rounded="$vuetify.breakpoint.mdAndUp"
+                    :fab="!$vuetify.breakpoint.mdAndUp"
+                    :small="!$vuetify.breakpoint.mdAndUp"
                     v-bind="{ ...attrs, ...tooltipAttrs }" 
                     v-on="{ ...on, ...tooltipOn }" 
                     color="primary"
@@ -117,12 +123,158 @@
             </v-list>
           </v-menu>
 
-          <v-tooltip bottom v-if="buttonConf2 && (isAuthor || contentType=='occurrences')">
+
+          <!-- Save -->
+          <div>
+            <v-tooltip bottom v-if="buttonConf2 && (isAuthor || contentType=='occurrences')">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn 
+                  elevation="1" 
+                  class="mr-1" 
+                  :rounded="$vuetify.breakpoint.mdAndUp"
+                  :fab="!$vuetify.breakpoint.mdAndUp"
+                  :small="!$vuetify.breakpoint.mdAndUp"
+                  color="primary" 
+                  :disabled="!changed" 
+                  @click="save" 
+                  v-bind="attrs" 
+                  v-on="on"
+                >
+                  <v-progress-circular 
+                    :size="20"
+                    v-if="loading.save"
+                    indeterminate
+                  ></v-progress-circular>
+                  <v-icon>mdi-content-save</v-icon>
+                </v-btn>
+              </template>
+              <span>Save</span>
+            </v-tooltip>
+          </div>
+
+
+          <!-- Publish -->
+          <div v-if="buttonConf2">
+            <v-tooltip bottom v-if="isAuthor || contentType=='occurrences'">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn 
+                  elevation="1" 
+                  class="mx-1" 
+                  :rounded="$vuetify.breakpoint.mdAndUp"
+                  :fab="!$vuetify.breakpoint.mdAndUp"
+                  :small="!$vuetify.breakpoint.mdAndUp"
+                  color="primary" 
+                  @click="publish" 
+                  v-bind="attrs"
+                  v-on="on"
+                  :disabled="isNew"
+                >
+                  <v-progress-circular 
+                    :size="20"
+                    v-if="loading.publish"
+                    indeterminate
+                  ></v-progress-circular>
+                  <v-icon v-if="isDraft">mdi-publish</v-icon>
+                  <v-icon v-if="!isDraft">mdi-publish-off</v-icon>
+                </v-btn>
+              </template>
+              <span v-if="isDraft">Publish</span>
+              <span v-if="!isDraft">Unpublish</span>
+            </v-tooltip>
+          </div>
+
+
+          <!-- Clone -->
+          <div v-if="buttonConf2">
+            <v-menu 
+              offset-y  
+              :nudge-width="350"
+              v-if="contentType=='courses'" 
+              :close-on-content-click="false"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
+                    <v-btn 
+                      elevation="1" 
+                      class="mx-1" 
+                      :rounded="$vuetify.breakpoint.mdAndUp"
+                      :fab="!$vuetify.breakpoint.mdAndUp"
+                      :small="!$vuetify.breakpoint.mdAndUp"
+                      color="primary" 
+                      v-bind="{ ...attrs, ...tooltipAttrs }" 
+                      v-on="{ ...on, ...tooltipOn }" 
+                      @click="copyCourseMenu()"
+                      :disabled="isNew"
+                    >
+                      <v-progress-circular 
+                        :size="20"
+                        v-if="loading.copy"
+                        indeterminate
+                      ></v-progress-circular>
+                      <v-icon>mdi-content-copy</v-icon>
+                    </v-btn>
+                  </template>
+                <span>Clone</span>
+                </v-tooltip>
+              </template>
+              <v-list>
+                <v-list-item>
+                  <v-treeview 
+                    selectable 
+                    dense 
+                    selection-type="independent" 
+                    v-model="cloneSelection"
+                    :items="cloneItems.children" 
+                    :open="cloneOpen" 
+                    :item-key="'idMenu'"
+                  ></v-treeview>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn width="100%" @click="copyCourse()">
+                    Clone
+                  </v-btn>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
+            <v-tooltip bottom v-if="contentType!='courses'">
+              <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
+                <v-btn 
+                  elevation="1" 
+                  class="mx-1" 
+                  :rounded="$vuetify.breakpoint.mdAndUp"
+                  :fab="!$vuetify.breakpoint.mdAndUp"
+                  :small="!$vuetify.breakpoint.mdAndUp"
+                  color="primary" 
+                  v-bind="{...tooltipAttrs }" 
+                  v-on="{...tooltipOn }" 
+                  @click="copy()"
+                  :disabled="isNew"
+                >
+                  <v-progress-circular 
+                    :size="20"
+                    v-if="loading.delete"
+                    indeterminate
+                  ></v-progress-circular>
+                  <v-icon>mdi-content-copy</v-icon>
+                </v-btn>
+              </template>
+            <span>Clone</span>
+            </v-tooltip>
+          </div>
+
+
+          <!-- Delete -->
+          <div>
+            <v-tooltip bottom v-if="buttonConf2 && (isAuthor || contentType=='occurrences')">
             <template v-slot:activator="{ on, attrs }">
               <v-btn 
                 elevation="1" 
                 class="ml-1" 
-                rounded 
+                :rounded="$vuetify.breakpoint.mdAndUp"
+                :fab="!$vuetify.breakpoint.mdAndUp"
+                :small="!$vuetify.breakpoint.mdAndUp"
                 color="error" 
                 v-if="isAuthor" 
                 v-bind="attrs" 
@@ -135,135 +287,18 @@
             </template>
             <span>Delete</span>
           </v-tooltip>
+          </div>
 
-          <v-menu 
-            offset-y  
-            :nudge-width="350"
-            v-if="buttonConf2 && contentType=='courses'" 
-            :close-on-content-click="false"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
-                  <v-btn 
-                    elevation="1" 
-                    class="mx-1" 
-                    rounded 
-                    color="primary" 
-                    v-bind="{ ...attrs, ...tooltipAttrs }" 
-                    v-on="{ ...on, ...tooltipOn }" 
-                    @click="copyCourseMenu()"
-                    :disabled="isNew"
-                  >
-                    <v-progress-circular 
-                      :size="20"
-                      v-if="loading.copy"
-                      indeterminate
-                    ></v-progress-circular>
-                    <v-icon>mdi-content-copy</v-icon>
-                  </v-btn>
-                </template>
-              <span>Clone</span>
-              </v-tooltip>
-            </template>
-            <v-list>
-              <v-list-item>
-                <v-treeview 
-                  selectable 
-                  dense 
-                  selection-type="independent" 
-                  v-model="cloneSelection"
-                  :items="cloneItems.children" 
-                  :open="cloneOpen" 
-                  :item-key="'idMenu'"
-                ></v-treeview>
-              </v-list-item>
-              <v-list-item>
-                <v-btn width="100%" @click="copyCourse()">
-                  Clone
-                </v-btn>
-              </v-list-item>
-            </v-list>
-          </v-menu>
 
-          <v-tooltip bottom v-if="buttonConf2 && contentType!='courses'">
-            <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
-              <v-btn 
-                elevation="1" 
-                class="mx-1" 
-                rounded 
-                color="primary" 
-                v-bind="{...tooltipAttrs }" 
-                v-on="{...tooltipOn }" 
-                @click="copy()"
-                :disabled="isNew"
-              >
-                <v-progress-circular 
-                  :size="20"
-                  v-if="loading.delete"
-                  indeterminate
-                ></v-progress-circular>
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
-            </template>
-          <span>Clone</span>
-          </v-tooltip>
-
-          <v-tooltip bottom v-if="buttonConf2 && (isAuthor || contentType=='occurrences')">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn 
-                elevation="1" 
-                class="mx-1" 
-                rounded 
-                color="primary" 
-                v-if="isAuthor" 
-                @click="publish" 
-                v-bind="attrs"
-                v-on="on"
-                :disabled="isNew"
-              >
-                <v-progress-circular 
-                  :size="20"
-                  v-if="loading.publish"
-                  indeterminate
-                ></v-progress-circular>
-                <v-icon v-if="isDraft">mdi-publish</v-icon>
-                <v-icon v-if="!isDraft">mdi-publish-off</v-icon>
-              </v-btn>
-            </template>
-            <span v-if="isDraft">Publish</span>
-            <span v-if="!isDraft">Unpublish</span>
-          </v-tooltip>
-
-          <v-tooltip bottom v-if="buttonConf2 && (isAuthor || contentType=='occurrences')">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn 
-                elevation="1" 
-                class="mr-1" 
-                rounded 
-                color="primary" 
-                :disabled="!changed" 
-                @click="save" 
-                v-bind="attrs" 
-                v-on="on"
-              >
-                <v-progress-circular 
-                  :size="20"
-                  v-if="loading.save"
-                  indeterminate
-                ></v-progress-circular>
-                <v-icon>mdi-content-save</v-icon>
-              </v-btn>
-            </template>
-            <span>Save</span>
-          </v-tooltip>
-
+          <!-- Account -->
           <v-tooltip bottom v-if="contentType=='accounts' && getAccountEditable">
             <template v-slot:activator="{ on, attrs }">
               <v-btn 
                 elevation="1" 
                 class="mr-1" 
-                rounded 
+                :rounded="$vuetify.breakpoint.mdAndUp"
+                :fab="!$vuetify.breakpoint.mdAndUp"
+                :small="!$vuetify.breakpoint.mdAndUp"
                 color="primary" 
                 @click="saveAccount" 
                 v-bind="attrs" 
@@ -284,7 +319,9 @@
               <v-btn 
                 elevation="1" 
                 class="mr-1" 
-                rounded 
+                :rounded="$vuetify.breakpoint.mdAndUp"
+                :fab="!$vuetify.breakpoint.mdAndUp"
+                :small="!$vuetify.breakpoint.mdAndUp"
                 color="primary" 
                 @click="setAccountEditable(true)" 
                 v-bind="attrs" 
@@ -409,7 +446,8 @@ export default {
   computed: {
     ...mapState("main", { changed: state => state.changed }),
     ...mapGetters("style", [
-      "getIcon"
+      "getIcon",
+      "isSMsmaller"
     ]),
     ...mapGetters("main", [
       "isAuthor",
@@ -677,10 +715,19 @@ export default {
     },
     async exit() {
       if (!this.changed) {
+        let contentCollType = localStorage.getItem("menuItem") || "";
         if (this.contentType=="occurrences"){
-          bus.$emit("changePage", "student,Occurrences");
+          if (contentCollType=="student"){
+            bus.$emit("changePage", "student,Occurrences");
+          } else {
+            bus.$emit("changePage", "home,Home");
+          }
         } else {
-          await bus.$emit("changePage", "content,Content");
+          if (contentCollType=="home"){
+            bus.$emit("changePage", "home,Home");
+          } else {
+            await bus.$emit("changePage", "content,Content");
+          }
         }
         this.deleteStructure();
       } else {
