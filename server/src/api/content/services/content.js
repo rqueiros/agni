@@ -80,27 +80,33 @@ module.exports = {
         c.icon = c.type == null ? "courses" : c.type
         c.label = c.name
         let label2 = ""
-        if (c.type != null && c.type.toLowerCase().includes(search.toLowerCase())){
+        if (c.type && c.type.toLowerCase().includes(search.toLowerCase())){
           label2 += " - Type:" + c.type
         }
-        c.goals.forEach(goal => {
-          if (goal.goal && goal.toLowerCase().includes(search.toLowerCase())){
-            label2 += " - Goal:" + goal.goal
-          }
-        });
-        c.modules.forEach(module => {
-          if (module.name && module.name.toLowerCase().includes(search.toLowerCase())){
-            label2 += " - Module:"+ module.name
-          }
-          module.lessons.forEach(lesson => {
-            if (lesson.name && lesson.name.toLowerCase().includes(search.toLowerCase())){
-              label2 += " - Lesson:"+ lesson.name
+        if (c.goals){
+          c.goals.forEach(goal => {
+            if (goal.goal && goal.toLowerCase().includes(search.toLowerCase())){
+              label2 += " - Goal:" + goal.goal
             }
-            if (lesson.description && lesson.description.toLowerCase().includes(search.toLowerCase())){
-              label2 += " - Lesson:"+ lesson.description
+          });
+        }
+        if (c.modules){
+          c.modules.forEach(module => {
+            if (module.name && module.name.toLowerCase().includes(search.toLowerCase())){
+              label2 += " - Module:"+ module.name
+            }
+            if (module.lessons){
+              module.lessons.forEach(lesson => {
+                if (lesson.name && lesson.name.toLowerCase().includes(search.toLowerCase())){
+                  label2 += " - Lesson:"+ lesson.name
+                }
+                if (lesson.description && lesson.description.toLowerCase().includes(search.toLowerCase())){
+                  label2 += " - Lesson:"+ lesson.description
+                }
+              })
             }
           })
-        })
+        }
         c.label2 = label2.length > 40 ? label2.substring(3,40) + " ..." : label2.substring(3,label2.length)
         return c;
       })
