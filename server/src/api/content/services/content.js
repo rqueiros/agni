@@ -89,7 +89,9 @@ module.exports = {
         console.log(c.goals)
         if (c.goals){
           c.goals.forEach(goal => {
+            console.log(2.5)
             if (goal.goal && goal.toLowerCase().includes(search.toLowerCase())){
+              console.log(2.6)
               label2 += " - Goal:" + goal.goal
             }
           });
