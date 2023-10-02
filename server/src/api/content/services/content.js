@@ -8,7 +8,6 @@ module.exports = {
   get: async (params) => {
     try {
       let search = params.filters.name.$containsi
-      console.log("courses")
       let courses = await strapi.entityService.findMany(
         "api::course.course", {
           filters:{
@@ -81,36 +80,26 @@ module.exports = {
         c.icon = c.type == null ? "courses" : c.type
         c.label = c.name
         let label2 = ""
-        console.log(1)
         if (c.type && c.type.toLowerCase().includes(search.toLowerCase())){
           label2 += " - Type:" + c.type
         }
-        console.log(2)
-        console.log(c.goals)
         if (c.goals){
           c.goals.forEach(goal => {
-            console.log(2.5)
-            if (goal.goal && goal.toLowerCase().includes(search.toLowerCase())){
-              console.log(2.6)
+            if (goal.goal && goal.goal.toLowerCase().includes(search.toLowerCase())){
               label2 += " - Goal:" + goal.goal
             }
           });
         }
-        console.log(3)
         if (c.modules){
           c.modules.forEach(module => {
-            console.log(4)
             if (module.name && module.name.toLowerCase().includes(search.toLowerCase())){
               label2 += " - Module:"+ module.name
             }
-            console.log(5)
             if (module.lessons){
               module.lessons.forEach(lesson => {
-                console.log(6)
                 if (lesson.name && lesson.name.toLowerCase().includes(search.toLowerCase())){
                   label2 += " - Lesson:"+ lesson.name
                 }
-                console.log(7)
                 if (lesson.description && lesson.description.toLowerCase().includes(search.toLowerCase())){
                   label2 += " - Lesson:"+ lesson.description
                 }
