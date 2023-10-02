@@ -81,9 +81,11 @@ module.exports = {
         c.icon = c.type == null ? "courses" : c.type
         c.label = c.name
         let label2 = ""
+        console.log(1)
         if (c.type && c.type.toLowerCase().includes(search.toLowerCase())){
           label2 += " - Type:" + c.type
         }
+        console.log(2)
         if (c.goals){
           c.goals.forEach(goal => {
             if (goal.goal && goal.toLowerCase().includes(search.toLowerCase())){
@@ -91,16 +93,21 @@ module.exports = {
             }
           });
         }
+        console.log(3)
         if (c.modules){
           c.modules.forEach(module => {
+            console.log(4)
             if (module.name && module.name.toLowerCase().includes(search.toLowerCase())){
               label2 += " - Module:"+ module.name
             }
+            console.log(5)
             if (module.lessons){
               module.lessons.forEach(lesson => {
+                console.log(6)
                 if (lesson.name && lesson.name.toLowerCase().includes(search.toLowerCase())){
                   label2 += " - Lesson:"+ lesson.name
                 }
+                console.log(7)
                 if (lesson.description && lesson.description.toLowerCase().includes(search.toLowerCase())){
                   label2 += " - Lesson:"+ lesson.description
                 }
