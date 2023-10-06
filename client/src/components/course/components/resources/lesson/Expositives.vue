@@ -1,10 +1,11 @@
 <template>
   <div id="expositives" v-if="expositivesNotNull || isAuthor">
+
     <v-card 
       :flat="!expositivesNotNull && isAuthor"
       class="d-flex rounded-0 align-center" 
       style="border-left: 0; border-right: 0;"
-      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
     >
       <!--Author-->
       <v-menu offset-y v-if="!expositivesNotNull && isAuthor">
@@ -37,7 +38,7 @@
       <v-layout 
         column 
       >
-        <v-app-bar flat color="boxes" class="pa-0" height="40">
+        <v-app-bar flat color="studentboxes" class="pa-0" height="40">
           <v-tabs
             style="width:calc(100% - 44px)"
             center-active
@@ -75,7 +76,9 @@
                   placeholder="Expositive name" 
                   field="name" 
                   @input="editableInput"
-                  onclick="event.stopPropagation()" />
+                  onclick="event.stopPropagation()" 
+                  :required="true"
+                />
                 <v-btn 
                   icon 
                   :x-small="getButtonSmallSize=='x-small'"
@@ -189,6 +192,8 @@ export default {
 
   data() {
     return {
+      valid: true,
+
       tab: null,
       dialog:false,
       addExpositiveMenu: [
@@ -260,6 +265,9 @@ export default {
 <style scoped>
 /* Tab bar styles */
 .theme--light.v-tabs .v-tab--active:hover::before, .theme--light.v-tabs .v-tab--active::before{
+  opacity:0.12;
+}
+.theme--dark.v-tabs .v-tab--active:hover::before, .theme--dark.v-tabs .v-tab--active::before{
   opacity:0.12;
 }
 #expositives>>>.v-toolbar__content, .v-toolbar__extension{

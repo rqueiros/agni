@@ -26,7 +26,16 @@
           class="mb-8 min_height" 
           :class="$vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'"
         >
+        <!--
+          <v-btn @click="validate">
+            Do it
+          </v-btn>-->
+          <!--
+          <v-form ref="loginForm" v-model="valid" lazy-validation>
+            <Resource :resource="resource" />
+          </v-form>-->
           <Resource :resource="resource" />
+
         </div>
 
         <Snackbar 
@@ -59,6 +68,7 @@ export default {
   },
   data: () => ({
     resource: "home,Home",
+    valid:true,
 
     snackbar: {
       open: false,
@@ -81,6 +91,9 @@ export default {
 
   methods: {
     ...mapActions("main", ["fetchEmptyCourse"]),
+    validate(){
+      console.log(this.$refs.loginForm.validate())
+    }
   },
 
   created() {

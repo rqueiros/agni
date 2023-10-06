@@ -26,6 +26,7 @@ export default new Vuetify({
       button:"#f5f5f5",
       editable:"#E2E2E2",
       text:"#000000",
+      studentboxes: colors.white,
     },
     dark: {
       background: "#1B1D25",
@@ -36,10 +37,11 @@ export default new Vuetify({
       //hover: colors.grey.darken4,
       hover: "#2E3235",
       boxes: "#24282B",
-      shadowColor: colors.blue,
+      shadowColor: colors.grey.darken3,
       button: "#484747",
       editable:colors.grey.darken1,
       text:"#FFFFFF",
+      studentboxes: "#1E1E1E"
     },
   }, },
   breakpoint: {

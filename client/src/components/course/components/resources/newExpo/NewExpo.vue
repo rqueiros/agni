@@ -9,6 +9,7 @@
       outlined 
       class="rounded-0"
       style="border-right-width: 0; border-left-width: 0;"
+      
     />
   </div>
 </template>

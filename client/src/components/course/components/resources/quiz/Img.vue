@@ -5,7 +5,7 @@
     <v-card 
       :outlined="!isEvaluative" 
       :class="isEvaluative || isQuestion ? 'shadow' : ''"
-      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
     >
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
         <v-list-item-content class="align-self-start" >

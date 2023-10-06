@@ -3,7 +3,7 @@
 
     <v-card 
       style="border-left: 0; border-right: 0;"
-      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
     >
       <!--Author-->
       <v-menu offset-y v-if="!evaluativesNotNull && isAuthor">
@@ -117,6 +117,7 @@
               @input="editableInput" 
               placeholder="Exercise name" 
               onclick="event.stopPropagation()"
+              :required="true"
             />
           </span>
         </template>
@@ -249,6 +250,8 @@ export default {
 
   data() {
     return {
+      valid:true,
+
       dialog: false,
       externalDialog : false,
       headers: {

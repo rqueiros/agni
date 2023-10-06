@@ -28,11 +28,13 @@
       color="orange"
     ></v-rating>-->
 
-    <div class="text-center pa-1" :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
+    <div class="text-center pa-1" :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
       <v-pagination 
         v-model="page" 
         :length="pageCount" 
         :total-visible="5" 
+        color="error"
+        
       />
     </div>
     <v-card-actions 
@@ -206,5 +208,12 @@ export default {
 }
 #player>>>.v-badge__badge .v-icon{
   font-size: 16px;
+}
+
+#player>>>.theme--dark.v-pagination .v-pagination__item{
+  background-color: #484747;
+}
+#player>>>.theme--dark.v-pagination .v-pagination__navigation{
+  background-color: #484747 !important;
 }
 </style>

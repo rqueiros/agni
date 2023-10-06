@@ -1,5 +1,6 @@
 <template>
   <div id="quizzer">
+
     <div :class="isMD ? 'mx-2' : 'mx-4'">
       <div 
         v-if="isEvaluative && !isQuestion" 
@@ -15,6 +16,7 @@
           field="name"
           @input="editableInput" 
           onclick="event.stopPropagation()" 
+          :required="true"
         />
         <span v-if="isViewer">
           {{ resource.name }}
@@ -27,7 +29,7 @@
       v-if="this.resource.questions.length > 0" 
       elevation="0"
     >
-      <v-stepper-header v-if="!isQuestion" style="height:60px" :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
+      <v-stepper-header v-if="!isQuestion" style="height:60px" :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
         <template v-for="n in resource.questions.length">
           <v-stepper-step 
             color="error"
@@ -46,9 +48,9 @@
           v-for="n in resource.questions.length" 
           :step="n" 
           :key="n+'c'"
-          :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+          :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
         >
-          <v-list :class="getSmallTextClass" :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
+          <v-list :class="getSmallTextClass" :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
             <v-list-item 
               class="pb-2" 
               style="min-height:0" 
@@ -62,16 +64,6 @@
                 </div>
 
                 <!--Author-->
-                <!--
-                <Editable 
-                  v-if="isAuthor" 
-                  type="question" 
-                  :value="resource.questions[n - 1].question"
-                  :id="resource.questions[n - 1].id" 
-                  field="question" 
-                  @input="editableInput" 
-                  placeholder="Question" 
-                />-->
                 <vue-editor 
                   v-if="isAuthor"
                   v-model="resource.questions[n - 1].question" 
@@ -111,7 +103,7 @@
                   fluid
                   :class="isAuthor ? 'py-0' : 'py-1'" 
                 >
-                  <v-simple-table :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
+                  <v-simple-table :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
                     <tr v-if="isTeacher">
                       <td class="pb-1">
                         <span>Correct:</span>
@@ -144,6 +136,7 @@
                             field="answer"
                             @input="editableInput" 
                             placeholder="Answer" 
+                            :required="true"
                           />
                         </span>
                       </td>
@@ -286,6 +279,8 @@ export default {
 
   data() {
     return {
+      valid:true,
+
       studentAnswers: {},
       question: 1,
       steps: 0,

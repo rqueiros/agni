@@ -11,6 +11,7 @@
             color=boxes
           >
               <v-row no-gutters style="height: 100%;">
+                
                 <template v-for="(occ, index) in currentOcc" >
                   <v-col :key="occ.id" v-if="currentOcc.length>0">
                     <v-hover
@@ -34,10 +35,6 @@
                             <div class="mt-4">
                               {{ occ.year }} - {{ occ.course.name }}
                             </div>
-                            <!--
-                            <div class="mt-3">
-                              {{ occ.classes.map(c => c.name).toString() }}
-                            </div>-->
                           </v-list-item-content>
                           <div style="align-self: baseline;">
                             <v-btn 
@@ -94,20 +91,11 @@
                             </v-col>
                           </v-row>
                         </v-card>
-
-                        <!--
-                          <v-progress-linear 
-                            color="primary" 
-                            height="10" 
-                            :value="(new Date() - new Date(occ.startDate))/(new Date(occ.endDate) - new Date(occ.startDate))*100" 
-                            rounded
-                          ></v-progress-linear>-->
-                        
                       </v-card>
                     </v-hover>
                   </v-col>
                   <v-divider 
-                    :key="occ.id" 
+                    :key="'b'+occ.id" 
                     vertical 
                     style="z-index:10" 
                     v-if="index < currentOcc.length-1">

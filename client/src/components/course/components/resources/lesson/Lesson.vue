@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-row class="mb-1 mt-0">
         <v-col :cols="isSMsmaller ? 12 : 7" class="py-0">
-          <v-card outlined :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
+          <v-card outlined :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
 
             <Header :resource="resource" />
 

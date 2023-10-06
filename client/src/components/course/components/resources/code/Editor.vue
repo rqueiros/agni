@@ -383,6 +383,9 @@ export default {
         this.contextDeleted=false
       }
     },
+    "resource.solution"(value){
+      this.code = value
+    },
     "resource.statement"(value) {
       const obj2 = {
         id: this.resource.id,

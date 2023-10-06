@@ -6,7 +6,7 @@
           <v-card 
             :outlined="!isEvaluative" 
             :class="isEvaluative || isQuestion ? 'shadow' : ''"
-            :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+            :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
           >
 
             <Header :resource="resource" v-if="!isEvaluative && !isQuestion"/>

@@ -3,7 +3,7 @@
     <v-card 
       :outlined="!isExpositive" 
       :class="isExpositive ? 'shadow' : ''" v-if="resource != undefined"
-      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
     >
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
         <v-list-item-content class="align-self-start" >
@@ -85,6 +85,7 @@
                 placeholder="Frame"
                 @input="editableInput"
                 onclick="event.stopPropagation()"
+                :required="true"
               />
             </v-col>
             <v-col class="pl-1 pr-1">
@@ -96,6 +97,7 @@
                 placeholder="Label"
                 @input="editableInput"
                 onclick="event.stopPropagation()"
+                :required="true"
               />
             </v-col>
             <v-col cols="2" class="pl-1">
@@ -152,6 +154,8 @@ export default {
   },
 
   data: () => ({
+    valid:true,
+
     selected: 0,
     duration: 0
   }),

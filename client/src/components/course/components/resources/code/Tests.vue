@@ -3,7 +3,7 @@
     <v-card 
       :outlined="!isEvaluative" 
       :class="isEvaluative ? 'shadow' : ''" 
-      :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+      :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
     >
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'">
         <v-list-item-content class="align-self-start" >
@@ -37,7 +37,7 @@
         :hide-default-footer="isTeacher"
         :no-data-text="isTeacher ? '' : 'There are no Tests'"
         disable-sort
-        :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}"
+        :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
       >
         <template v-slot:top>
           <div class="py-1 d-flex" :class="!isMDsmaller ? '' : isMD ? 'px-2' : 'px-4'">
@@ -361,6 +361,7 @@
                 :field="'input'"
                 placeholder="Input"
                 @input="editableInput"
+                :required="true"
               ></Editable>
               <Editable
                 :type="'test'"
@@ -369,6 +370,7 @@
                 :field="'expected'"
                 placeholder="Expected"
                 @input="editableInput"
+                :required="true"
               ></Editable>
             </span>
             <span v-if="isViewer">
@@ -404,9 +406,7 @@
             <span v-if="isAuthor">
               <vue-cascader-select
                 :options="options"
-                @select="
-                  selected => setTypes(item.id, selected.value)
-                "
+                @select="selected => setTypes(item.id, selected.value)"
                 :value="
                   'subtype' in item && item.subtype != '' && item.subtype != null
                     ? item.subtype
@@ -476,7 +476,7 @@
       </v-data-table>
 
       <!-- <br />
-       <v-alert
+      <v-alert
       color="#2A3B4D"
       dark
       icon="mdi-firework"
@@ -509,6 +509,7 @@ import { mapActions, mapGetters, mapMutations } from "vuex";
 /* import * as LJS from "@/assets/utils/test.js";
  */
 import Vue from "vue";
+import { EventBus } from "@/event-bus.js";
 
 import Editable from "../../../../gerneral/Editable.vue";
 import VueCascaderSelect from "vue-cascader-select";
@@ -534,6 +535,8 @@ export default {
   },
 
   data: () => ({
+    valid:true,
+
     dialog: false,
     dialogDelete: false,
 
@@ -648,6 +651,13 @@ export default {
     }
   },
 
+  mounted() {
+    EventBus.$on('runTests', this.run);
+  },
+  beforeDestroy() {
+    EventBus.$off('runTests', this.run);
+  },
+
   methods: {
     ...mapActions("main",[
       "setProgress"
@@ -736,6 +746,7 @@ export default {
       });
     }, */
     run() {
+      console.log(123)
       // Save the code
       this.$emit("onSaveCode");
 

@@ -1,7 +1,7 @@
 <template>
   <v-card 
     class="mx-auto" 
-    :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}" 
+    :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}" 
     outlined
   >
     <v-list-item>

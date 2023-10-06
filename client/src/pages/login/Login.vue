@@ -24,24 +24,22 @@
                       <v-btn
                         class="ma-2"
                         outlined
-                        color="black"
                         @click="studentLogin"
                         width="100%"
                       >
                         Student Guest
-                        <v-icon dark right> mdi-login-variant </v-icon>
+                        <v-icon right> mdi-login-variant </v-icon>
                       </v-btn>
                     </v-col>
                     <v-col>
                       <v-btn
                         class="ma-2"
                         outlined
-                        color="black"
                         @click="teacherlogin"
                         width="100%"
                       >
                         Teacher Guest
-                        <v-icon dark right> mdi-login-variant </v-icon>
+                        <v-icon right> mdi-login-variant </v-icon>
                       </v-btn>
                     </v-col>
                   </v-row>
@@ -79,11 +77,11 @@
                         <v-btn
                           class="ma-2"
                           outlined
-                          :color="loginError ? 'error' : 'black'"
+                          :color="loginError ? 'error' : ''"
                           @click="validate"
                         >
                           LOGIN
-                          <v-icon dark right> mdi-login-variant </v-icon>
+                          <v-icon right> mdi-login-variant </v-icon>
                         </v-btn>
                         <div class="d-flex align-center ma-2" style="color:red" v-if="loginError">
                           Invalid login credentials. Please try again.
@@ -160,12 +158,11 @@
                       <v-col class="d-flex ml-auto" cols="12" sm="3" xsm="12">
                         <v-btn
                           outlined
-                          color="black"
                           disabled
                           @click="validate"
                         >
                           REGISTER
-                          <v-icon dark right> mdi-login-variant </v-icon>
+                          <v-icon right> mdi-login-variant </v-icon>
                         </v-btn>
                       </v-col>
                     </v-row>

@@ -60,14 +60,6 @@
         </v-col>
       </v-row>
 
-      <!--
-      <v-row dense>
-        <v-col cols="12" style="max-width: 400px;">
-          <v-text-field v-model="search" style="background-color: white;" prepend-inner-icon="mdi-magnify" label="Search"
-            single-line class="pa-0 ma-0" outlined dense hide-details></v-text-field>
-        </v-col>
-      </v-row>-->
-
       <v-row dense>
         <v-col>
           <v-card width="100%" class="shadow" color="boxes">

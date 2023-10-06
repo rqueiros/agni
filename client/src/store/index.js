@@ -2157,6 +2157,86 @@ const main = {
       //this.commit("main/setChanged", false);
     },
 
+    async generateProgrammingEx(state, [description, id]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const url = serverData.domain + serverData.gpt;
+      
+      try {
+        const response = await axios.post(
+          url,
+          { data: {"description":description} },
+          { headers: { Authorization: auth } }
+        );
+        
+        let data = response.data.function_call.arguments
+        let json = JSON.parse(data)
+        console.log(json)
+        
+        if (state.getters.getCourses.length>0){
+          let evaluative = state.getters.getCourse.children.flatMap(c => c.children).flatMap(l => l.evaluatives).find(e => e.id == id)
+          evaluative.statement = json.statement
+          evaluative.solution = json.solution
+          let tests = []
+          for (let test of json.tests){
+            test.new = true
+            test.output = ""
+            if (test.input.endsWith(")") && !test.input.startsWith("(")){
+              const firstIndex = test.input.indexOf("(");
+              const lastIndex = test.input.lastIndexOf(")");
+              test.input = test.input.substring(firstIndex + 1, lastIndex).replace(',', "");
+            }
+            if (json.solution.includes("console.log")){
+              test.type = "log"
+              test.subtype = null
+              test.input = "log"
+            } else if (json.solution.includes("function")) {
+              test.type = "function"
+              test.subtype = null
+            } else {
+              test.type = null
+              test.subtype = null
+            }
+            tests.push(test)
+          }
+          evaluative.tests = tests
+        } else {
+          let evaluative = state.getters.getEvaluative
+          evaluative.name = json.name
+          evaluative.statement = json.statement
+          evaluative.solution = json.solution
+          let tests = []
+          for (let test of json.tests){
+            test.new = true
+            if (test.input.endsWith(")") && !test.input.startsWith("(")){
+              const firstIndex = test.input.indexOf("(");
+              const lastIndex = test.input.lastIndexOf(")");
+              test.input = test.input.str.substring(firstIndex + 1, lastIndex).replace(',', "");
+            }
+            if (json.solution.includes("console.log")){
+              test.type = "log"
+              test.subtype = null
+              test.input = "log"
+            } else if (json.solution.includes("function")) {
+              test.type = "function"
+              test.subtype = null
+            } else {
+              test.type = null
+              test.subtype = null
+            }
+            
+            tests.push(test)
+          }
+          evaluative.tests = tests
+        }
+                
+      } catch (error) {
+        console.error("Error in generateProgrammingEx: ", error);
+        throw error;  // You might want to re-throw the error if it should be handled by the calling function
+      }
+    }
+    
+
+    /*
     async generateProgrammingEx(state, [description, id]){
       const auth = "Bearer " + state.getters.getJWT;
       const url = serverData.domain + serverData.gpt;
@@ -2183,7 +2263,18 @@ const main = {
               if (test.input.endsWith(")") && !test.input.startsWith("(")){
                 const firstIndex = test.input.indexOf("(");
                 const lastIndex = test.input.lastIndexOf(")");
-                test.input = test.input.substring(firstIndex + 1, lastIndex);
+                test.input = test.input.substring(firstIndex + 1, lastIndex).replace(',', "");
+              }
+              if (json.solution.includes("console.log")){
+                test.type = "log"
+                test.subtype = null
+                test.input = "log"
+              } else if (json.solution.includes("function")) {
+                test.type = "function"
+                test.subtype = null
+              } else {
+                test.type = null
+                test.subtype = null
               }
               tests.push(test)
             }
@@ -2199,14 +2290,26 @@ const main = {
               if (test.input.endsWith(")") && !test.input.startsWith("(")){
                 const firstIndex = test.input.indexOf("(");
                 const lastIndex = test.input.lastIndexOf(")");
-                test.input = test.input.str.substring(firstIndex + 1, lastIndex).replace(/,/g, "");
+                test.input = test.input.str.substring(firstIndex + 1, lastIndex).replace(',', "");
               }
+              if (json.solution.includes("console.log")){
+                test.type = "log"
+                test.subtype = null
+                test.input = "log"
+              } else if (json.solution.includes("function")) {
+                test.type = "function"
+                test.subtype = null
+              } else {
+                test.type = null
+                test.subtype = null
+              }
+              
               tests.push(test)
             }
             evaluative.tests = tests
           }
         });
-    },
+    },*/
 
 
   },

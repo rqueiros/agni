@@ -8,7 +8,7 @@
         @click="backToSheet"
         color="error" 
         class="mt-2 mr-3" 
-        style="height:68px; width:10px" min-width="10px" 
+        style="height:60px; width:10px" min-width="10px" 
         v-if="resource.contentType != 'lesson'"
       >
           <v-icon>mdi-arrow-left</v-icon>
@@ -42,6 +42,7 @@
                 .id
             "
             @input="editableInput"
+            :required="true"
           />
         </v-list-item-title>
 
@@ -63,6 +64,7 @@
             :value="getLessonByResourceId(resource.id).name"
             :id="getLessonByResourceId(resource.id).id"
             @input="editableInput"
+            :required="true"
           />
         </v-list-item-subtitle>
         <v-list-item-subtitle :class="getSubtitleClass" v-if="resource.contentType =='lesson'">
@@ -78,39 +80,10 @@
             :id="resource.id"
             field="name"
             @input="editableInput"
+            :required="true"
           />
         </v-list-item-subtitle>
 
-        
-        <!--
-        <v-list-item-subtitle :class="getSubtitleClass">
-
-          <div v-if="(isStudent || isViewer) && resource.contentType=='lesson'">
-            {{ resource.internalId }}.
-            {{ resource.name }}
-          </div>
-          <div v-if="(isStudent || isViewer) && resource.contentType!='lesson'">
-            {{ resource.name }}
-          </div>
-          <Editable
-            v-if="isAuthor && resource.contentType == 'lesson'"
-            placeholder="Lesson name"
-            type="lesson"
-            :value="resource.name"
-            :id="resource.id"
-            field="name"
-            @input="editableInput"
-          />
-          <Editable
-            v-if="isAuthor && resource.contentType != 'lesson'"
-            placeholder="Exercise name"
-            type="evaluative"
-            :value="resource.name"
-            :id="resource.id"
-            field="name"
-            @input="editableInput"
-          />
-        </v-list-item-subtitle>-->
       </v-list-item-content>
       <v-list-item-avatar 
         tile 
@@ -142,6 +115,7 @@
               :id="resource.id"
               field="name"
               @input="editableInput"
+              :required="true"
             />
           </v-list-item-subtitle>
         </v-list-item-content>
@@ -168,6 +142,7 @@
         :id="resource.id"
         field="description"
         @input="editableInput"
+        :required="true"
       />
     </v-card-text>
 
@@ -184,7 +159,7 @@
       :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
         : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
     >
-      <v-sheet class="mb-2 mt-n4 rounded-lg" :color="openChat ? '#74AA9C' : 'boxes'">
+      <v-sheet class="mb-2 mt-n4 rounded-lg" :color="openChat ? '#74AA9C' : 'studentboxes'">
         <div style="font-size: 14px;" class="text-center pt-1" v-if="openChat">
           Describe the Exercise you want to generate.
         </div>
@@ -216,18 +191,21 @@
           </div>
         </div>
         <div v-if="openChat">
-          <v-btn text width="100%" @click="generateExercise">Generate</v-btn>
+          <v-btn 
+            text
+            width="100%" 
+            @click="generateExercise"
+            :disabled="generateWaiting"
+          >
+            <v-progress-circular 
+              :size="20"
+              v-if="generateWaiting"
+              indeterminate
+            ></v-progress-circular>
+            Generate
+          </v-btn>
         </div>
       </v-sheet>
-      <!--
-      <Editable
-        placeholder="Exercise statement"
-        type="evaluative"
-        :value="resource.statement"
-        :id="resource.id"
-        field="statement"
-        @input="editableInput"
-      />-->
       <vue-editor 
         v-model="resource.statement" 
         style="border-radius: 8px;"
@@ -236,6 +214,7 @@
         placeholder="Evaluative statement"
       />
     </v-card-text>
+
 
     <!--<v-alert v-if="resource.html != undefined" color="#2A3B4D" 
       dark icon="mdi-language-html5" dense>
@@ -257,6 +236,8 @@ import Editable from "../../../gerneral/Editable.vue";
 
 import { VueEditor } from "vue2-editor";
 
+import { EventBus } from "@/event-bus.js";
+
 
 export default {
   name: "Header",
@@ -274,6 +255,10 @@ export default {
 
   data() {
     return {
+      generateWaiting:false,
+
+      valid: true,
+
       openChat:false,
       chat:"",
 
@@ -334,8 +319,11 @@ export default {
       const lesson = this.getLessonByResourceId(this.resource.id);
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
-    generateExercise(){
-      this.generateProgrammingEx([this.chat, this.resource.id])
+    async generateExercise(){
+      this.generateWaiting=true
+      await this.generateProgrammingEx([this.chat, this.resource.id])
+      this.generateWaiting=false
+      EventBus.$emit('runTests');
     },
   },
 };

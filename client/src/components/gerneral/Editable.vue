@@ -1,32 +1,20 @@
 <template>
-  <div>
-    <!-- @blur="valueLocal = $event.target.value; func()"   v-on:dblclick="dblclick"-->
-    <input
-      type="text"
+  <div id="edita">
+    <v-text-field
+      hide-details
+      :outlined="!valid"
+      :solo="valid"
+      :flat="valid"
+      :background-color="$vuetify.theme.currentTheme.editable"
       ref="edit"
       v-show="edit"
       :placeholder="placeholder"
       :value="valueLocal"
-      :class="'editable'"
-      style="width: calc(100% - 2px); margin:1px;"
-      :style="{backgroundColor : $vuetify.theme.currentTheme.editable, color : $vuetify.theme.currentTheme.text}"
-      @blur="
-        valueLocal = $event.target.value;
-        func();
-      "
-      @keydown.enter="handleEnter"
+      class="editable"
+      style="width: calc(100% - 2px); min-height: 25px !important;"
+      @blur="onBlur"
     />
-    <!-- v-show="edit" edit = false; 
-      valueLocal = $event.target.value;
-        func2();
-    <div
-      v-show="!edit"
-      v-on:click="click"
-      :class="'editable '+getClass"
-      style="min-width: 100px; border-radius: 5px;"
-    >
-      {{ valueLocal }}
-    </div>-->
+    <!-- :rules="required ? [rules.required] : []" -->
   </div>
 </template>
 
@@ -36,8 +24,14 @@
 export default {
   data() {
     return {
+      valid: true,
       edit: true,
-      valueLocal: this.value
+      valueLocal: this.value,
+
+      rules: {
+        required: value => !!value || "Required.",
+        min: v => (v && v.length >= 6) || "Min 6 characters"
+      }
     };
   },
   props: {
@@ -64,6 +58,10 @@ export default {
     size: {
       type: String,
       default: () => {}
+    },
+    required: {
+      type: Boolean,
+      default: () => false
     }
   },
 
@@ -74,6 +72,11 @@ export default {
   },
 
   methods: {
+    onBlur() {
+      this.valid = this.$refs.edit.validate();
+      this.valueLocal = this.$refs.edit.internalValue;
+      this.func();
+    },
     click() {
       this.edit = true;
       setTimeout(() => {
@@ -107,11 +110,23 @@ export default {
 <style scoped>
 .editable {
   font-size: inherit;
-  padding: 4px;
-  border-radius: 5px;
   line-height: normal !important;
 }
 .editable:hover {
   cursor: text !important;
 }
+
+#edita >>> .v-input__control{
+  min-height: 0px !important;
+}
+
+#edita >>> .v-input__slot{
+  min-height: 0px !important;
+}
+
+#edita >>> .v-text-field input{
+  padding: 3px 0 3px;
+}
+
+
 </style>

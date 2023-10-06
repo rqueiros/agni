@@ -110,7 +110,6 @@ module.exports = {
         c.label2 = label2.length > 40 ? label2.substring(3,40) + " ..." : label2.substring(3,label2.length)
         return c;
       })
-      console.log("expo")
       let expositives = await strapi.entityService.findMany(
         "api::expositive.expositive", {
           filters:{
@@ -140,7 +139,6 @@ module.exports = {
         e.label2 = label2
         return e
       })
-      console.log("eval")
       let evaluatives = await strapi.entityService.findMany(
         "api::evaluative.evaluative", {
           filters:{
@@ -194,7 +192,6 @@ module.exports = {
         e.label2 = ""
         return e
       })
-      console.log("quest")
       let questions = await strapi.entityService.findMany(
         "api::question.question", {
           filters:{
@@ -232,7 +229,6 @@ module.exports = {
         q.label2 = label2.length > 40 ? label2.substring(3,40) + " ..." : label2.substring(3,label2.length)
         return q
       })
-      console.log("occ")
       let occurrences = await strapi.entityService.findMany(
         "api::occurrence.occurrence", {
           filters:{
@@ -253,7 +249,6 @@ module.exports = {
         q.label2 = "Year:"+q.year.toString()
         return q
       })
-      console.log("class")
       let classes = await strapi.entityService.findMany(
         "api::class.class", {
           filters:{
@@ -274,7 +269,6 @@ module.exports = {
         q.label2 = ""
         return q
       })
-      console.log("students")
       let students = await strapi.entityService.findMany(
         "api::student.student", {
           filters:{
