@@ -3,13 +3,14 @@
     <v-container fluid>
       <v-row class="mb-1 mt-0">
         <v-col class="py-0" :cols="isSMsmaller ? 12 : 7">
-          <v-card 
-            :outlined="!isEvaluative" 
+          <v-card
+            :outlined="!isEvaluative"
             :class="isEvaluative || isQuestion ? 'shadow' : ''"
-            :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
+            :style="{
+              backgroundColor: $vuetify.theme.currentTheme.studentboxes
+            }"
           >
-
-            <Header :resource="resource" v-if="!isEvaluative && !isQuestion"/>
+            <Header :resource="resource" v-if="!isEvaluative && !isQuestion" />
 
             <Quizzer
               :resource="resource"
@@ -48,18 +49,25 @@
           class="py-0 pl-0"
           :class="isSMsmaller ? 'd-none' : 'd-block'"
         >
-          <Img :question="getQuestion" :isEvaluative="isEvaluative" :isQuestion="isQuestion"/>
+          <Img
+            :question="getQuestion"
+            :isEvaluative="isEvaluative"
+            :isQuestion="isQuestion"
+          />
         </v-col>
       </v-row>
       <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
         <v-col cols="12">
-          <Img :question="getQuestion" :isEvaluative="isEvaluative" :isQuestion="isQuestion"/>
+          <Img
+            :question="getQuestion"
+            :isEvaluative="isEvaluative"
+            :isQuestion="isQuestion"
+          />
         </v-col>
       </v-row>
     </v-container>
   </div>
 </template>
-
 
 <script>
 import { bus } from "@/main.js";
@@ -75,7 +83,7 @@ export default {
   components: {
     Header,
     Quizzer,
-    Img,
+    Img
   },
 
   props: {
@@ -83,44 +91,36 @@ export default {
       type: Object,
       default: () => {}
     },
-    isEvaluative:{
-      type:Boolean,
+    isEvaluative: {
+      type: Boolean,
       default: () => false
     },
-    isQuestion:{
-      type:Boolean,
+    isQuestion: {
+      type: Boolean,
       default: () => false
     }
   },
 
   data() {
     return {
-      index:0,
+      index: 0
     };
   },
 
-  created(){
+  created() {
     bus.$on("setIndex", payload => {
       this.index = payload;
     });
   },
 
   computed: {
-    ...mapGetters("main",[
-      "isStudent", 
-      "isTeacher", 
-      "isViewer", 
-      "isAuthor"
-    ]),
-    ...mapGetters("style", [
-      "isSMsmaller"
-    ]),
-    getQuestion(){
-      return this.resource.questions[this.index]
+    ...mapGetters("main", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
+    ...mapGetters("style", ["isSMsmaller"]),
+    getQuestion() {
+      return this.resource.questions[this.index];
     }
   }
 };
 </script>
-
 
 <style scoped></style>

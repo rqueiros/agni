@@ -1,26 +1,20 @@
 <template>
   <div id="tests">
-    <v-card 
-      :outlined="!isEvaluative" 
-      :class="isEvaluative ? 'shadow' : ''" 
-      :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
+    <v-card
+      :outlined="!isEvaluative"
+      :class="isEvaluative ? 'shadow' : ''"
+      :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     >
       <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'">
-        <v-list-item-content class="align-self-start" >
+        <v-list-item-content class="align-self-start">
           <v-list-item-title :class="getTitleClass">
             TESTS
           </v-list-item-title>
-          <v-list-item-subtitle
-            v-if="isStudent"
-            :class="getSmallTextClass"
+          <v-list-item-subtitle v-if="isStudent" :class="getSmallTextClass"
             >Run the teacher tests and create your owns!</v-list-item-subtitle
           >
         </v-list-item-content>
-        <v-list-item-avatar
-          tile
-          :size="getAvatarMediumSize"
-          color="blue"
-        >
+        <v-list-item-avatar tile :size="getAvatarMediumSize" color="blue">
           <v-icon color="white" :size="getIconBigSize">
             mdi-robot-confused
           </v-icon>
@@ -28,35 +22,44 @@
       </v-list-item>
 
       <v-data-table
-        :headers="isAuthor ? headers.author : 
-            isViewer ? headers.viewer : headers.student" 
+        :headers="
+          isAuthor
+            ? headers.author
+            : isViewer
+            ? headers.viewer
+            : headers.student
+        "
         :items="resource.tests"
-        :sort-by="isStudent ? input : ''"
+        :sort-by="isStudent ? 'input' : ''"
         mobile-breakpoint="0"
         :group-by="isStudent ? 'type' : []"
         :hide-default-footer="isTeacher"
         :no-data-text="isTeacher ? '' : 'There are no Tests'"
         disable-sort
-        :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
+        :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
       >
         <template v-slot:top>
-          <div class="py-1 d-flex" :class="!isMDsmaller ? '' : isMD ? 'px-2' : 'px-4'">
-            <v-btn 
+          <div
+            class="py-1 d-flex"
+            :class="!isMDsmaller ? '' : isMD ? 'px-2' : 'px-4'"
+          >
+            <v-btn
               @click="run"
               color="success"
               :disabled="getErrors"
-              :small="getButtonMediumSize=='small'"
-              :medium="getButtonMediumSize=='medium'"
+              :small="getButtonMediumSize == 'small'"
+              :medium="getButtonMediumSize == 'medium'"
             >
               Run Tests
             </v-btn>
-            <v-btn v-if="isStudent"
+            <v-btn
+              v-if="isStudent"
               color="primary"
               class="mx-2"
               dark
               @click="newTest"
-              :small="getButtonMediumSize=='small'"
-              :medium="getButtonMediumSize=='medium'"
+              :small="getButtonMediumSize == 'small'"
+              :medium="getButtonMediumSize == 'medium'"
             >
               New Test
             </v-btn>
@@ -68,13 +71,13 @@
                 offset-x
               >
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn 
+                  <v-btn
                     v-bind="attrs"
                     v-on="on"
                     color="blue"
                     style="color:white"
-                    :small="getButtonMediumSize=='small'"
-                    :medium="getButtonMediumSize=='medium'"
+                    :small="getButtonMediumSize == 'small'"
+                    :medium="getButtonMediumSize == 'medium'"
                   >
                     Help
                   </v-btn>
@@ -84,8 +87,12 @@
                   <v-list>
                     <v-list-item>
                       <v-list-item-content>
-                        <v-list-item-title>How to create a Test</v-list-item-title>
-                        <v-list-item-subtitle>Test examples follow above</v-list-item-subtitle>
+                        <v-list-item-title
+                          >How to create a Test</v-list-item-title
+                        >
+                        <v-list-item-subtitle
+                          >Test examples follow above</v-list-item-subtitle
+                        >
                       </v-list-item-content>
                     </v-list-item>
                   </v-list>
@@ -323,8 +330,8 @@
           </v-dialog>-->
         </template>
 
-        <template 
-          v-slot:group.header="{ items, isOpen, toggle }" 
+        <template
+          v-slot:group.header="{ items, isOpen, toggle }"
           v-if="isStudent"
         >
           <th colspan="3">
@@ -353,7 +360,7 @@
             <span v-if="isStudent">
               {{ item.alias || item.input }}
             </span>
-            <span v-if="isAuthor" >
+            <span v-if="isAuthor">
               <Editable
                 :type="'test'"
                 :value="item.input"
@@ -381,11 +388,11 @@
         </template>
 
         <template v-slot:item.output="{ item }">
-          <v-chip 
-            :color="getColor(item)" 
+          <v-chip
+            :color="getColor(item)"
             dark
-            :small="getButtonMediumSize=='small'" 
-            :medium="getButtonMediumSize=='medium'"
+            :small="getButtonMediumSize == 'small'"
+            :medium="getButtonMediumSize == 'medium'"
           >
             {{ item.output }}
           </v-chip>
@@ -401,16 +408,20 @@
           </div>
         </template>
 
-        <template v-slot:item.type="{item}">
+        <template v-slot:item.type="{ item }">
           <div :class="getSmallTextClass">
             <span v-if="isAuthor">
               <vue-cascader-select
                 :options="options"
                 @select="selected => setTypes(item.id, selected.value)"
                 :value="
-                  'subtype' in item && item.subtype != '' && item.subtype != null
+                  'subtype' in item &&
+                  item.subtype != '' &&
+                  item.subtype != null
                     ? item.subtype
-                    : item.type != null ? item.type : ''
+                    : item.type != null
+                    ? item.type
+                    : ''
                 "
               />
             </span>
@@ -421,14 +432,14 @@
           </div>
         </template>
 
-        <template v-slot:item.show="{item}">
+        <template v-slot:item.show="{ item }">
           <v-btn
             icon
             v-if="item.show"
-            @click="changeTestVisibility(item.id, false)" 
+            @click="changeTestVisibility(item.id, false)"
             :disabled="isViewer"
-            :x-small="getButtonSmallSize=='x-small'"
-            :small="getButtonSmallSize=='small'"
+            :x-small="getButtonSmallSize == 'x-small'"
+            :small="getButtonSmallSize == 'small'"
           >
             <v-icon :size="getIconSmallSize">
               mdi-eye
@@ -437,8 +448,8 @@
           <v-btn
             icon
             v-if="!item.show"
-            :x-small="getButtonSmallSize=='x-small'"
-            :small="getButtonSmallSize=='small'"
+            :x-small="getButtonSmallSize == 'x-small'"
+            :small="getButtonSmallSize == 'small'"
             @click="changeTestVisibility(item.id, true)"
             :disabled="isViewer"
           >
@@ -448,12 +459,12 @@
           </v-btn>
         </template>
 
-        <template v-slot:item.actions="{item}">
+        <template v-slot:item.actions="{ item }">
           <v-btn
             icon
             @click="deleteTest(item.id)"
-            :x-small="getButtonSmallSize=='x-small'"
-            :small="getButtonSmallSize=='small'"
+            :x-small="getButtonSmallSize == 'x-small'"
+            :small="getButtonSmallSize == 'small'"
           >
             <v-icon :size="getIconSmallSize">
               mdi-delete
@@ -465,8 +476,8 @@
           <v-btn
             width="100%"
             @click="addTestByEvaluativeId(resource.id)"
-            :small="getButtonMediumSize=='small'" 
-            :medium="getButtonMediumSize=='medium'"
+            :small="getButtonMediumSize == 'small'"
+            :medium="getButtonMediumSize == 'medium'"
             class="mb-2 mt-1"
             color="button"
           >
@@ -531,16 +542,16 @@ export default {
     isEvaluative: {
       type: Boolean,
       default: () => false
-    },
+    }
   },
 
   data: () => ({
-    valid:true,
+    valid: true,
 
     dialog: false,
     dialogDelete: false,
 
-    headers:{
+    headers: {
       student: [
         { text: "Input", value: "input", align: "start", sortable: true },
         { text: "Type", value: "type" },
@@ -553,18 +564,18 @@ export default {
         { text: "Expected", value: "expected" }
       ],
       author: [
-        { text: "Output", value: "output", align: "center"},
+        { text: "Output", value: "output", align: "center" },
         { text: "Input \n Expected", value: "input", align: "center" },
-        { text: "Type", value: "type",  align: "center" },
-        { text: "", value: "show", align: "center"},
+        { text: "Type", value: "type", align: "center" },
+        { text: "", value: "show", align: "center" },
         { text: "", value: "actions" }
       ],
       viewer: [
-        { text: "Output", value: "output", align: "center"},
+        { text: "Output", value: "output", align: "center" },
         { text: "Input \n Expected", value: "input", align: "center" },
         { text: "Type", value: "type", align: "center" },
         { text: "Show", value: "show", align: "center" }
-      ],
+      ]
     },
 
     editedIndex: -1,
@@ -612,15 +623,15 @@ export default {
   }),
 
   computed: {
-    ...mapGetters("main",[
+    ...mapGetters("main", [
       "getStatusByResourceId",
       "getStatusTeacher",
       "isStudent",
       "isTeacher",
       "isViewer",
-      "isAuthor",
+      "isAuthor"
     ]),
-    ...mapGetters("style",[
+    ...mapGetters("style", [
       "getTitleClass",
       "getSmallTextClass",
       "getAvatarMediumSize",
@@ -629,14 +640,14 @@ export default {
       "isMD",
       "getIconSmallSize",
       "getButtonMediumSize",
-      "getButtonSmallSize",
+      "getButtonSmallSize"
     ]),
     formTitle() {
       return this.editedIndex === -1 ? "New Test" : "Edit Test";
     },
     getErrors() {
       return this.errors.some(error => error.type == "error");
-    },
+    }
     /* tests2() {
       return this.resource.tests.filter((test) => test.type == "metric");
     }, */
@@ -652,19 +663,17 @@ export default {
   },
 
   mounted() {
-    EventBus.$on('runTests', this.run);
+    EventBus.$on("runTests", this.run);
   },
   beforeDestroy() {
-    EventBus.$off('runTests', this.run);
+    EventBus.$off("runTests", this.run);
   },
 
   methods: {
-    ...mapActions("main",[
-      "setProgress"
-    ]),
-    ...mapMutations("main",[
-      "addTestByEvaluativeId", 
-      "deleteTest", 
+    ...mapActions("main", ["setProgress"]),
+    ...mapMutations("main", [
+      "addTestByEvaluativeId",
+      "deleteTest",
       "editableInput"
     ]),
     changeTestVisibility(id, value) {
@@ -746,7 +755,7 @@ export default {
       });
     }, */
     run() {
-      console.log(123)
+      console.log(123);
       // Save the code
       this.$emit("onSaveCode");
 
@@ -891,9 +900,8 @@ export default {
 };
 </script>
 
-
 <style scoped>
-#tests>>>.v-data-table__empty-wrapper {
+#tests >>> .v-data-table__empty-wrapper {
   display: none;
 }
 
@@ -934,5 +942,4 @@ export default {
   height: 2em;
   padding: 0 20px 0 5px;
 }
-
 </style>

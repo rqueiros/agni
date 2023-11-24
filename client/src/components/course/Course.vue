@@ -43,19 +43,25 @@ export default {
   watch: {
     courses() {
       let type;
-      if (this.resource && "contentType" in this.resource && (this.resource.contentType=="course" || this.resource.contentType=="module" || this.resource.contentType=="lesson")){
-        type = this.resource.type
+      if (
+        this.resource &&
+        "contentType" in this.resource &&
+        (this.resource.contentType == "course" ||
+          this.resource.contentType == "module" ||
+          this.resource.contentType == "lesson")
+      ) {
+        type = this.resource.type;
       } else {
-        type = "evaluative"
+        type = "evaluative";
       }
       let id;
-      if (this.resource){
-        id = this.resource.id
+      if (this.resource) {
+        id = this.resource.id;
       } else {
-        id = 0
+        id = 0;
       }
-      this.setResource(id,type)
-    },
+      this.setResource(id, type);
+    }
   },
 
   mounted() {
@@ -67,18 +73,18 @@ export default {
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
-  beforeDestroy(){
+  beforeDestroy() {
     clearTimeout(this.updateParentDivWidthTimeout);
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
   computed: {
     ...mapState("main", { courses: state => state.courses }),
-    ...mapGetters("main",["getResourceById"]),
+    ...mapGetters("main", ["getResourceById"])
   },
 
   methods: {
-    ...mapMutations("style",["setScreenSize"]),
+    ...mapMutations("style", ["setScreenSize"]),
     setResource(resourceId, type) {
       this.isResource = resourceId;
       this.type = type;
@@ -99,10 +105,9 @@ export default {
 </script>
 
 <style>
-.v-dialog{
+.v-dialog {
   overflow-y: visible !important;
 }
-
 
 /*
 
@@ -113,7 +118,7 @@ export default {
   margin-top:1px;
 }*/
 
-/* Course Size *//*
+/* Course Size */ /*
 .courseXS {
   font-size: 1em;
 }
@@ -129,8 +134,6 @@ export default {
 .courseXL {
   font-size: 1em;
 }*/
-
-
 
 /*
 .v-stepper__header {

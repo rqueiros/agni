@@ -1,20 +1,20 @@
 <template>
   <div id="header" class="text-left">
-    <v-list-item 
-      :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" 
+    <v-list-item
+      :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'"
       class="align-start"
     >
-      <v-btn 
+      <v-btn
         @click="backToSheet"
-        color="error" 
-        class="mt-2 mr-3" 
-        style="height:60px; width:10px" min-width="10px" 
+        color="error"
+        class="mt-2 mr-3"
+        style="height:60px; width:10px"
+        min-width="10px"
         v-if="resource.contentType != 'lesson'"
       >
-          <v-icon>mdi-arrow-left</v-icon>
+        <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
       <v-list-item-content class="py-2">
-        
         <v-list-item-title :class="getTitleClass">
           <!--Student + Viewer-->
           <div v-if="isStudent || isViewer">
@@ -22,11 +22,8 @@
               getModuleByResourceId(resource.id, resource.contentType)
                 .internalId
             }}.
-            {{
-              getModuleByResourceId(resource.id, resource.contentType)
-                .name
-            }}
-          </div> 
+            {{ getModuleByResourceId(resource.id, resource.contentType).name }}
+          </div>
           <!--Author-->
           <Editable
             v-if="isAuthor"
@@ -34,13 +31,9 @@
             field="name"
             placeholder="Module Name"
             :value="
-              getModuleByResourceId(resource.id, resource.contentType)
-                .name
+              getModuleByResourceId(resource.id, resource.contentType).name
             "
-            :id="
-              getModuleByResourceId(resource.id, resource.contentType)
-                .id
-            "
+            :id="getModuleByResourceId(resource.id, resource.contentType).id"
             @input="editableInput"
             :required="true"
           />
@@ -67,8 +60,13 @@
             :required="true"
           />
         </v-list-item-subtitle>
-        <v-list-item-subtitle :class="getSubtitleClass" v-if="resource.contentType =='lesson'">
-          <div v-if="(isStudent || isViewer) && resource.contentType=='lesson'">
+        <v-list-item-subtitle
+          :class="getSubtitleClass"
+          v-if="resource.contentType == 'lesson'"
+        >
+          <div
+            v-if="(isStudent || isViewer) && resource.contentType == 'lesson'"
+          >
             {{ resource.internalId }}.
             {{ resource.name }}
           </div>
@@ -83,27 +81,32 @@
             :required="true"
           />
         </v-list-item-subtitle>
-
       </v-list-item-content>
-      <v-list-item-avatar 
-        tile 
-        :size="getAvatarMediumSize" 
-        color="red" 
+      <v-list-item-avatar
+        tile
+        :size="getAvatarMediumSize"
+        color="red"
         class="align-self-start"
       >
         <v-icon color="white" :size="getIconBigSize">
-          {{ resource.contentType=="code" ? 
-          getIcon(resource.type) : getIcon(resource.contentType) }}
+          {{
+            resource.contentType == "code"
+              ? getIcon(resource.type)
+              : getIcon(resource.contentType)
+          }}
         </v-icon>
       </v-list-item-avatar>
     </v-list-item>
 
-    <v-card-text class="pa-0" v-if="resource.contentType!='lesson'">
-      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" style="min-height:0px">
+    <v-card-text class="pa-0" v-if="resource.contentType != 'lesson'">
+      <v-list-item
+        :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'"
+        style="min-height:0px"
+      >
         <v-list-item-content class="pb-2 pt-0">
           <v-list-item-subtitle :class="getSubtitleClass">
             <!--Student + Viewer-->
-            <div v-if="(isStudent || isViewer)">
+            <div v-if="isStudent || isViewer">
               {{ resource.name }}
             </div>
             <!--Author-->
@@ -125,15 +128,25 @@
     <!--Student + Viewer-->
     <v-card-text
       v-if="resource.description && (isStudent || isViewer)"
-      :class="!isMDsmaller ? 'px-4 '+ getSmallTextClass
-        : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
+      :class="
+        !isMDsmaller
+          ? 'px-4 ' + getSmallTextClass
+          : isMD
+          ? 'px-2 ' + getSmallTextClass
+          : 'px-4 ' + getSmallTextClass
+      "
       v-html="resource.description"
     ></v-card-text>
     <!--Author-->
     <v-card-text
       v-if="resource.contentType == 'lesson' && isAuthor"
-      :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
-        : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
+      :class="
+        !isMDsmaller
+          ? 'px-4 ' + getSmallTextClass
+          : isMD
+          ? 'px-2 ' + getSmallTextClass
+          : 'px-4 ' + getSmallTextClass
+      "
     >
       <Editable
         type="lesson"
@@ -149,17 +162,31 @@
     <!--Student + Viewer-->
     <v-card-text
       v-if="resource.statement && (isStudent || isViewer)"
-      :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
-        : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
+      :class="
+        !isMDsmaller
+          ? 'px-4 ' + getSmallTextClass
+          : isMD
+          ? 'px-2 ' + getSmallTextClass
+          : 'px-4 ' + getSmallTextClass
+      "
       v-html="resource.statement"
     ></v-card-text>
     <!--Author-->
     <v-card-text
       v-if="resource.contentType == 'code' && isAuthor"
-      :class="!isMDsmaller ? 'px-4 '+getSmallTextClass
-        : isMD ? 'px-2 '+ getSmallTextClass : 'px-4 '+ getSmallTextClass" 
+      :class="
+        !isMDsmaller
+          ? 'px-4 ' + getSmallTextClass
+          : isMD
+          ? 'px-2 ' + getSmallTextClass
+          : 'px-4 ' + getSmallTextClass
+      "
     >
-      <v-sheet class="mb-2 mt-n4 rounded-lg" :color="openChat ? '#74AA9C' : 'studentboxes'">
+    <!--
+      <v-sheet
+        class="mb-2 mt-n4 rounded-lg"
+        :color="openChat ? '#74AA9C' : 'studentboxes'"
+      >
         <div style="font-size: 14px;" class="text-center pt-1" v-if="openChat">
           Describe the Exercise you want to generate.
         </div>
@@ -173,9 +200,9 @@
             <img
               :src="require('@/assets/chatgptLogo.png')"
               contain
-              height="10px" 
+              height="10px"
               class="pa-1"
-            >          
+            />
           </v-avatar>
           <div v-if="openChat" class="flex-grow-1">
             <v-textarea
@@ -191,13 +218,13 @@
           </div>
         </div>
         <div v-if="openChat">
-          <v-btn 
+          <v-btn
             text
-            width="100%" 
+            width="100%"
             @click="generateExercise"
             :disabled="generateWaiting"
           >
-            <v-progress-circular 
+            <v-progress-circular
               :size="20"
               v-if="generateWaiting"
               indeterminate
@@ -205,16 +232,15 @@
             Generate
           </v-btn>
         </div>
-      </v-sheet>
-      <vue-editor 
-        v-model="resource.statement" 
+      </v-sheet>-->
+      <vue-editor
+        v-model="resource.statement"
         style="border-radius: 8px;"
-        :style="{backgroundColor : $vuetify.theme.currentTheme.editable}"
+        :style="{ backgroundColor: $vuetify.theme.currentTheme.editable }"
         :editor-toolbar="customToolbar"
         placeholder="Evaluative statement"
       />
     </v-card-text>
-
 
     <!--<v-alert v-if="resource.html != undefined" color="#2A3B4D" 
       dark icon="mdi-language-html5" dense>
@@ -238,7 +264,6 @@ import { VueEditor } from "vue2-editor";
 
 import { EventBus } from "@/event-bus.js";
 
-
 export default {
   name: "Header",
 
@@ -255,36 +280,33 @@ export default {
 
   data() {
     return {
-      generateWaiting:false,
+      generateWaiting: false,
 
       valid: true,
 
-      openChat:false,
-      chat:"",
+      openChat: false,
+      chat: "",
 
       customToolbar: [
         ["bold", "italic", "underline"],
-        [
-          { align: "" },
-          { align: "center" },
-        ],
+        [{ align: "" }, { align: "center" }],
         ["code-block"],
         [{ list: "bullet" }],
-        [{ color: [] }, { background: [] }],
-      ],
-    }
+        [{ color: [] }, { background: [] }]
+      ]
+    };
   },
 
   computed: {
-    ...mapGetters("main",[
+    ...mapGetters("main", [
       "getModuleByResourceId",
       "getLessonByResourceId",
       "isStudent",
       "isTeacher",
       "isAuthor",
-      "isViewer",
+      "isViewer"
     ]),
-    ...mapGetters("style",[
+    ...mapGetters("style", [
       "getTitleClass",
       "getSubtitleClass",
       "getIconBigSize",
@@ -305,11 +327,11 @@ export default {
         type: "evaluative"
       };
       this.editableInput(obj2);
-    },
+    }
   },
 
   methods: {
-    ...mapMutations("main",["editableInput"]),
+    ...mapMutations("main", ["editableInput"]),
     ...mapActions("main", ["generateProgrammingEx"]),
     /*html_escape(html_str) {
       const lines = html_str.split("\n");
@@ -319,38 +341,38 @@ export default {
       const lesson = this.getLessonByResourceId(this.resource.id);
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
-    async generateExercise(){
-      this.generateWaiting=true
-      await this.generateProgrammingEx([this.chat, this.resource.id])
-      this.generateWaiting=false
-      EventBus.$emit('runTests');
-    },
-  },
+    async generateExercise() {
+      this.generateWaiting = true;
+      await this.generateProgrammingEx([this.chat, this.resource.id]);
+      this.generateWaiting = false;
+      EventBus.$emit("runTests");
+    }
+  }
 };
 </script>
 
 <style scoped>
-.gptAvater:hover{
+.gptAvater:hover {
   cursor: pointer;
 }
 
 /* Text editor */
-#header>>>.ql-toolbar.ql-snow{
-  border:none;
+#header >>> .ql-toolbar.ql-snow {
+  border: none;
   border-bottom: 1px solid #ccc;
 }
-#header>>>.ql-container.ql-snow{
-  border:none;
+#header >>> .ql-container.ql-snow {
+  border: none;
 }
-#header>>>.ql-editor{
-  font-size:0.75rem;
+#header >>> .ql-editor {
+  font-size: 0.75rem;
   min-height: 100px;
 }
-#header>>>.quillWrapper .ql-snow.ql-toolbar .ql-formats{
-  margin-bottom:2px;
+#header >>> .quillWrapper .ql-snow.ql-toolbar .ql-formats {
+  margin-bottom: 2px;
 }
-#header>>>.quillWrapper .ql-snow.ql-toolbar{
-  padding-top:4px;
-  padding-bottom:4px
+#header >>> .quillWrapper .ql-snow.ql-toolbar {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 </style>

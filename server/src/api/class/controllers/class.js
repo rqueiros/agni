@@ -129,7 +129,7 @@ module.exports = createCoreController(uid, () => {
                let evalStats = statuses.filter(s => s.evaluative.id == evaluative.id)
                evalStats = evalStats.map(s => s.grade==100 ? 1 : 0)
                let value = evalStats.reduce((accumulator, currentValue) => accumulator + currentValue, 0)/studentLen
-               evaluative.correctPerc = value*100
+               evaluative.correctPerc = Math.round(value*100)
             })
 
             let res = {students:stat, evaluatives:evaluatives}

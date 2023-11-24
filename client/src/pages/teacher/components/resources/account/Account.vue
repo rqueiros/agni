@@ -1,6 +1,6 @@
 <template>
   <div id="account" style="width: 100%;">
-    <v-container fluid class="pa-0 mb-4">
+    <v-container fluid class="pa-0 mb-4" style="max-width: 1200px;">
       <v-row>
         <v-col style="max-width: 200px;">
           <v-card
@@ -15,26 +15,34 @@
               height="170"
               color="primary"
               rounded="xl"
-              v-if="(!'image' in getUser) || getUser.image == null || ('data' in getUser.image &&  getUser.image.data == null)"
+              v-if="
+                !'image' in getUser ||
+                  getUser.image == null ||
+                  ('data' in getUser.image && getUser.image.data == null)
+              "
             >
               <v-icon size="xxx-large" color="white">
                 mdi-account-tie
               </v-icon>
             </v-avatar>
             <v-file-input
-            v-if="(!'image' in getUser) || getUser.image == null || ('data' in getUser.image &&  getUser.image.data == null)"
+              v-if="
+                !'image' in getUser ||
+                  getUser.image == null ||
+                  ('data' in getUser.image && getUser.image.data == null)
+              "
               v-model="image"
               prepend-icon="mdi-plus"
               hide-details
               hide-input
               class="avatarInput"
-              :style="{backgroundColor : $vuetify.theme.currentTheme.button}"
+              :style="{ backgroundColor: $vuetify.theme.currentTheme.button }"
             ></v-file-input>
             <v-badge
               v-else
               overlap
-              @click.native="deleteImage" 
-              icon="mdi-close" 
+              @click.native="deleteImage"
+              icon="mdi-close"
               bordered
               bottom
               class="badge"
@@ -56,14 +64,14 @@
           </v-card>
         </v-col>
         <v-col>
-          <v-row >
+          <v-row>
             <v-col>
-              <v-card
-                class="pa-2 shadow"
-                width="100%"
-                color="boxes"
-              >
-                <v-row no-gutters style="height:29px" class="d-flex align-center">
+              <v-card class="pa-2 shadow" width="100%" color="boxes">
+                <v-row
+                  no-gutters
+                  style="height:29px"
+                  class="d-flex align-center"
+                >
                   <v-col cols="2">
                     Name:
                   </v-col>
@@ -85,14 +93,14 @@
               </v-card>
             </v-col>
           </v-row>
-          <v-row >
+          <v-row>
             <v-col>
-              <v-card
-                class="pa-2 shadow"
-                width="100%"
-                color="boxes"
-              >
-                <v-row no-gutters style="height:29px" class="d-flex align-center">
+              <v-card class="pa-2 shadow" width="100%" color="boxes">
+                <v-row
+                  no-gutters
+                  style="height:29px"
+                  class="d-flex align-center"
+                >
                   <v-col cols="2">
                     Email:
                   </v-col>
@@ -114,12 +122,12 @@
           </v-row>
           <v-row>
             <v-col>
-              <v-card
-                class="pa-2 shadow"
-                width="100%"
-                color="boxes"
-              >
-              <v-row no-gutters style="min-height:29px" class="d-flex align-center">
+              <v-card class="pa-2 shadow" width="100%" color="boxes">
+                <v-row
+                  no-gutters
+                  style="min-height:29px"
+                  class="d-flex align-center"
+                >
                   <v-col cols="2">
                     Password:
                   </v-col>
@@ -139,12 +147,7 @@
       </v-row>
       <v-row>
         <v-col>
-          <v-card
-            class="pa-2 shadow"
-            width="100%"
-            height="100%"
-            color="boxes"
-          >
+          <v-card class="pa-2 shadow" width="100%" height="100%" color="boxes">
             <v-row>
               <v-col class="d-flex justify-center">
                 <v-icon size="x-large" color="primary">
@@ -215,7 +218,9 @@
       <v-row>
         <v-col>
           <v-expansion-panels flat class="shadow">
-            <v-expansion-panel :style="{backgroundColor : $vuetify.theme.currentTheme.boxes}">
+            <v-expansion-panel
+              :style="{ backgroundColor: $vuetify.theme.currentTheme.boxes }"
+            >
               <v-expansion-panel-header>
                 Account Settings
               </v-expansion-panel-header>
@@ -230,7 +235,13 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>
-                      <v-btn text color="error" class="pa-0" @click="deleteAccount" disabled>
+                      <v-btn
+                        text
+                        color="error"
+                        class="pa-0"
+                        @click="deleteAccount"
+                        disabled
+                      >
                         Delete Account
                       </v-btn>
                     </v-list-item-title>
@@ -299,7 +310,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="darken-1" text @click="dialog=false" width="84px">
+          <v-btn color="darken-1" text @click="dialog = false" width="84px">
             Cancel
           </v-btn>
           <v-btn color="primary" text @click="save" width="84px">
@@ -313,55 +324,50 @@
 </template>
 
 <script>
-import { mapActions, mapGetters, mapMutations } from 'vuex';
+import { mapActions, mapGetters, mapMutations } from "vuex";
 
-import Editable from '../../../../../components/gerneral/Editable.vue';
+import Editable from "../../../../../components/gerneral/Editable.vue";
 
 export default {
   name: "Account",
 
-  components:{
+  components: {
     Editable
   },
 
   data: () => ({
-    image:null,
+    image: null,
     imageData: null,
-    contents:{
-      occurrences:0,
-      classes:0,
-      students:0,
-      courses:0,
-      exposititves:0,
-      evaluatives:0,
-      questions:0
+    contents: {
+      occurrences: 0,
+      classes: 0,
+      students: 0,
+      courses: 0,
+      exposititves: 0,
+      evaluatives: 0,
+      questions: 0
     },
-    dialog:false,
+    dialog: false
   }),
 
   async created() {
-    this.loadImage()
-    let resp = await this.getTeachersContent()
-    this.contents.occurrences = resp.occurrences.length
-    this.contents.classes = resp.classes.length
-    this.contents.students = resp.students.length
-    this.contents.courses = resp.course.length
-    this.contents.exposititves = resp.expositives.length
-    this.contents.evaluatives = resp.evaluatives.length
-    this.contents.questions = resp.questions.length
-
+    this.loadImage();
+    let resp = await this.getTeachersContent();
+    this.contents.occurrences = resp.occurrences.length;
+    this.contents.classes = resp.classes.length;
+    this.contents.students = resp.students.length;
+    this.contents.courses = resp.course.length;
+    this.contents.exposititves = resp.expositives.length;
+    this.contents.evaluatives = resp.evaluatives.length;
+    this.contents.questions = resp.questions.length;
   },
 
   computed: {
-    ...mapGetters("main", [
-      "getUser",
-      "getAccountEditable",
-      "getDomain"
-    ]),
+    ...mapGetters("main", ["getUser", "getAccountEditable", "getDomain"])
   },
 
   watch: {
-    image(newV){
+    image(newV) {
       const obj = {
         id: 0,
         value: newV,
@@ -369,34 +375,34 @@ export default {
         type: "user"
       };
       this.editableInput(obj);
-      this.loadImage()
-      if (newV != null ){
-        this.updateUserImage(this.getUser.image)
+      this.loadImage();
+      if (newV != null) {
+        this.updateUserImage(this.getUser.image);
       }
     }
   },
 
   methods: {
-    ...mapMutations("main",[
-      "editableInput",
-    ]),
+    ...mapMutations("main", ["editableInput"]),
     ...mapActions("main", [
       "changePW",
       "getTeachersContent",
       "updateUserImage"
     ]),
-    save(){
-      this.dialog = false
-      this.changePW()
+    save() {
+      this.dialog = false;
+      this.changePW();
     },
     loadImage() {
-      this.imageData = null
+      this.imageData = null;
       if (this.getUser && "image" in this.getUser) {
         const file = this.getUser.image;
-        if (file != null && !("data" in file && file.data == null) && "url" in file) {
-          this.imageData =
-            this.getDomain +
-            this.getUser.image.url;
+        if (
+          file != null &&
+          !("data" in file && file.data == null) &&
+          "url" in file
+        ) {
+          this.imageData = this.getDomain + this.getUser.image.url;
         } else if (file != null && "name" in file) {
           const reader = new FileReader();
           reader.onload = () => {
@@ -408,58 +414,52 @@ export default {
         }
       }
     },
-    deleteImage(){
+    deleteImage() {
       const obj = {
         id: 0,
-        value: {data:null},
+        value: { data: null },
         field: "image",
         type: "user"
       };
-      this.file=null;
+      this.file = null;
       this.editableInput(obj);
-      this.loadImage()
-      this.updateUserImage(this.getUser.image)
+      this.loadImage();
+      this.updateUserImage(this.getUser.image);
     },
-    deleteAccount(){
+    deleteAccount() {
       //TODO
-      console.log("Delete Account")
+      console.log("Delete Account");
     }
   }
-}
-
+};
 </script>
 
 <style scoped>
-#account>>>.v-badge__badge:hover{
+#account >>> .v-badge__badge:hover {
   cursor: pointer;
 }
-#account>>>.v-badge__badge{
-  color:black;
-  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 
-    0px 2px 5px 0px rgba(0, 0, 0, 0.14), 
-    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+#account >>> .v-badge__badge {
+  color: black;
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
 
-
-.avatarInput{
+.avatarInput {
   display: flex;
   justify-content: center;
   align-items: center;
-  width:26px;
+  width: 26px;
   height: 26px;
-  padding:0px;
+  padding: 0px;
   border-radius: 15px;
   position: absolute;
-  bottom:7px;
-  right:7px;
-  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 
-    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 
-    0px 1px 5px 0px rgba(0, 0, 0, 0.12)
+  bottom: 7px;
+  right: 7px;
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
 
-#account>>>.v-input__prepend-outer{
-  margin:0;
+#account >>> .v-input__prepend-outer {
+  margin: 0;
 }
-
-
 </style>

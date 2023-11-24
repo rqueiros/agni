@@ -129,7 +129,7 @@ module.exports = createCoreController(uid, () => {
             })
 
             correctExercises = (finalStatuses.filter(s => s.grade == 100).length / finalStatuses.length) * 100
-            correctExercises = Number(correctExercises.toFixed(2));
+            correctExercises = Math.round(correctExercises)
 
             evalDic = evalDic.filter(l => l.length != 0)
             let engagementStatuses = []
@@ -141,10 +141,10 @@ module.exports = createCoreController(uid, () => {
             }
             engagementStatuses = engagementStatuses.map(s => finalStatuses.find(stat => stat.evaluative.id == s.id))
             engagment = engagementStatuses.map(s => s.grade).reduce((accumulator, currentValue) => accumulator + currentValue, 0)/engagementStatuses.length
-            engagment = Number(engagment.toFixed(2));
+            engagment = Math.round(engagment)
 
             let performance = (correctExercises + engagment) / 2
-            performance = Number(performance.toFixed(2));
+            performance = Math.round(performance)
 
 
             return {

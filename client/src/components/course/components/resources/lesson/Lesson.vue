@@ -3,18 +3,22 @@
     <v-container fluid>
       <v-row class="mb-1 mt-0">
         <v-col :cols="isSMsmaller ? 12 : 7" class="py-0">
-          <v-card outlined :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
-
+          <v-card
+            outlined
+            :style="{
+              backgroundColor: $vuetify.theme.currentTheme.studentboxes
+            }"
+          >
             <Header :resource="resource" />
 
             <v-spacer class="mb-1"></v-spacer>
 
-            <v-divider v-if="resource.expositives.length>0"/>
+            <v-divider v-if="resource.expositives.length > 0" />
             <Expositives :resource="resource" ref="expositives" />
 
             <v-spacer class="mb-6"></v-spacer>
 
-            <v-divider v-if="resource.evaluatives.length>0"/>
+            <v-divider v-if="resource.evaluatives.length > 0" />
             <Evaluatives :resource="resource" />
 
             <v-spacer v-if="isStudent" class="mb-6"></v-spacer>
@@ -98,15 +102,8 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main",[
-      "isStudent",
-      "isTeacher",
-      "isAuthor",
-      "isViewer",
-    ]),
-    ...mapGetters("style",[
-      "isSMsmaller"
-    ])
+    ...mapGetters("main", ["isStudent", "isTeacher", "isAuthor", "isViewer"]),
+    ...mapGetters("style", ["isSMsmaller"])
   },
   methods: {
     setMilestone(index) {

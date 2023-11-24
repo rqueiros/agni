@@ -1,7 +1,7 @@
 <template>
-  <v-card 
-    class="mx-auto" 
-    :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}" 
+  <v-card
+    class="mx-auto"
+    :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     outlined
   >
     <v-list-item>
@@ -64,10 +64,7 @@ export default {
   }),
 
   computed: {
-    ...mapGetters("main", [
-      "isStudent",
-      "isTeacher"
-    ]),
+    ...mapGetters("main", ["isStudent", "isTeacher"]),
     ...mapGetters("style", [
       "getTitleClass",
       "getSmallTextClass",

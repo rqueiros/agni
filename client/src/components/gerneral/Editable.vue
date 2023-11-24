@@ -116,17 +116,15 @@ export default {
   cursor: text !important;
 }
 
-#edita >>> .v-input__control{
+#edita >>> .v-input__control {
   min-height: 0px !important;
 }
 
-#edita >>> .v-input__slot{
+#edita >>> .v-input__slot {
   min-height: 0px !important;
 }
 
-#edita >>> .v-text-field input{
+#edita >>> .v-text-field input {
   padding: 3px 0 3px;
 }
-
-
 </style>

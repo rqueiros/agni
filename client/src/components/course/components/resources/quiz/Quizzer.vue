@@ -1,21 +1,20 @@
 <template>
   <div id="quizzer">
-
     <div :class="isMD ? 'mx-2' : 'mx-4'">
-      <div 
-        v-if="isEvaluative && !isQuestion" 
-        class="pt-2 pb-2" 
+      <div
+        v-if="isEvaluative && !isQuestion"
+        class="pt-2 pb-2"
         :class="getSubtitleClass"
       >
-        <Editable 
+        <Editable
           v-if="isAuthor"
-          type="evaluative" 
-          :value="resource.name" 
-          :id="resource.id" 
+          type="evaluative"
+          :value="resource.name"
+          :id="resource.id"
           placeholder="Evaluative name"
           field="name"
-          @input="editableInput" 
-          onclick="event.stopPropagation()" 
+          @input="editableInput"
+          onclick="event.stopPropagation()"
           :required="true"
         />
         <span v-if="isViewer">
@@ -24,70 +23,84 @@
       </div>
     </div>
 
-    <v-stepper 
-      v-model="question" 
-      v-if="this.resource.questions.length > 0" 
+    <v-stepper
+      v-model="question"
+      v-if="this.resource.questions.length > 0"
       elevation="0"
     >
-      <v-stepper-header v-if="!isQuestion" style="height:60px" :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
+      <v-stepper-header
+        v-if="!isQuestion"
+        style="height:60px"
+        :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
+      >
         <template v-for="n in resource.questions.length">
-          <v-stepper-step 
+          <v-stepper-step
             color="error"
-            :complete="question > n && isStudent" 
-            :step="n" 
-            editable 
-            :key="n" 
+            :complete="question > n && isStudent"
+            :step="n"
+            editable
+            :key="n"
             v-if="true"
           />
-          <v-divider v-if="n !== resource.questions.length" :key="n+'b'"/>
+          <v-divider v-if="n !== resource.questions.length" :key="n + 'b'" />
         </template>
       </v-stepper-header>
 
       <v-stepper-items>
-        <v-stepper-content :class="isAuthor ? 'px-3 py-1' : 'py-2'"
-          v-for="n in resource.questions.length" 
-          :step="n" 
-          :key="n+'c'"
-          :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
+        <v-stepper-content
+          :class="isAuthor ? 'px-3 py-1' : 'py-2'"
+          v-for="n in resource.questions.length"
+          :step="n"
+          :key="n + 'c'"
+          :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
         >
-          <v-list :class="getSmallTextClass" :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
-            <v-list-item 
-              class="pb-2" 
-              style="min-height:0" 
+          <v-list
+            :class="getSmallTextClass"
+            :style="{
+              backgroundColor: $vuetify.theme.currentTheme.studentboxes
+            }"
+          >
+            <v-list-item
+              class="pb-2"
+              style="min-height:0"
               :class="isAuthor ? 'px-0' : ''"
             >
-              <v-list-item-content class="pb-0 pt-1"> 
+              <v-list-item-content class="pb-0 pt-1">
                 <!--Student & Viewer-->
                 <div
                   v-if="isStudent || isViewer"
-                  v-html="n + '. ' + resource.questions[n - 1].question">
-                </div>
+                  v-html="n + '. ' + resource.questions[n - 1].question"
+                ></div>
 
                 <!--Author-->
-                <vue-editor 
+                <vue-editor
                   v-if="isAuthor"
-                  v-model="resource.questions[n - 1].question" 
+                  v-model="resource.questions[n - 1].question"
                   style="border-radius: 8px;"
                   :editor-toolbar="customToolbar"
                   placeholder="Question"
-                  @text-change="(delta, oldDelta) => questionChange(delta, oldDelta)"
-                  :style="{backgroundColor : $vuetify.theme.currentTheme.editable}"
+                  @text-change="
+                    (delta, oldDelta) => questionChange(delta, oldDelta)
+                  "
+                  :style="{
+                    backgroundColor: $vuetify.theme.currentTheme.editable
+                  }"
                 />
               </v-list-item-content>
 
               <!--Author-->
-              <v-list-item-avatar 
+              <v-list-item-avatar
                 v-if="isAuthor & !isQuestion"
-                min-height="0"  
+                min-height="0"
                 height="fit-content"
                 class="my-0 ml-0 d-flex align-self-start justify-end pt-1"
               >
-                <v-btn 
+                <v-btn
                   icon
-                  :small="getButtonMediumSize=='small'"
-                  :medium="getButtonMediumSize=='medium'"
+                  :small="getButtonMediumSize == 'small'"
+                  :medium="getButtonMediumSize == 'medium'"
                 >
-                  <v-icon 
+                  <v-icon
                     @click="deleteQue(resource.questions[n - 1].id)"
                     :size="getIconMediumSize"
                   >
@@ -99,28 +112,29 @@
 
             <v-list-item class="py-1">
               <v-list-item-content class="pa-0">
-                <v-container 
-                  fluid
-                  :class="isAuthor ? 'py-0' : 'py-1'" 
-                >
-                  <v-simple-table :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
+                <v-container fluid :class="isAuthor ? 'py-0' : 'py-1'">
+                  <v-simple-table
+                    :style="{
+                      backgroundColor: $vuetify.theme.currentTheme.studentboxes
+                    }"
+                  >
                     <tr v-if="isTeacher">
                       <td class="pb-1">
                         <span>Correct:</span>
                       </td>
                     </tr>
-                    <tr 
-                      v-for="(answer, index) in getAnswers(n - 1)" 
+                    <tr
+                      v-for="(answer, index) in getAnswers(n - 1)"
                       :key="index + 'third'"
                     >
                       <td class="py-1 pl-2" width="50">
-                        <v-checkbox  
+                        <v-checkbox
                           color="error"
                           class="mt-0"
-                          v-model="selected" 
-                          :value="index" 
-                          hide-details 
-                          :dense="getIconMediumSize=='x-large'"
+                          v-model="selected"
+                          :value="index"
+                          hide-details
+                          :dense="getIconMediumSize == 'x-large'"
                           :disabled="isViewer"
                         />
                       </td>
@@ -129,23 +143,23 @@
                           {{ answer.answer }}
                         </span>
                         <span v-if="isAuthor">
-                          <Editable 
-                            type="answer" 
-                            :value="answer.answer" 
-                            :id="answer.id" 
+                          <Editable
+                            type="answer"
+                            :value="answer.answer"
+                            :id="answer.id"
                             field="answer"
-                            @input="editableInput" 
-                            placeholder="Answer" 
+                            @input="editableInput"
+                            placeholder="Answer"
                             :required="true"
                           />
                         </span>
                       </td>
                       <td v-if="isAuthor" class="pl-2">
-                        <v-btn 
-                          icon 
+                        <v-btn
+                          icon
                           @click="deleteAns(answer.id)"
-                          :x-small="getButtonSmallSize=='x-small'"
-                          :small="getButtonSmallSize=='small'"
+                          :x-small="getButtonSmallSize == 'x-small'"
+                          :small="getButtonSmallSize == 'small'"
                         >
                           <v-icon :size="getIconSmallSize">
                             mdi-delete
@@ -153,14 +167,16 @@
                         </v-btn>
                       </td>
                     </tr>
-                    <tr v-if="isAuthor" >
+                    <tr v-if="isAuthor">
                       <td :colspan="3" class="px-2 pt-2">
-                        <v-btn 
+                        <v-btn
                           class="ma-1"
-                          width="100%" 
-                          @click="addAnswerByQuestionId(resource.questions[n - 1].id)"
-                          :small="getButtonMediumSize=='small'"
-                          :medium="getButtonMediumSize=='medium'"
+                          width="100%"
+                          @click="
+                            addAnswerByQuestionId(resource.questions[n - 1].id)
+                          "
+                          :small="getButtonMediumSize == 'small'"
+                          :medium="getButtonMediumSize == 'medium'"
                           color="button"
                         >
                           <v-icon> mdi-plus </v-icon>
@@ -174,22 +190,22 @@
             </v-list-item>
 
             <v-list-item v-if="isStudent">
-              <v-btn 
-                v-show="n != steps" 
-                color="success" 
-                @click="nextStep(n)" 
-                class="mr-2" 
-                :small="getButtonMediumSize=='small'"
-                :medium="getButtonMediumSize=='medium'"
+              <v-btn
+                v-show="n != steps"
+                color="success"
+                @click="nextStep(n)"
+                class="mr-2"
+                :small="getButtonMediumSize == 'small'"
+                :medium="getButtonMediumSize == 'medium'"
               >
                 Continue
               </v-btn>
-              <v-btn 
-                v-show="n == steps" 
-                color="error" 
-                @click="finish" 
-                :small="getButtonMediumSize=='small'"
-                :medium="getButtonMediumSize=='medium'"
+              <v-btn
+                v-show="n == steps"
+                color="error"
+                @click="finish"
+                :small="getButtonMediumSize == 'small'"
+                :medium="getButtonMediumSize == 'medium'"
               >
                 Finish
               </v-btn>
@@ -202,13 +218,13 @@
     <div class="px-6">
       <v-menu offset-y v-if="isAuthor && !isQuestion">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn 
-            v-bind="attrs" 
-            v-on="on" 
-            width="100%" 
+          <v-btn
+            v-bind="attrs"
+            v-on="on"
+            width="100%"
             class="mb-2"
-            :small="getButtonMediumSize=='small'"
-            :medium="getButtonMediumSize=='medium'"
+            :small="getButtonMediumSize == 'small'"
+            :medium="getButtonMediumSize == 'medium'"
             color="button"
           >
             <v-icon> mdi-plus </v-icon>
@@ -216,10 +232,10 @@
           </v-btn>
         </template>
         <v-list dense>
-          <v-list-item 
+          <v-list-item
             class="text-center"
-            v-for="(item, index) in addQuestionMenu" 
-            :key="index" 
+            v-for="(item, index) in addQuestionMenu"
+            :key="index"
             @click="addQuestion(item.title, resource.id)"
           >
             <v-list-item-title>{{ item.title }}</v-list-item-title>
@@ -228,18 +244,16 @@
       </v-menu>
     </div>
 
-    <SelectDialog 
+    <SelectDialog
       v-if="isAuthor"
-      :dialog="dialog" 
-      :type="'questions'" 
+      :dialog="dialog"
+      :type="'questions'"
       :already="resource.questions.map(e => e.id)"
-      @addExistingquestions="addExistingQue" 
-      @closeSelectDialog="dialog = false" 
+      @addExistingquestions="addExistingQue"
+      @closeSelectDialog="dialog = false"
     />
-
   </div>
 </template>
-
 
 <script>
 import { bus } from "@/main.js";
@@ -252,14 +266,13 @@ import SelectDialog from "../../../../gerneral/SelectDialog.vue";
 
 import { VueEditor } from "vue2-editor";
 
-
 export default {
   name: "Quizzer",
 
   props: {
     resource: {
       type: Object,
-      default: () => { }
+      default: () => {}
     },
     isEvaluative: {
       type: Boolean,
@@ -279,7 +292,7 @@ export default {
 
   data() {
     return {
-      valid:true,
+      valid: true,
 
       studentAnswers: {},
       question: 1,
@@ -289,28 +302,24 @@ export default {
 
       dialog: false,
 
-      addQuestionMenu: [
-        { title: "NEW" },
-        { title: "SELECT" }
-      ],
+      addQuestionMenu: [{ title: "NEW" }, { title: "SELECT" }],
 
       customToolbar: [
         ["bold", "italic", "underline"],
-        [
-          { align: "" },
-          { align: "center" },
-        ],
+        [{ align: "" }, { align: "center" }],
         ["code-block"],
         [{ list: "bullet" }],
-        [{ color: [] }, { background: [] }],
-      ],
+        [{ color: [] }, { background: [] }]
+      ]
     };
   },
 
   created() {
     //this.quiz = this.getQuizByResourceId(this.resource.quizId);
-    if (this.isTeacher){
-      this.selected = this.resource.questions[this.question - 1].correctAnswer.map(v => v - 1)
+    if (this.isTeacher) {
+      this.selected = this.resource.questions[
+        this.question - 1
+      ].correctAnswer.map(v => v - 1);
     }
     if ("questions" in this.resource) {
       this.steps = this.resource.questions.length;
@@ -319,7 +328,6 @@ export default {
     }
   },
 
-
   watch: {
     steps(val) {
       if (this.question > val) {
@@ -327,17 +335,26 @@ export default {
       }
     },
     question(newE1) {
-      if (this.isTeacher){
-        this.selected = this.resource.questions[newE1 - 1].correctAnswer.map(v => v - 1)
-      } else if (this.isStudent){
-        this.selected = newE1-1 in this.studentAnswers ? this.studentAnswers[newE1-1] : []
+      if (this.isTeacher) {
+        this.selected = this.resource.questions[newE1 - 1].correctAnswer.map(
+          v => v - 1
+        );
+      } else if (this.isStudent) {
+        this.selected =
+          newE1 - 1 in this.studentAnswers
+            ? this.studentAnswers[newE1 - 1]
+            : [];
       }
       bus.$emit("setIndex", newE1 - 1);
     },
     selected(newS) {
-      if (this.isTeacher){
-        let corrA = this.resource.questions[this.question - 1].correctAnswer.map(v => v - 1)
-        if (!(newS.length == corrA.length && newS.every((v, i) => v == corrA[i]))){
+      if (this.isTeacher) {
+        let corrA = this.resource.questions[
+          this.question - 1
+        ].correctAnswer.map(v => v - 1);
+        if (
+          !(newS.length == corrA.length && newS.every((v, i) => v == corrA[i]))
+        ) {
           const obj = {
             value: newS.map(v => v + 1),
             type: "question",
@@ -346,10 +363,10 @@ export default {
           };
           this.editableInput(obj);
         }
-      } else if (this.isStudent){
-        this.studentAnswers[this.question-1] =  newS
+      } else if (this.isStudent) {
+        this.studentAnswers[this.question - 1] = newS;
       }
-    },
+    }
   },
 
   computed: {
@@ -359,7 +376,7 @@ export default {
       "isStudent",
       "isTeacher",
       "isViewer",
-      "isAuthor",
+      "isAuthor"
     ]),
     ...mapGetters("style", [
       "getSmallTextClass",
@@ -374,10 +391,10 @@ export default {
       return this.resource.questions.length;
     },
     getAnswers() {
-      return function (n) {
+      return function(n) {
         return this.resource.questions[n].answers;
       };
-    },
+    }
   },
 
   methods: {
@@ -391,23 +408,25 @@ export default {
       "setChanged"
     ]),
     ...mapActions("main", [
-      "setProgress", 
-      "fetchCollectionTypes", 
+      "setProgress",
+      "fetchCollectionTypes",
       "addExistingQuestions"
     ]),
     async addExistingQue(ids) {
-      await this.addExistingQuestions([this.resource.id, ids])
-      this.dialog = false
+      await this.addExistingQuestions([this.resource.id, ids]);
+      this.dialog = false;
     },
     deleteAns(id) {
       this.deleteAnswer(id);
-      this.selected = this.resource.questions[this.question - 1].correctAnswer.map(v => v - 1);
+      this.selected = this.resource.questions[
+        this.question - 1
+      ].correctAnswer.map(v => v - 1);
     },
-    questionChange(delta,oldDelta,){
-      if (oldDelta.ops[0].insert!="\n"){
-        this.setChanged(true)
+    questionChange(delta, oldDelta) {
+      if (oldDelta.ops[0].insert != "\n") {
+        this.setChanged(true);
       }
-    },  
+    },
     deleteQue(id) {
       this.deleteQuestion(id);
       if (this.question > this.resource.questions.length && this.question > 1) {
@@ -426,20 +445,23 @@ export default {
       let cont = 0;
       const wrongQuestions = [];
       this.resource.questions.forEach(question => {
-        let studentAnswer = i in this.studentAnswers ? this.studentAnswers[i].map(v => v+1) : []
-        if (studentAnswer.length != question.correctAnswer.length){
+        let studentAnswer =
+          i in this.studentAnswers
+            ? this.studentAnswers[i].map(v => v + 1)
+            : [];
+        if (studentAnswer.length != question.correctAnswer.length) {
           wrongQuestions.push(i);
           i++;
-          return
+          return;
         }
-        for (let j =0; j<question.correctAnswer.length; j++){
-          if (question.correctAnswer[j]!=studentAnswer[j]){
+        for (let j = 0; j < question.correctAnswer.length; j++) {
+          if (question.correctAnswer[j] != studentAnswer[j]) {
             wrongQuestions.push(i);
             i++;
-            return
+            return;
           }
         }
-        cont++
+        cont++;
         i++;
       });
 
@@ -448,13 +470,13 @@ export default {
         return { question: q.id };
       });
       for (let i = 0; i < ques.length; i++) {
-        ques[i].answer = JSON.stringify(this.studentAnswers[i].map(v => v+1))
+        ques[i].answer = JSON.stringify(this.studentAnswers[i].map(v => v + 1));
       }
-      console.log(ques)
+      console.log(ques);
 
       let htmlMsg = `${cont} from ${this.resource.questions.length} (${status}%) answers correct!`;
       if (wrongQuestions.length > 0) {
-        htmlMsg += `<br>Questions wrong: ${wrongQuestions.map(v => v+1)}`;
+        htmlMsg += `<br>Questions wrong: ${wrongQuestions.map(v => v + 1)}`;
       }
 
       await Swal.fire({
@@ -466,7 +488,7 @@ export default {
       });
 
       const lesson = this.getLessonByResourceId(this.resource.id); //TODO problem with contentType
-      console.log(lesson)
+      console.log(lesson);
 
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
 
@@ -477,11 +499,10 @@ export default {
           answer: [{ __component: "solution.quiz", questions: ques }]
         }
       });
-
     },
     addQuestion(type, id) {
       if (type == "NEW") {
-        this.addQuestionByResourceId(id)
+        this.addQuestionByResourceId(id);
       } else if (type == "SELECT") {
         this.dialog = true;
       }
@@ -490,37 +511,36 @@ export default {
 };
 </script>
 
-
 <style scoped>
 /*Checkboxes styles */
-#quizzer>>>.v-input--selection-controls{
-  padding-top:0;
+#quizzer >>> .v-input--selection-controls {
+  padding-top: 0;
 }
-#quizzer>>>.v-data-table__wrapper{
-  overflow:visible;
+#quizzer >>> .v-data-table__wrapper {
+  overflow: visible;
 }
 
-#quizzer>>>.v-stepper__step{
-  padding:18px
+#quizzer >>> .v-stepper__step {
+  padding: 18px;
 }
 
 /* Text editor */
-#quizzer>>>.ql-toolbar.ql-snow{
-  border:none;
+#quizzer >>> .ql-toolbar.ql-snow {
+  border: none;
   border-bottom: 1px solid #ccc;
 }
-#quizzer>>>.ql-container.ql-snow{
-  border:none;
+#quizzer >>> .ql-container.ql-snow {
+  border: none;
 }
-#quizzer>>>.ql-editor{
-  font-size:0.75rem;
+#quizzer >>> .ql-editor {
+  font-size: 0.75rem;
   min-height: 100px;
 }
-#quizzer>>>.quillWrapper .ql-snow.ql-toolbar .ql-formats{
-  margin-bottom:2px;
+#quizzer >>> .quillWrapper .ql-snow.ql-toolbar .ql-formats {
+  margin-bottom: 2px;
 }
-#quizzer>>>.quillWrapper .ql-snow.ql-toolbar{
-  padding-top:4px;
-  padding-bottom:4px
+#quizzer >>> .quillWrapper .ql-snow.ql-toolbar {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 </style>

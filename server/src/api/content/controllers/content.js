@@ -34,44 +34,52 @@ module.exports = {
     try {
       const data = ctx.request.body.data
 
-      let prompt = "Create a JavaScript programming exercise with the description: " + data.description
+      let prompt = "Create "+data.howMany+" JavaScript programming exercise for the topic: " + data.topic
 
       const schema = {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the exercise"
-          },
-          "statement": {
-            "type": "string",
-            "description": "Statement for the exercise"
-          },
-          "solution": {
-            "type": "string",
-            "description": "Solution code for the exercise in JavaScript"
-          },
-          "tests": {
+        "type":"object",
+        "properties":{
+          "exercises":{
             "type": "array",
-            "description": "Input, output tests to verify the student`s solution",
-            "minItems": 3,
-            "items": {
+            "description": "List of programming exercises",
+            "items":{
               "type": "object",
               "properties": {
-                "input": {
-                  "type": "string" ,
-                  "description": "input for the test"
+                "name": {
+                  "type": "string",
+                  "description": "Name of the exercise"
                 },
-                "expected": {
-                  "type": "string" ,
-                  "description": "expected output for the test"
+                "statement": {
+                  "type": "string",
+                  "description": "Statement for the exercise in a html Format"
+                },
+                "solution": {
+                  "type": "string",
+                  "description": "Solution code for the exercise in JavaScript"
+                },
+                "tests": {
+                  "type": "array",
+                  "description": "Input, output tests to verify the student`s solution",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "string" ,
+                        "description": "input for the test"
+                      },
+                      "expected": {
+                        "type": "string" ,
+                        "description": "expected output for the test"
+                      } 
+                    },
+                    "required": ["input", "expected"] 
+                  },
                 } 
               },
-              "required": ["input", "expected"] 
-            },
-          } 
-        },
-        "required": ["name", "statement", "solution", "tests"]
+              "required": ["name", "statement", "solution", "tests"]
+            }
+          }
+        }
       }
       const chatCompletion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",

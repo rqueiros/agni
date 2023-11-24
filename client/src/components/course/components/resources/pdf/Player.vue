@@ -1,23 +1,23 @@
 <template>
-  <div id="player" >
+  <div id="player">
     <div>
-      <v-badge 
-        tile 
+      <v-badge
+        tile
         class="badge"
-        v-if="isAuthor" 
+        v-if="isAuthor"
         overlap
         color="button"
-        @click.native="deletePDF" 
-        icon="mdi-close" 
+        @click.native="deletePDF"
+        icon="mdi-close"
       >
       </v-badge>
-      <pdf 
+      <pdf
         style="width: 100%;"
-        ref="pdfComponent" 
-        @num-pages="pageCount = $event" 
-        @page-loaded="currentPage = $event" 
+        ref="pdfComponent"
+        @num-pages="pageCount = $event"
+        @page-loaded="currentPage = $event"
         :src="pdfData"
-        :page="page" 
+        :page="page"
       />
     </div>
 
@@ -28,18 +28,20 @@
       color="orange"
     ></v-rating>-->
 
-    <div class="text-center pa-1" :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
-      <v-pagination 
-        v-model="page" 
-        :length="pageCount" 
-        :total-visible="5" 
+    <div
+      class="text-center pa-1"
+      :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
+    >
+      <v-pagination
+        v-model="page"
+        :length="pageCount"
+        :total-visible="5"
         color="error"
-        
       />
     </div>
-    <v-card-actions 
+    <v-card-actions
       v-if="isStudent"
-      :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" 
+      :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'"
     >
       <v-btn color="success" class="mb-2" @click="print">
         PRINT
@@ -58,7 +60,6 @@
   </div>
 </template>
 
-
 <script>
 import pdf from "vue-pdf";
 //import Swal from "sweetalert2";
@@ -75,7 +76,7 @@ export default {
   props: {
     resource: {
       type: Object,
-      default: () => { }
+      default: () => {}
     }
   },
 
@@ -91,9 +92,7 @@ export default {
   created() {
     const file = this.resource.file;
     if ("data" in file) {
-      this.pdfData =
-        this.getDomain +
-        this.resource.file.data.attributes.url;
+      this.pdfData = this.getDomain + this.resource.file.data.attributes.url;
     } else {
       const reader = new FileReader();
       reader.onload = () => {
@@ -107,25 +106,20 @@ export default {
 
   computed: {
     ...mapGetters("main", [
-      "getDomain", 
-      "isAuthor", 
-      "isStudent", 
-      "isTeacher", 
+      "getDomain",
+      "isAuthor",
+      "isStudent",
+      "isTeacher",
       "isViewer"
     ]),
-    ...mapGetters("style", [
-      "isMDsmaller", 
-      "isMD"
-    ])
+    ...mapGetters("style", ["isMDsmaller", "isMD"])
   },
 
   methods: {
-    ...mapMutations("main", [
-      "setExpositiveField"
-    ]),
+    ...mapMutations("main", ["setExpositiveField"]),
     getCurrentPage: () => this.page,
-    pageUrl(page){
-      this.page = page
+    pageUrl(page) {
+      this.page = page;
     },
     currentPage(page) {
       this.page = page;
@@ -140,9 +134,9 @@ export default {
       }
       this.$refs.pdfComponent.print(100, [...pages]);
     },
-    deletePDF(){
-      this.setExpositiveField([this.resource.id, "file", {data:null}])
-      this.setExpositiveField([this.resource.id, "type", null])
+    deletePDF() {
+      this.setExpositiveField([this.resource.id, "file", { data: null }]);
+      this.setExpositiveField([this.resource.id, "type", null]);
     }
     /*
     copyText() {
@@ -182,38 +176,36 @@ export default {
 };
 </script>
 
-
 <style scoped>
 /* Make links from pdf disappear */
-::v-deep section{
+::v-deep section {
   display: none;
 }
 
 /* Badge styles */
-.badge:hover{
+.badge:hover {
   cursor: pointer;
 }
-.badge{
-  z-index:5; 
-  position:absolute; 
-  top:12px; 
-  right:12px; 
-  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 
-    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 
-    0px 1px 5px 0px rgba(0, 0, 0, 0.12)
+.badge {
+  z-index: 5;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
-#player>>>.v-badge--tile .v-badge__badge{
+#player >>> .v-badge--tile .v-badge__badge {
   border-radius: 4px;
-  color:black;
+  color: black;
 }
-#player>>>.v-badge__badge .v-icon{
+#player >>> .v-badge__badge .v-icon {
   font-size: 16px;
 }
 
-#player>>>.theme--dark.v-pagination .v-pagination__item{
+#player >>> .theme--dark.v-pagination .v-pagination__item {
   background-color: #484747;
 }
-#player>>>.theme--dark.v-pagination .v-pagination__navigation{
+#player >>> .theme--dark.v-pagination .v-pagination__navigation {
   background-color: #484747 !important;
 }
 </style>

@@ -3,8 +3,8 @@
     <v-dialog v-model="localDialog" max-width="500px">
       <v-card v-if="dialog">
         <v-card-title class="pb-2" :class="getSubtitleClass">
-          {{ dialogItem.contentType[0].toUpperCase() }}.
-          {{ dialogItem.name }} - Condition:
+          {{ dialogItem.contentType[0].toUpperCase() }}. {{ dialogItem.name }} -
+          Condition:
         </v-card-title>
 
         <v-card-text style="color:rgba(0, 0, 0, 0.87)">
@@ -13,8 +13,7 @@
               <v-col class="text-center">
                 After Week:
               </v-col>
-              <v-col>
-              </v-col>
+              <v-col> </v-col>
               <v-col class="text-center">
                 After Perc Done:
               </v-col>
@@ -23,12 +22,15 @@
               <v-col>
                 <!--Author-->
                 <span v-if="isAuthor">
-                  <Editable 
-                    :type="'condition'" 
-                    :value="dialogItem.condition.afterWeek == null ? '' : 
-                      dialogItem.condition.afterWeek.toString()"
-                    :id="dialogItem.condition.id" 
-                    :field="'afterWeek'" 
+                  <Editable
+                    :type="'condition'"
+                    :value="
+                      dialogItem.condition.afterWeek == null
+                        ? ''
+                        : dialogItem.condition.afterWeek.toString()
+                    "
+                    :id="dialogItem.condition.id"
+                    :field="'afterWeek'"
                     @input="editableInput"
                     onclick="event.stopPropagation()"
                   />
@@ -41,17 +43,19 @@
               <v-col class="py-0">
                 <!--Author-->
                 <span v-if="isAuthor">
-                  <vue-cascader-select 
-                    :placeholder="'Type'" 
-                    :options="options" 
-                    @select="selected =>
-                      setType(
-                        dialogItem.condition.id,
-                        selected.value
-                      )" 
+                  <vue-cascader-select
+                    :placeholder="'Type'"
+                    :options="options"
+                    @select="
+                      selected =>
+                        setType(dialogItem.condition.id, selected.value)
+                    "
                     @clear="val => setType(dialogItem.condition.id, null)"
-                    :value="dialogItem.condition.type == null ? '' : 
-                      dialogItem.condition.type"
+                    :value="
+                      dialogItem.condition.type == null
+                        ? ''
+                        : dialogItem.condition.type
+                    "
                   />
                 </span>
                 <!--Viewer-->
@@ -62,14 +66,17 @@
               <v-col>
                 <!--Author-->
                 <span v-if="isAuthor">
-                  <Editable 
-                    :type="'condition'" 
-                    :value="dialogItem.condition.afterPercDone == null ? '' : 
-                      dialogItem.condition.afterPercDone.toString()"
-                    :id="dialogItem.condition.id" 
-                    :field="'afterPercDone'" 
+                  <Editable
+                    :type="'condition'"
+                    :value="
+                      dialogItem.condition.afterPercDone == null
+                        ? ''
+                        : dialogItem.condition.afterPercDone.toString()
+                    "
+                    :id="dialogItem.condition.id"
+                    :field="'afterPercDone'"
                     @input="editableInput"
-                    onclick="event.stopPropagation()" 
+                    onclick="event.stopPropagation()"
                   />
                 </span>
                 <!--Viewer-->
@@ -84,7 +91,6 @@
     </v-dialog>
   </div>
 </template>
-
 
 <script>
 import Vue from "vue";
@@ -101,18 +107,20 @@ export default {
 
   components: {
     VueCascaderSelect,
-    Editable,
+    Editable
   },
 
   props: {
     dialogItem: {
       type: Object,
-      default: () => { return { 
-        "afterWeek": "", 
-        "afterPercDone": "", 
-        "contentType": "",
-        "type":""
-      }}
+      default: () => {
+        return {
+          afterWeek: "",
+          afterPercDone: "",
+          contentType: "",
+          type: ""
+        };
+      }
     },
     dialog: {
       type: Boolean,
@@ -122,17 +130,17 @@ export default {
 
   data() {
     return {
-      localDialog:this.dialog,
+      localDialog: this.dialog,
       options: [
         { label: "AND", value: "AND" },
         { label: "OR", value: "OR" }
       ]
-    }
+    };
   },
 
   watch: {
     dialog(newValue) {
-      this.localDialog = newValue
+      this.localDialog = newValue;
     },
     localDialog(newValue) {
       bus.$emit("dialogModuleLessonChange", newValue);
@@ -140,23 +148,16 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main",[
-      "isStudent",
-      "isTeacher",
-      "isViewer",
-      "isAuthor",
-    ]),
-    ...mapGetters("style",[
+    ...mapGetters("main", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
+    ...mapGetters("style", [
       "getIconSmallSize",
       "getSmallTextClass",
-      "getSubtitleClass",
-    ]),
+      "getSubtitleClass"
+    ])
   },
 
   methods: {
-    ...mapMutations("main",[
-      "editableInput",
-    ]),
+    ...mapMutations("main", ["editableInput"]),
     setType(id, value) {
       const obj = {
         id: id,
@@ -167,10 +168,7 @@ export default {
       this.editableInput(obj);
     }
   }
-
-}
+};
 </script>
 
-
-<style scoped>
-</style>
+<style scoped></style>

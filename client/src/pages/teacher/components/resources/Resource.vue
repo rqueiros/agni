@@ -1,5 +1,7 @@
 <template>
-  <component :is="getComponent"></component>
+  <div>
+    <component :is="getComponent"></component>
+  </div>
 </template>
 
 <script>

@@ -22,7 +22,6 @@
   </div>
 </template>
 
-
 <script>
 import Player from "./Player.vue";
 
@@ -43,10 +42,9 @@ export default {
   methods: {
     setMilestone(index) {
       this.$refs.player.pageUrl(index);
-    },
-  },
+    }
+  }
 };
 </script>
-
 
 <style scoped></style>

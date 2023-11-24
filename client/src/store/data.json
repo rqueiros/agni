@@ -1,0 +1,51 @@
+{
+  "lesson": {
+    "new": true,
+    "contentType": "lesson",
+    "name": "",
+    "description": "",
+    "evaluatives": [],
+    "expositives": []
+  },
+  "module":{
+    "new": true,
+    "contentType": "module",
+    "name": "",
+    "children": [
+      {
+        "id": 0,
+        "idMenu":-1,
+        "type": "add",
+        "contentType": "lesson",
+        "name": "add Lesson",
+        "evaluatives": [],
+        "expositives": [],
+        "locked": true
+      }
+    ]
+  },
+  "course":{
+    "new": true,
+    "contentType": "course",
+    "name": "",
+    "type": null,
+    "goals": [],
+    "children": [
+      {
+        "new": true,
+        "contentType": "module",
+        "name": "",
+        "children": [
+          {
+            "new": true,
+            "contentType": "lesson",
+            "name": "",
+            "description": "",
+            "evaluatives": [],
+            "expositives": []
+          }
+        ]
+      }
+    ]
+  }
+}

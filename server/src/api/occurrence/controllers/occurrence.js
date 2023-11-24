@@ -159,7 +159,7 @@ module.exports = createCoreController(uid, () => {
                      let evaluative = evaluatives.find(e => e.id == ev.id)
                      let correctPercCurrent = evaluative.correctPerc
                      let correctPercNew = ev.correctPerc
-                     let correctPerc = (numStudentsCurrent*correctPercCurrent + numStudentsNew*correctPercNew)/(numStudentsCurrent+numStudentsNew)
+                     let correctPerc = Math.round((numStudentsCurrent*correctPercCurrent + numStudentsNew*correctPercNew)/(numStudentsCurrent+numStudentsNew))
                      
                      evaluative.correctPerc = correctPerc
                   }

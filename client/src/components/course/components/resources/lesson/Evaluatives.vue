@@ -1,30 +1,29 @@
 <template>
   <div id="evaluatives" v-if="evaluativesNotNull || isAuthor">
-
-    <v-card 
+    <v-card
       style="border-left: 0; border-right: 0;"
-      :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
+      :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     >
       <!--Author-->
       <v-menu offset-y v-if="!evaluativesNotNull && isAuthor">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn 
-            width="100%" 
-            v-bind="attrs" 
-            v-on="on" 
+          <v-btn
+            width="100%"
+            v-bind="attrs"
+            v-on="on"
             height="36px"
-            :small="getButtonMediumSize=='small'" 
-            :medium="getButtonMediumSize=='medium'"
+            :small="getButtonMediumSize == 'small'"
+            :medium="getButtonMediumSize == 'medium'"
             color="button"
           >
             <v-icon>mdi-plus</v-icon>Add Exercises
           </v-btn>
         </template>
         <v-list dense>
-          <v-list-item 
+          <v-list-item
             class="text-center"
-            v-for="(item, index) in addEvaluativeMenu" 
-            :key="index"  
+            v-for="(item, index) in addEvaluativeMenu"
+            :key="index"
             @click="addEvaluative(item.value)"
           >
             <v-list-item-title>{{ item.title }}</v-list-item-title>
@@ -32,14 +31,19 @@
         </v-list>
       </v-menu>
 
-      <v-data-table 
-        v-if="(isAuthor && evaluativesNotNull) || isStudent || isViewer" 
-        :headers="isAuthor ? headers.author : 
-          isViewer ? headers.viewer : headers.student" 
-        :items="loadResource" 
-        @click:row="play" 
-        mobile-breakpoint="0" 
-        no-data-text="" 
+      <v-data-table
+        v-if="(isAuthor && evaluativesNotNull) || isStudent || isViewer"
+        :headers="
+          isAuthor
+            ? headers.author
+            : isViewer
+            ? headers.viewer
+            : headers.student
+        "
+        :items="loadResource"
+        @click:row="play"
+        mobile-breakpoint="0"
+        no-data-text=""
         :hide-default-footer="isAuthor"
         class="my-data-table"
         style="background-color: transparent;"
@@ -54,15 +58,15 @@
           </v-list-item>
         </template>
 
-        <template v-slot:item.id="{item}">
+        <template v-slot:item.id="{ item }">
           <span :class="getSmallTextClass">
             {{ item.id }}
           </span>
         </template>
 
         <template v-slot:item.type="{ item }">
-          <v-icon 
-            v-if="'type' in item && item.type!=null"
+          <v-icon
+            v-if="'type' in item && item.type != null"
             :size="getIconMediumSize"
           >
             {{ getIcon(item.type) }}
@@ -76,12 +80,12 @@
         <template v-slot:footer v-if="isAuthor">
           <v-menu offset-y>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn 
-                width="100%" 
-                v-bind="attrs" 
-                v-on="on" 
-                :small="getButtonMediumSize=='small'" 
-                :medium="getButtonMediumSize=='medium'"
+              <v-btn
+                width="100%"
+                v-bind="attrs"
+                v-on="on"
+                :small="getButtonMediumSize == 'small'"
+                :medium="getButtonMediumSize == 'medium'"
                 class="mb-2 mt-1"
                 color="button"
               >
@@ -89,9 +93,9 @@
               </v-btn>
             </template>
             <v-list dense>
-              <v-list-item 
-                v-for="(item, index) in addEvaluativeMenu" 
-                :key="index" 
+              <v-list-item
+                v-for="(item, index) in addEvaluativeMenu"
+                :key="index"
                 class="text-center"
                 link
                 @click="addEvaluative(item.value)"
@@ -102,20 +106,20 @@
           </v-menu>
         </template>
 
-        <template v-slot:item.name="{item}">
+        <template v-slot:item.name="{ item }">
           <!--Student & Viewer-->
           <span v-if="isStudent || isViewer">
             {{ item.name }}
           </span>
           <!--Author-->
-          <span  v-if="isAuthor" :class="getSmallTextClass">
-            <Editable 
-              type="evaluative" 
-              :value="item.name" 
-              :id="item.rid" 
+          <span v-if="isAuthor" :class="getSmallTextClass">
+            <Editable
+              type="evaluative"
+              :value="item.name"
+              :id="item.rid"
               field="name"
-              @input="editableInput" 
-              placeholder="Exercise name" 
+              @input="editableInput"
+              placeholder="Exercise name"
               onclick="event.stopPropagation()"
               :required="true"
             />
@@ -123,11 +127,11 @@
         </template>
 
         <template v-slot:item.grade="{ item }">
-          <v-chip 
-            :color="getColor(item.grade)" 
-            dark 
-            :small="getButtonMediumSize=='small'" 
-            :medium="getButtonMediumSize=='medium'"
+          <v-chip
+            :color="getColor(item.grade)"
+            dark
+            :small="getButtonMediumSize == 'small'"
+            :medium="getButtonMediumSize == 'medium'"
           >
             {{ item.grade }}%
           </v-chip>
@@ -135,20 +139,20 @@
 
         <template v-slot:item.action="{ item }">
           <!--Student-->
-          <v-btn 
-            v-if="isStudent" 
-            icon 
+          <v-btn
+            v-if="isStudent"
+            icon
             @click="play(item)"
-            :x-small="getButtonSmallSize=='x-small'"
-            :small="getButtonSmallSize=='small'"
+            :x-small="getButtonSmallSize == 'x-small'"
+            :small="getButtonSmallSize == 'small'"
           >
             <v-icon :size="getIconSmallSize">mdi-clipboard-play</v-icon>
           </v-btn>
           <!--Author-->
-          <v-btn 
+          <v-btn
             v-if="isAuthor"
-            :x-small="getButtonSmallSize=='x-small'"
-            :small="getButtonSmallSize=='small'"
+            :x-small="getButtonSmallSize == 'x-small'"
+            :small="getButtonSmallSize == 'small'"
             icon
             @click="deleteEvaluative(item.rid)"
             onclick="event.stopPropagation()"
@@ -159,19 +163,19 @@
       </v-data-table>
     </v-card>
 
-    <SelectDialog 
+    <SelectDialog
       v-if="isAuthor"
-      :dialog="dialog" 
-      :type="'evaluatives'" 
+      :dialog="dialog"
+      :type="'evaluatives'"
       :already="resource.evaluatives.map(e => e.id)"
-      @addExistingevaluatives="addExistingEval" 
-      @closeSelectDialog="dialog=false"
+      @addExistingevaluatives="addExistingEval"
+      @closeSelectDialog="dialog = false"
     />
 
     <ExternalDialog
       :dialog="externalDialog"
-      @addExternalExercises="addExternalExercises" 
-      @closeSelectDialog="externalDialog=false"
+      @addExternalExercises="addExternalExercises"
+      @closeSelectDialog="externalDialog = false"
     />
 
     <!--
@@ -217,12 +221,8 @@
       </v-card>
     </v-dialog>
     -->
-
-
   </div>
-
 </template>
-
 
 <script>
 import { bus } from "@/main.js";
@@ -244,16 +244,16 @@ export default {
   props: {
     resource: {
       type: Object,
-      default: () => { }
-    },
+      default: () => {}
+    }
   },
 
   data() {
     return {
-      valid:true,
+      valid: true,
 
       dialog: false,
-      externalDialog : false,
+      externalDialog: false,
       headers: {
         student: [
           { text: "#", align: "start", sortable: true, value: "id" },
@@ -272,14 +272,14 @@ export default {
           { text: "#", align: "start", sortable: true, value: "id" },
           { text: "Type", value: "type" },
           { text: "Name", value: "name" }
-        ],
+        ]
       },
       addEvaluativeMenu: [
         { title: "NEW QUIZ", value: "quiz" },
         { title: "NEW PROG. EX.", value: "prog" },
         { title: "SELECT", value: "select" },
         { title: "EXTERNAL", value: "external" }
-      ],
+      ]
     };
   },
 
@@ -298,7 +298,7 @@ export default {
       "isStudent",
       "isTeacher",
       "isAuthor",
-      "isViewer",
+      "isViewer"
     ]),
     ...mapGetters("style", [
       "getSubtitleClass",
@@ -319,7 +319,9 @@ export default {
       } else if (this.isStudent) {
         let i = 1;
         this.resource.evaluatives.forEach(evaluative => {
-          let grade = Number(this.getStatusByResourceId(evaluative.id).grade.toFixed(1));
+          let grade = Number(
+            this.getStatusByResourceId(evaluative.id).grade.toFixed(1)
+          );
           ev.push({
             id: i,
             rid: evaluative.id,
@@ -359,31 +361,29 @@ export default {
       "addProgExByLessonId",
       "addExternalExByLessonId"
     ]),
-    ...mapActions("main", [
-      "addExistingEvaluatives"
-    ]),
+    ...mapActions("main", ["addExistingEvaluatives"]),
     addEvaluative(type) {
       if (type == "quiz") {
-        this.addQuizByLessonId(this.resource.id)
+        this.addQuizByLessonId(this.resource.id);
       } else if (type == "prog") {
-        this.addProgExByLessonId(this.resource.id)
+        this.addProgExByLessonId(this.resource.id);
       } else if (type == "select") {
         this.dialog = true;
-      } else if (type == "external"){
+      } else if (type == "external") {
         this.externalDialog = true;
       }
     },
     play(value) {
       bus.$emit("changeIt", [value.rid, "evaluative"]);
     },
-    async addExistingEval(ids){
-      await this.addExistingEvaluatives([this.resource.id, ids])
-      this.dialog=false
+    async addExistingEval(ids) {
+      await this.addExistingEvaluatives([this.resource.id, ids]);
+      this.dialog = false;
     },
-    addExternalExercises(exercises){
-      this.externalDialog = false
-      this.addExternalExByLessonId([this.resource.id, exercises])
-    }, 
+    addExternalExercises(exercises) {
+      this.externalDialog = false;
+      this.addExternalExByLessonId([this.resource.id, exercises]);
+    },
     getColor(status) {
       status = +status;
       if (status == 0) return "red";
@@ -393,7 +393,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 .my-data-table tbody tr:hover {

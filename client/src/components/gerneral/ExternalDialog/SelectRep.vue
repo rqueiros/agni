@@ -10,21 +10,24 @@
           <v-row>
             <v-col>
               <v-hover v-slot="{ hover }">
-                <v-card 
-                  class="d-flex justify-center align-center hover" 
+                <v-card
+                  class="d-flex justify-center align-center hover"
                   :color="hover ? 'hover' : ''"
-                  @click="$emit('changeType','authorkit');"
+                  @click="$emit('changeType', 'authorkit')"
                 >
-                  <v-img 
-                    :src="require('@/assets/authorkit.png')" 
-                    height="150" 
+                  <v-img
+                    :src="require('@/assets/authorkit.png')"
+                    height="150"
                     contain
                   ></v-img>
                 </v-card>
               </v-hover>
             </v-col>
             <v-col>
-              <v-card style="min-height:100%" class="d-flex justify-center align-center">
+              <v-card
+                style="min-height:100%"
+                class="d-flex justify-center align-center"
+              >
                 Other Repositories will come
               </v-card>
             </v-col>
@@ -44,20 +47,17 @@
     </v-card>
   </div>
 </template>
-    
-<script>
 
+<script>
 export default {
   name: "SelectRep",
 
-  methods:{
-
-  }
-}
+  methods: {}
+};
 </script>
 
 <style scoped>
-.hover:hover{
+.hover:hover {
   cursor: pointer;
 }
 </style>

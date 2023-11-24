@@ -3,11 +3,15 @@
     <v-container fluid>
       <v-row>
         <v-col :cols="isSMsmaller ? 12 : 7">
-          <v-card :outlined="!isEvaluative" :class="isEvaluative ? 'shadow' : ''" height="200px">
+          <v-card
+            :outlined="!isEvaluative"
+            :class="isEvaluative ? 'shadow' : ''"
+            height="200px"
+          >
             <v-row no-gutters style="height: 100%;">
               <v-col cols="6">
-                <v-btn 
-                  outlined 
+                <v-btn
+                  outlined
                   @click="changeEvaluativeTypeById([getEvaluative.id, 'quiz'])"
                   width="100%"
                   height="100%"
@@ -17,8 +21,8 @@
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn 
-                  outlined 
+                <v-btn
+                  outlined
                   @click="changeEvaluativeTypeById([getEvaluative.id, 'code'])"
                   width="100%"
                   height="100%"
@@ -35,9 +39,8 @@
   </div>
 </template>
 
-
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters, mapMutations } from "vuex";
 
 export default {
   name: "NewEval",
@@ -46,7 +49,7 @@ export default {
     isEvaluative: {
       type: Boolean,
       default: () => false
-    },
+    }
   },
 
   computed: {
@@ -54,12 +57,10 @@ export default {
     ...mapGetters("style", ["isSMsmaller"])
   },
 
-  methods:{
+  methods: {
     ...mapMutations("main", ["changeEvaluativeTypeById"])
-  },
-
-}
+  }
+};
 </script>
-
 
 <style scoped></style>

@@ -45,7 +45,7 @@ export default {
   data() {
     return {
       localSnackbar: this.snackbar
-    }
+    };
   },
 
   watch: {
@@ -58,9 +58,8 @@ export default {
         bus.$emit("snackbarChange", newValue);
       }
     }
-  },
-
-}
+  }
+};
 </script>
 
 <style></style>

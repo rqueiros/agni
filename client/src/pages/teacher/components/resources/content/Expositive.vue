@@ -1,13 +1,13 @@
 <template>
   <div id="expositive" ref="expo">
-    <Expo :expositive="getExpositive" v-if="getExpositive"/>
+    <Expo :expositive="getExpositive" v-if="getExpositive" />
   </div>
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters, mapMutations } from "vuex";
 
-import Expo from './Expo.vue';
+import Expo from "./Expo.vue";
 
 export default {
   name: "Expositive",
@@ -18,7 +18,7 @@ export default {
 
   data() {
     return {
-      expositive: {},
+      expositive: {}
     };
   },
 
@@ -35,26 +35,25 @@ export default {
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
-  beforeDestroy(){
+  beforeDestroy() {
     clearTimeout(this.updateParentDivWidthTimeout);
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
   computed: {
-    ...mapGetters("main", ["getExpositive"]),
+    ...mapGetters("main", ["getExpositive"])
   },
 
   methods: {
-    ...mapMutations("style",["setScreenSize"]),
+    ...mapMutations("style", ["setScreenSize"]),
     updateParentDivWidth() {
       clearTimeout(this.updateParentDivWidthTimeout);
       this.updateParentDivWidthTimeout = setTimeout(() => {
         this.setScreenSize(this.$refs.expo.offsetWidth);
       }, 200);
     }
-  },
-
-}
+  }
+};
 </script>
 
 <style scoped></style>

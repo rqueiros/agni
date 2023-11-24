@@ -14,7 +14,12 @@
                     guest@esmad.ipp.pt
                   </v-list-item-subtitle>
                 </v-list-item-content>
-                <v-list-item-avatar tile color="red" class="box" :size="getAvatarMediumSize">
+                <v-list-item-avatar
+                  tile
+                  color="red"
+                  class="box"
+                  :size="getAvatarMediumSize"
+                >
                   <v-icon color="white" class="box_icon" :size="getIconBigSize">
                     mdi-card-account-details
                   </v-icon>
@@ -38,7 +43,12 @@
                     Status on the course exercises sheets
                   </v-list-item-subtitle>
                 </v-list-item-content>
-                <v-list-item-avatar tile color="blue" class="box" :size="getAvatarMediumSize">
+                <v-list-item-avatar
+                  tile
+                  color="blue"
+                  class="box"
+                  :size="getAvatarMediumSize"
+                >
                   <v-icon color="white" class="box_icon" :size="getIconBigSize">
                     mdi-rocket-launch
                   </v-icon>
@@ -96,7 +106,7 @@
 
       <v-row :class="isSMsmaller ? 'd-block' : 'd-none'" v-if="isStudent">
         <v-col cols="12">
-          <Gamification/>
+          <Gamification />
         </v-col>
       </v-row>
 
@@ -131,22 +141,24 @@ export default {
   },
   created() {
     if (this.isStudent) {
-      let lessons;
+      let lessons = this.getLessons;
+      /*
       if (this.type == "course") {
         lessons = this.getLessonsByCourse(this.resource);
       } else {
         lessons = this.getLessonsByModule(this.resource);
-      }
+      }*/
       this.sheets = [];
       lessons.forEach(lesson => {
         const id =
-          this.getModuleByLesson(lesson.strapiId).internalId +
+          this.getModuleByLesson(lesson.id).internalId +
           ":" +
           lesson.internalId;
-        const rid = lesson.strapiId;
+        const rid = lesson.id;
         const name = lesson.name;
-        const status = this.getCompletationStatusByLesson(lesson.strapiId);
+        let status = this.getCompletationStatusByLesson(lesson.id);
         if (status) {
+          status = status.toFixed(2)
           this.sheets.push({ id, rid, name, status });
         }
       });
@@ -165,7 +177,7 @@ export default {
         { text: "Solving status (%)", value: "status" },
         { text: "Actions", value: "action" }
       ],
-      sheets: [],
+      sheets: []
     };
   },
   methods: {
@@ -180,17 +192,18 @@ export default {
     },
     play2(value) {
       bus.$emit("changeIt", [value.rid, "lesson"]);
-    },
+    }
   },
   computed: {
-    ...mapGetters("main",[
+    ...mapGetters("main", [
       "getLessonsByCourse",
       "getCompletationStatusByLesson",
       "getModuleByLesson",
       "getLessonsByModule",
       "getRole",
       "isStudent",
-      "isTeacher"
+      "isTeacher",
+      "getLessons"
     ]),
     ...mapGetters("style", [
       "getTitleClass",
@@ -198,8 +211,8 @@ export default {
       "getAvatarMediumSize",
       "getIconBigSize",
       "isSMsmaller"
-    ]),
-  },
+    ])
+  }
 };
 </script>
 

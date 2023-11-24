@@ -1,0 +1,17 @@
+{
+    "class":[
+        {
+            "className":"CDDD",
+            "students":[
+                {
+                    "studentName":"ich1",
+                    "email":"y4nm45@gmail.com"
+                },
+                {
+                    "studentName":"ich2",
+                    "email":"yannikbauer@gmx.de"
+                }
+            ]
+        }
+    ]
+}

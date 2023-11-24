@@ -3,11 +3,18 @@
     <v-container fluid>
       <v-row>
         <v-col :cols="isSMsmaller ? 12 : 7">
-          <v-card :outlined="!isEvaluative" :class="isEvaluative ? 'shadow' : ''" :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
+          <v-card
+            :outlined="!isEvaluative"
+            :class="isEvaluative ? 'shadow' : ''"
+            :style="{
+              backgroundColor: $vuetify.theme.currentTheme.studentboxes
+            }"
+          >
             <Header :resource="resource" v-if="!isEvaluative" />
-            
+
             <Editor
-              :resource="resource" :isEvaluative="isEvaluative"
+              :resource="resource"
+              :isEvaluative="isEvaluative"
               @onErrors="setErrors"
               @onLogs="setLogs"
               ref="editor"
@@ -23,7 +30,11 @@
             </v-rating>-->
 
             <v-expansion-panels v-if="isStudent || isAuthor">
-              <v-expansion-panel :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}">
+              <v-expansion-panel
+                :style="{
+                  backgroundColor: $vuetify.theme.currentTheme.studentboxes
+                }"
+              >
                 <v-expansion-panel-header disable-icon-rotate>
                   Errors ({{ errors.length }})
                   <template v-slot:actions>
@@ -110,9 +121,9 @@
             </v-expansion-panels>
           </v-card>
         </v-col>
-        <v-col 
-          cols="5" 
-          class="pl-0" 
+        <v-col
+          cols="5"
+          class="pl-0"
           :class="isSMsmaller ? 'd-none' : 'd-block'"
         >
           <Tests
@@ -143,7 +154,7 @@
 import { mapGetters } from "vuex";
 import Header from "../Header.vue";
 import Editor from "./Editor.vue";
-import Tests from "./Tests.vue"
+import Tests from "./Tests.vue";
 
 export default {
   name: "Code",
@@ -162,7 +173,7 @@ export default {
     isEvaluative: {
       type: Boolean,
       default: () => false
-    },
+    }
   },
 
   data() {
@@ -175,7 +186,7 @@ export default {
       errors: [],
       logs: [],
       rating: 0,
-      line: 0,
+      line: 0
     };
   },
 
@@ -193,20 +204,13 @@ export default {
     },
     handleClick(value) {
       this.$refs.editor.gotoLine(value.row);
-    },
+    }
   },
 
   computed: {
-    ...mapGetters("main",[
-      "isStudent", 
-      "isTeacher", 
-      "isViewer", 
-      "isAuthor", 
-    ]),
-    ...mapGetters("style",[
-      "isSMsmaller"
-    ]),
-  },
+    ...mapGetters("main", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
+    ...mapGetters("style", ["isSMsmaller"])
+  }
 };
 </script>
 

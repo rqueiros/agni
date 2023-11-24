@@ -1,26 +1,18 @@
 <template>
-  <div id="header">
-
-    <v-app-bar 
-      rounded 
-      height="auto" 
-      color="appbar"
-      class="py-2 px-0"
-      flat
-    >
+  <div id="header" class="d-flex justify-center">
+    <v-app-bar rounded height="auto" color="appbar" class="py-2 px-0" flat style="max-width: 1200px;">
       <v-row no-gutters>
-        <v-col :cols="$vuetify.breakpoint.mdAndUp ? '3' : '4'" class="d-flex align-center">
-          
-          <v-tooltip bottom v-if="buttonConf2">
+        <v-col cols="4" md="4" class="d-flex align-center">
+          <v-tooltip bottom v-if="isCollectionType">
             <template v-slot:activator="{ on, attrs }">
-              <v-btn 
+              <v-btn
                 fab
                 small
-                text 
-                elevation="0" 
-                class="mr-1" 
-                @click="exit" 
-                v-bind="attrs" 
+                text
+                elevation="0"
+                class="mr-1"
+                @click="exit"
+                v-bind="attrs"
                 v-on="on"
               >
                 <v-icon>mdi-arrow-left</v-icon>
@@ -29,23 +21,28 @@
             <span>Back</span>
           </v-tooltip>
 
-          <v-divider vertical v-if="buttonConf2" class="mr-4"/>
+          <v-divider vertical v-if="isCollectionType" class="mr-4" />
 
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
-              <span v-bind="attrs" v-on="on" style="font-size:22px"> {{ title[contentType] }}
+              <span v-bind="attrs" v-on="on" style="font-size:22px">
+                <span v-if="$vuetify.breakpoint.lgAndUp">
+                  {{ componentText[component].title }}
+                </span>
+                <span v-else>
+                  {{ componentText[component].titleShort }}
+                </span>
               </span>
             </template>
-            <span>{{ description[contentType] }}</span>
+            <span>{{ componentText[component].description }}</span>
           </v-tooltip>
-
         </v-col>
-        <v-col cols="4">
+        <v-col cols="3">
           <v-autocomplete
-            v-model="model"
-            :items="items"
-            :loading="isLoading"
-            :search-input.sync="search"
+            v-model="searchData.model"
+            :items="searchItems"
+            :loading="loading.search"
+            :search-input.sync="searchData.input"
             hide-no-data
             hide-details
             hide-selected
@@ -58,33 +55,30 @@
             dense
           >
             <template v-slot:item="{ item }">
-              <v-list-item-avatar
-                class="text-h5 font-weight-light white--text"
-              >
+              <v-list-item-avatar class="text-h5 font-weight-light white--text">
                 <v-icon>
                   {{ getIcon(item.icon) }}
                 </v-icon>
               </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title v-text="item.label"></v-list-item-title>
-                <v-list-item-subtitle v-text="item.label2"></v-list-item-subtitle>
+                <v-list-item-title v-text="item.label" />
+                <v-list-item-subtitle v-text="item.label2" />
               </v-list-item-content>
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col :cols="$vuetify.breakpoint.mdAndUp ? '5' : '4'" class="d-flex align-center justify-end">
-
+        <v-col cols="4" md="5" class="d-flex align-center justify-end">
           <!-- Adds -->
-          <v-tooltip bottom v-if="buttonConf1 && contentType=='occurrencess'">
+          <v-tooltip bottom v-if="component == 'dashboardstudent'">
             <template v-slot:activator="{ on, attrs }">
-              <v-btn 
-                elevation="1" 
+              <v-btn
+                elevation="1"
                 :rounded="$vuetify.breakpoint.mdAndUp"
                 :fab="!$vuetify.breakpoint.mdAndUp"
                 :small="!$vuetify.breakpoint.mdAndUp"
-                color="primary" 
-                @click="addCollectionType('Occurrence')" 
-                v-bind="attrs" 
+                color="primary"
+                @click="addCollectionType('Occurrence')"
+                v-bind="attrs"
                 v-on="on"
               >
                 <v-icon>mdi-plus</v-icon>
@@ -92,30 +86,32 @@
             </template>
             <span>Add</span>
           </v-tooltip>
-          <v-menu offset-y auto v-if="buttonConf1 && contentType=='contents'">
+          <v-menu offset-y auto v-if="component == 'content'">
             <template v-slot:activator="{ on, attrs }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
-                  <v-btn 
-                    elevation="1" 
+                <template
+                  v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }"
+                >
+                  <v-btn
+                    elevation="1"
                     :rounded="$vuetify.breakpoint.mdAndUp"
                     :fab="!$vuetify.breakpoint.mdAndUp"
                     :small="!$vuetify.breakpoint.mdAndUp"
-                    v-bind="{ ...attrs, ...tooltipAttrs }" 
-                    v-on="{ ...on, ...tooltipOn }" 
+                    v-bind="{ ...attrs, ...tooltipAttrs }"
+                    v-on="{ ...on, ...tooltipOn }"
                     color="primary"
                   >
                     <v-icon>mdi-plus</v-icon>
                   </v-btn>
                 </template>
-              <span>Add</span>
+                <span>Add</span>
               </v-tooltip>
             </template>
             <v-list>
-              <v-list-item 
-                v-for="(item, index) in addList" 
-                :key="index" 
-                link 
+              <v-list-item
+                v-for="(item, index) in addList"
+                :key="index"
+                link
                 @click="addCollectionType(item.title)"
               >
                 <v-list-item-title>{{ item.title }}</v-list-item-title>
@@ -123,24 +119,23 @@
             </v-list>
           </v-menu>
 
-
-          <!-- Save -->
-          <div>
-            <v-tooltip bottom v-if="buttonConf2 && (isAuthor || contentType=='occurrences')">
+          <div v-if="isCollectionType">
+            <!-- Save -->
+            <v-tooltip bottom v-if="isAuthor || component == 'occurrence'">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn 
-                  elevation="1" 
-                  class="mr-1" 
+                <v-btn
+                  elevation="1"
+                  class="mr-1"
                   :rounded="$vuetify.breakpoint.mdAndUp"
                   :fab="!$vuetify.breakpoint.mdAndUp"
                   :small="!$vuetify.breakpoint.mdAndUp"
-                  color="primary" 
-                  :disabled="!changed" 
-                  @click="save" 
-                  v-bind="attrs" 
+                  color="primary"
+                  :disabled="!changed"
+                  @click="save"
+                  v-bind="attrs"
                   v-on="on"
                 >
-                  <v-progress-circular 
+                  <v-progress-circular
                     :size="20"
                     v-if="loading.save"
                     indeterminate
@@ -150,26 +145,23 @@
               </template>
               <span>Save</span>
             </v-tooltip>
-          </div>
 
-
-          <!-- Publish -->
-          <div v-if="buttonConf2">
-            <v-tooltip bottom v-if="isAuthor || contentType=='occurrences'">
+            <!-- Publish -->
+            <v-tooltip bottom v-if="isAuthor || component == 'occurrence'">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn 
-                  elevation="1" 
-                  class="mx-1" 
+                <v-btn
+                  elevation="1"
+                  class="mx-1"
                   :rounded="$vuetify.breakpoint.mdAndUp"
                   :fab="!$vuetify.breakpoint.mdAndUp"
                   :small="!$vuetify.breakpoint.mdAndUp"
-                  color="primary" 
-                  @click="publish" 
+                  color="primary"
+                  @click="publish"
                   v-bind="attrs"
                   v-on="on"
                   :disabled="isNew"
                 >
-                  <v-progress-circular 
+                  <v-progress-circular
                     :size="20"
                     v-if="loading.publish"
                     indeterminate
@@ -181,33 +173,32 @@
               <span v-if="isDraft">Publish</span>
               <span v-if="!isDraft">Unpublish</span>
             </v-tooltip>
-          </div>
 
-
-          <!-- Clone -->
-          <div v-if="buttonConf2">
-            <v-menu 
-              offset-y  
+            <!-- Clone -->
+            <v-menu
+              offset-y
               :nudge-width="350"
-              v-if="contentType=='courses'" 
+              v-if="component == 'course'"
               :close-on-content-click="false"
             >
               <template v-slot:activator="{ on, attrs }">
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
-                    <v-btn 
-                      elevation="1" 
-                      class="mx-1" 
+                  <template
+                    v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }"
+                  >
+                    <v-btn
+                      elevation="1"
+                      class="mx-1"
                       :rounded="$vuetify.breakpoint.mdAndUp"
                       :fab="!$vuetify.breakpoint.mdAndUp"
                       :small="!$vuetify.breakpoint.mdAndUp"
-                      color="primary" 
-                      v-bind="{ ...attrs, ...tooltipAttrs }" 
-                      v-on="{ ...on, ...tooltipOn }" 
+                      color="primary"
+                      v-bind="{ ...attrs, ...tooltipAttrs }"
+                      v-on="{ ...on, ...tooltipOn }"
                       @click="copyCourseMenu()"
                       :disabled="isNew"
                     >
-                      <v-progress-circular 
+                      <v-progress-circular
                         :size="20"
                         v-if="loading.copy"
                         indeterminate
@@ -215,44 +206,28 @@
                       <v-icon>mdi-content-copy</v-icon>
                     </v-btn>
                   </template>
-                <span>Clone</span>
+                  <span>Clone</span>
                 </v-tooltip>
               </template>
-              <v-list>
-                <v-list-item>
-                  <v-treeview 
-                    selectable 
-                    dense 
-                    selection-type="independent" 
-                    v-model="cloneSelection"
-                    :items="cloneItems.children" 
-                    :open="cloneOpen" 
-                    :item-key="'idMenu'"
-                  ></v-treeview>
-                </v-list-item>
-                <v-list-item>
-                  <v-btn width="100%" @click="copyCourse()">
-                    Clone
-                  </v-btn>
-                </v-list-item>
-              </v-list>
+              <CopyCourseMenu :course="getCourse"/>
             </v-menu>
-
-            <v-tooltip bottom v-if="contentType!='courses'">
-              <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
-                <v-btn 
-                  elevation="1" 
-                  class="mx-1" 
+            <v-tooltip bottom v-else>
+              <template
+                v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }"
+              >
+                <v-btn
+                  elevation="1"
+                  class="mx-1"
                   :rounded="$vuetify.breakpoint.mdAndUp"
                   :fab="!$vuetify.breakpoint.mdAndUp"
                   :small="!$vuetify.breakpoint.mdAndUp"
-                  color="primary" 
-                  v-bind="{...tooltipAttrs }" 
-                  v-on="{...tooltipOn }" 
+                  color="primary"
+                  v-bind="{ ...tooltipAttrs }"
+                  v-on="{ ...tooltipOn }"
                   @click="copy()"
                   :disabled="isNew"
                 >
-                  <v-progress-circular 
+                  <v-progress-circular
                     :size="20"
                     v-if="loading.delete"
                     indeterminate
@@ -260,110 +235,103 @@
                   <v-icon>mdi-content-copy</v-icon>
                 </v-btn>
               </template>
-            <span>Clone</span>
+              <span>Clone</span>
+            </v-tooltip>
+
+            <!-- Delete -->
+            <v-tooltip bottom v-if="isAuthor || component == 'occurrence'">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  elevation="1"
+                  class="ml-1"
+                  :rounded="$vuetify.breakpoint.mdAndUp"
+                  :fab="!$vuetify.breakpoint.mdAndUp"
+                  :small="!$vuetify.breakpoint.mdAndUp"
+                  color="error"
+                  v-if="isAuthor"
+                  v-bind="attrs"
+                  v-on="on"
+                  @click="remove()"
+                  :disabled="isNew"
+                >
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+              <span>Delete</span>
             </v-tooltip>
           </div>
 
-
-          <!-- Delete -->
-          <div>
-            <v-tooltip bottom v-if="buttonConf2 && (isAuthor || contentType=='occurrences')">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn 
-                elevation="1" 
-                class="ml-1" 
-                :rounded="$vuetify.breakpoint.mdAndUp"
-                :fab="!$vuetify.breakpoint.mdAndUp"
-                :small="!$vuetify.breakpoint.mdAndUp"
-                color="error" 
-                v-if="isAuthor" 
-                v-bind="attrs" 
-                v-on="on"
-                @click="remove()"
-                :disabled="isNew"
-              >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </template>
-            <span>Delete</span>
-          </v-tooltip>
-          </div>
-
-
           <!-- Account -->
-          <v-tooltip bottom v-if="contentType=='accounts' && getAccountEditable">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn 
-                elevation="1" 
-                class="mr-1" 
-                :rounded="$vuetify.breakpoint.mdAndUp"
-                :fab="!$vuetify.breakpoint.mdAndUp"
-                :small="!$vuetify.breakpoint.mdAndUp"
-                color="primary" 
-                @click="saveAccount" 
-                v-bind="attrs" 
-                v-on="on"
-              >
-                <v-progress-circular 
-                  :size="20"
-                  v-if="loading.save"
-                  indeterminate
-                ></v-progress-circular>
-                <v-icon>mdi-content-save</v-icon>
-              </v-btn>
-            </template>
-            <span>Save</span>
-          </v-tooltip>
-          <v-tooltip bottom v-if="contentType=='accounts' && !getAccountEditable">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn 
-                elevation="1" 
-                class="mr-1" 
-                :rounded="$vuetify.breakpoint.mdAndUp"
-                :fab="!$vuetify.breakpoint.mdAndUp"
-                :small="!$vuetify.breakpoint.mdAndUp"
-                color="primary" 
-                @click="setAccountEditable(true)" 
-                v-bind="attrs" 
-                v-on="on"
-              >
-                <v-progress-circular 
-                  :size="20"
-                  v-if="loading.save"
-                  indeterminate
-                ></v-progress-circular>
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-            </template>
-            <span>Edit</span>
-          </v-tooltip>
+          <div v-if="component == 'account'">
+            <v-tooltip bottom v-if="getAccountEditable">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  elevation="1"
+                  class="mr-1"
+                  :rounded="$vuetify.breakpoint.mdAndUp"
+                  :fab="!$vuetify.breakpoint.mdAndUp"
+                  :small="!$vuetify.breakpoint.mdAndUp"
+                  color="primary"
+                  @click="saveAccount"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-progress-circular
+                    :size="20"
+                    v-if="loading.save"
+                    indeterminate
+                  ></v-progress-circular>
+                  <v-icon>mdi-content-save</v-icon>
+                </v-btn>
+              </template>
+              <span>Save</span>
+            </v-tooltip>
+            <v-tooltip bottom v-else>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  elevation="1"
+                  class="mr-1"
+                  :rounded="$vuetify.breakpoint.mdAndUp"
+                  :fab="!$vuetify.breakpoint.mdAndUp"
+                  :small="!$vuetify.breakpoint.mdAndUp"
+                  color="primary"
+                  @click="setAccountEditable(true)"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-progress-circular
+                    :size="20"
+                    v-if="loading.save"
+                    indeterminate
+                  ></v-progress-circular>
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </template>
+              <span>Edit</span>
+            </v-tooltip>
+          </div>
         </v-col>
       </v-row>
-    
-  
     </v-app-bar>
 
-    <YesNoDialog 
-      :dialog="yesNoDialog.open" 
-      :question="yesNoDialog.question" 
-      :buttons="yesNoDialog.buttons" 
+    <YesNoDialog
+      :dialog="yesNoDialog.open"
+      :question="yesNoDialog.question"
+      :buttons="yesNoDialog.buttons"
     />
 
-    <DeleteDialog 
-      :dialog="deleteDialog" 
-      :collectionType="contentType"
-    />
-
+    <DeleteDialog :dialog="deleteDialog.open" :collectionType="collectionType"/>
   </div>
 </template>
 
 <script>
 import { bus } from "@/main.js";
 
-import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
+import { mapGetters, mapActions, mapMutations, mapState } from "vuex";
 
 import DeleteDialog from "../../../../components/gerneral/DeleteDialog.vue";
 import YesNoDialog from "../../../../components/gerneral/YesNoDialog.vue";
+import CopyCourseMenu from "../../../../components/gerneral/CopyCourseMenu.vue";
 
 export default {
   name: "Header",
@@ -375,79 +343,155 @@ export default {
     }
   },
 
-  components:{
+  components: {
     YesNoDialog,
-    DeleteDialog
+    DeleteDialog,
+    CopyCourseMenu,
   },
 
   data() {
     return {
-      buttonConf1: false,
-      buttonConf2: false,
+      searchData: {
+        model: null,
+        input: null,
+        entries: []
+      },
 
-      entries : [],
-      isLoading: false,
-      model: null,
-      search: null,
-
-      cloneItems: [],
-      cloneSelection: [],
-      cloneOpen: [],
-
-      addList:[
+      addList: [
         { title: "Course" },
         { title: "Expositive" },
         { title: "Evaluative" },
         { title: "Question" }
       ],
-      title: {
-        occurrencess:"OCCURRENCES",
-        occurrences:"OCCURRENCE",
-        contents:"CONTENT",
-        courses:"COURSE",
-        expositives:"EXPOSITIVE",
-        evaluatives:"EVALUATIVE",
-        questions:"QUESTION",
-        homes:"WELCOME TO AGNI",
-        accounts:"ACCOUNT",
-        settingss:"SETTINGS"
-      },
-      description: {
-        occurrencess:"Manage your current, draft and past occurrences",
-        occurrences:"Create, edit or view this occurrence",
-        contents:"Manage courses, expositives (pdf,..), evaluatives (progEx, Quiz) and questions",
-        courses:"Create, edit or view this course",
-        expositives:"Create, edit or view this expositive",
-        evaluatives:"Create, edit or view this evaluative",
-        questions:"Create, edit or view this question",
-        homes:"",
-        accounts:"",
-        settingss:""
+
+      componentText: {
+        dashboardstudent: {
+          title: "OCCURRENCES",
+          titleShort: "OCCURRENCES",
+          description: "Manage your current, draft and past Occurrences"
+        },
+        occurrence: {
+          title: "OCCURRENCE",
+          titleShort: "OCCURRENCE",
+          description: "Create, edit or view this Occurrence"
+        },
+        content: {
+          title: "CONTENT",
+          titleShort: "CONTENT",
+          description:
+            "Manage Courses, Expositives (pdf,..), Evaluatives (progEx, quiz) and Questions"
+        },
+        course: {
+          title: "COURSE",
+          titleShort: "COURSE",
+          description: "Create, edit or view this Course"
+        },
+        expositive: {
+          title: "EXPOSITIVE",
+          titleShort: "EXPOSITIVE",
+          description: "Create, edit or view this Expositive"
+        },
+        evaluative: {
+          title: "EVALUATIVE",
+          titleShort: "EVALUATIVE",
+          description: "Create, edit or view this Evaluative"
+        },
+        question: {
+          title: "QUESTION",
+          titleShort: "QUESTION",
+          description: "Create, edit or view this Question"
+        },
+        home: {
+          title: "WELCOME TO AGNI",
+          titleShort: "WELCOME",
+          description:
+            "A Virtual Learning Environment for practicing JavaScript"
+        },
+        account: {
+          title: "ACCOUNT",
+          titleShort: "ACCOUNT",
+          description: "Manage your Account"
+        },
+        settings: {
+          title: "SETTINGS",
+          titleShort: "SETTINGS",
+          description: "Informations, Questions, or Feedback?"
+        }
       },
 
-      deleteDialog: false,
-      toDeleteItem: 0,
+      deleteDialog:{
+        open: false,
+        item: null,
+      },
 
       yesNoDialog: {
         open: false,
         question: "",
-        buttons: [],
+        buttons: []
       },
 
       loading: {
-        save:false,
-        publish:false,
-        copy:false,
-        delete:false
-      }
+        save: false,
+        publish: false,
+        copy: false,
+        delete: false,
+        search: false
+      },
     };
+  },
+
+  created() {
+    bus.$on("yesNoDialog", payload => {
+      this.yesNoDialog.open = payload;
+    });
+    bus.$on("deleteDialog", payload => {
+      this.deleteDialog.open = payload;
+    });
+    bus.$on("yesNoDialogResult", async payload => {
+      this.yesNoDialog.open = false;
+      if (payload == "save" && this.yesNoDialog.question!="") {
+        const saveSuccess = await this.save();
+        if (saveSuccess){
+          this.exitContentType();
+        }
+      } else if (payload == "dontSave" && this.yesNoDialog.question!="") {
+        this.exitContentType();
+      } // else if (payload == "cancel") {}
+    });
+    bus.$on("deleteDialogResult", async payload => {
+      this.deleteDialog.open = false;
+      if (this.deleteDialog.item && payload == "ok") {
+        this.loading.delete = true;
+        await this.delete()
+        this.deleteDialog.item = null;
+        this.loading.delete = false;
+      } // else if (payload == "cancel") {}
+    });
+  },
+
+  watch: {
+    "searchData.model"(newValue) {
+      if (newValue != null) {
+        this.openCollectionType(newValue);
+        this.searchData.model = null;
+        this.searchData.input = "";
+      }
+    },
+    async "searchData.input"(newValue) {
+      if (this.searchData.input){
+        if (this.loading.search) return;
+        this.loading.search = true;
+        await this.search(newValue)
+        this.loading.search = false;
+      }
+    },
   },
 
   computed: {
     ...mapState("main", { changed: state => state.changed }),
     ...mapGetters("style", [
       "getIcon",
-      "isSMsmaller"
+      "getMesssage"
     ]),
     ...mapGetters("main", [
       "isAuthor",
@@ -459,178 +503,52 @@ export default {
       "getOccurrence",
       "getAccountEditable"
     ]),
-    contentType() {
-      return this.resource.split(",")[1].toLowerCase()+"s"
+    component() {
+      return this.resource.split(",")[1].toLowerCase();
+    },
+    isCollectionType() {
+      if (
+        this.component == "occurrence" ||
+        this.component == "course" ||
+        this.component == "expositive" ||
+        this.component == "evaluative" ||
+        this.component == "question"
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    collectionType() {
+      return this.resource.split(",")[1].toLowerCase() + "s";
     },
     isDraft() {
-      switch (this.contentType) {
-        case "courses": return this.getPublishedAt("courses") == null;
-        case "expositives": return this.getPublishedAt("expositives") == null;
-        case "evaluatives": return this.getPublishedAt("evaluatives") == null;
-        case "questions": return this.getPublishedAt("questions") == null;
-        default: return false
+      if (this.isCollectionType){
+        return this.getPublishedAt(this.collectionType) == null
+      } else {
+        return false
       }
     },
-    isNew(){
-      switch (this.contentType) {
-        case "courses": return this.getCourse ? this.getCourse.new : false;
-        case "expositives": return this.getExpositive ? this.getExpositive.new : false;
-        case "evaluatives": return this.getEvaluative ? this.getEvaluative.new : false;
-        case "questions": return this.getQuestion ? this.getQuestion.new : false;
-        default: return false
+    isNew() {
+      switch (this.collectionType) {
+        case "courses":
+          return this.getCourse ? this.getCourse.new : false;
+        case "expositives":
+          return this.getExpositive ? this.getExpositive.new : false;
+        case "evaluatives":
+          return this.getEvaluative ? this.getEvaluative.new : false;
+        case "questions":
+          return this.getQuestion ? this.getQuestion.new : false;
+        default:
+          return false;
       }
     },
-    fields () {
-      if (!this.model) return []
-
-      return Object.keys(this.model).map(key => {
-        return {
-          key,
-          value: this.model[key] || 'n/a',
-        }
-      })
+    searchItems() {
+      return this.searchData.entries.map(entry => {
+        let Description = entry.label + entry.label2;
+        return Object.assign({}, entry, { Description });
+      });
     },
-    items () {
-      return this.entries.map(entry => {
-        let Description = entry.label + entry.label2
-        return Object.assign({}, entry, { Description })
-      })
-    },
-  },
-
-  created() {
-    bus.$on("yesNoDialog", payload => {
-      this.yesNoDialog.open = payload;
-    });
-    bus.$on("yesNoDialogResult", async payload => {
-      if (payload == "save") {
-        this.yesNoDialog.open = false;
-        await this.save() 
-        if (!this.snackbar.color == "error") {
-          if (this.contentType=="occurrences"){
-          bus.$emit("changePage", "student,Occurrences");
-          } else {
-            await bus.$emit("changePage", "content,Content");
-          }
-          this.deleteStructure();
-        }
-      } else if (payload == "dontSave") {
-        this.yesNoDialog.open = false;
-        if (this.contentType=="occurrences"){
-          bus.$emit("changePage", "student,Occurrences");
-        } else {
-          await bus.$emit("changePage", "content,Content");
-        }
-        this.deleteStructure();
-      } else if (payload == "cancel") {
-        this.yesNoDialog.open = false;
-      }
-    });
-    bus.$on("deleteDialog", payload => {
-      this.deleteDialog = payload;
-    });
-    bus.$on("deleteDialogResult", async payload => {
-      this.deleteDialog = false
-      if (this.toDeleteItem != 0) {
-        try {
-          if (payload == "ok") {
-            this.loading.delete = true
-            await this.deleteCollectionType([this.toDeleteItem.id, this.contentType]);
-            bus.$emit("successSnackbar", "Occurrence saved")
-            this.toDeleteItem = 0;
-            bus.$emit("changePage", "student,Occurrences");
-          }
-        } catch (error) {
-          this.toDeleteItem = 0;
-          bus.$emit("errorSnackbar", "Something went wrong saving the Occurrence")
-        }
-        this.loading.delete = false
-      }
-    });
-  },
-
-  watch: {
-    resource(newV){
-      if (newV.includes("Occurrences")) {
-        this.buttonConf1 = true
-        this.buttonConf2 = false
-      } else if (newV.includes("Course")) {
-        this.buttonConf1 = false
-        this.buttonConf2 = true
-      }  else if (newV.includes("Expositive")) {
-        this.buttonConf1 = false
-        this.buttonConf2 = true
-      } else if (newV.includes("Evaluative")) {
-        this.buttonConf1 = false
-        this.buttonConf2 = true
-      } else if (newV.includes("Question")) {
-        this.buttonConf1 = false
-        this.buttonConf2 = true
-      } else if (newV.includes("content")) {
-        this.buttonConf1 = true
-        this.buttonConf2 = false
-      } else if (newV.includes("Occurrence")) {
-        this.buttonConf1 = false
-        this.buttonConf2 = true
-      } else if (newV.includes("Home")) {
-        this.buttonConf1 = false
-        this.buttonConf2 = false
-      } else if (newV.includes("account")) {
-        this.buttonConf1 = false
-        this.buttonConf2 = false
-      } else if (newV.includes("settings")) {
-        this.buttonConf1 = false
-        this.buttonConf2 = false
-      }
-    },
-    model(newV){
-      if (newV != null){
-        this.openCollectionType(newV)
-        this.model = null
-      }
-    },
-    async search(newV) {
-      // Items have already been loaded
-      //if (this.items.length > 0) return
-
-      // Items have already been requested
-      if (this.isLoading) return
-
-      this.isLoading = true
-
-      let params = {
-        filters: {
-          name: {
-            $containsi: newV
-          }
-        }
-      }
-      let a = await this.fetchContents(params)
-      this.entries = a
-      this.isLoading = false
-      
-    },
-    cloneSelection(newV, oldV) {
-      if (newV.length > oldV.length) {
-        const newItem = newV.find(v => !oldV.includes(v));
-        const parent = this.findParentofCloneBody(newItem);
-        if (parent != null) {
-          let addIds = [];
-          parent.forEach(v => {
-            if (!newV.includes(v)) {
-              addIds.push(v);
-            }
-          });
-          this.cloneSelection.push(...addIds);
-        }
-        let addIds = this.findChilrens(newItem)
-        this.cloneSelection.push(...addIds)
-      } else if (newV.length < oldV.length){
-        const remItem = oldV.find(v => !newV.includes(v));
-        let remIds = this.findChilrens(remItem)
-        this.cloneSelection = this.cloneSelection.filter(id => !remIds.includes(id))
-      }
-    }
   },
 
   methods: {
@@ -643,105 +561,149 @@ export default {
       "saveCollectionType",
       "publishCollectionType",
       "copyCollectionType",
-      "fetchCloneBody",
-      "fetchClone",
-      "updateUser"
+      "updateUser",
+      "createNewCollectionType"
     ]),
     ...mapMutations("main", [
-      "createNewQuestion", 
-      "createNewExpositive", 
+      "createNewQuestion",
+      "createNewExpositive",
       "createNewEvaluative",
       "deleteStructure",
-      "setAccountEditable"
+      "setAccountEditable",
     ]),
-    async saveAccount(){
-      this.setAccountEditable(false)
-      this.updateUser()
+    async saveAccount() {
+      this.setAccountEditable(false);
+      this.updateUser();
     },
     async copy() {
-      let id = 0
-      if (this.contentType =="courses"){
-        id = this.getCourse.id
-      } else if (this.contentType == "expositives"){
-        id = this.getExpositive.id
-      } else if (this.contentType == "evaluatives"){
-        id = this.getEvaluative.id
-      } else if (this.contentType == "questions"){
-        id = this.getQuestion.id
+      let id = 0;
+      if (this.collectionType == "courses") {
+        id = this.getCourse.id;
+      } else if (this.collectionType == "expositives") {
+        id = this.getExpositive.id;
+      } else if (this.collectionType == "evaluatives") {
+        id = this.getEvaluative.id;
+      } else if (this.collectionType == "questions") {
+        id = this.getQuestion.id;
       }
 
       try {
-        this.loading.copy = true
-        await this.copyCollectionType([id, this.contentType])
-        bus.$emit("successSnackbar", this.contentType + " copied")
+        this.loading.copy = true;
+        await this.copyCollectionType([id, this.collectionType]);
+        bus.$emit("successSnackbar", this.getMesssage([this.component, "copy", "success"]))
       } catch (error) {
-        console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong copying the " + this.collTypeName())
+        console.log(error);
+        bus.$emit("errorSnackbar", this.getMesssage([this.component, "copy", "error"]))
       }
-      this.loading.copy = false
+      this.loading.copy = false;
     },
     async publish() {
       try {
-        this.loading.publish = true
-        let res = await this.publishCollectionType(this.contentType);
-        bus.$emit("successSnackbar", this.contentType + " " + res)
+        this.loading.publish = true;
+        let pub = await this.publishCollectionType(this.collectionType);
+        bus.$emit("successSnackbar", this.getMesssage([this.component, pub, "success"]))
       } catch (error) {
-        console.log(error)
-        const pub = this.isDraft ? "publishing" : "unpublishing"
-        bus.$emit("errorSnackbar", "Something went wrong " + pub + " the " + this.collTypeName())
+        console.log(error);
+        const pub = this.isDraft ? "publishing" : "unpublishing";
+        bus.$emit("errorSnackbar", this.getMesssage([this.component, pub, "error"]))
       }
-      this.loading.publish = false
+      this.loading.publish = false;
     },
     async save() {
       //TODO check if all fields are declared
       try {
-        this.loading.save = true
-        await this.saveCollectionType(this.contentType)
-        bus.$emit("successSnackbar", this.contentType + " saved")
+        this.loading.save = true;
+        await this.saveCollectionType(this.collectionType);
+        bus.$emit("successSnackbar", this.getMesssage([this.component, "save", "success"]))
+        this.loading.save = false;
+        return true;
       } catch (error) {
-        console.log(error)
-        let message = "Something went wrong saving the "+this.collTypeName()
-        let errorMsg = error.response.data.error.details.errors[0].message
-        if (errorMsg.includes(".tests") && errorMsg.includes(".type")){
-          message = this.collTypeName()+" not saved - The Type of all Tests must be defined"
-        } else if (errorMsg.includes("content") && errorMsg.includes(".type")){
-          message = this.collTypeName()+" not saved - The Type of all Porg. Exercises must be defined"
-        } else if (errorMsg.includes("content") && errorMsg.includes(".statement")){
-          message = this.collTypeName()+" not saved - The Statement of all Porg. Exercises must be defined"
-        }
-        bus.$emit("errorSnackbar", message)
+        console.log(error);
+        /*
+        let message = "Something went wrong saving the " + this.collTypeName();
+        let errorMsg = error.response.data.error.details.errors[0].message;
+        if (errorMsg.includes(".tests") && errorMsg.includes(".type")) {
+          message =
+            this.collTypeName() +
+            " not saved - The Type of all Tests must be defined";
+        } else if (errorMsg.includes("content") && errorMsg.includes(".type")) {
+          message =
+            this.collTypeName() +
+            " not saved - The Type of all Porg. Exercises must be defined";
+        } else if (
+          errorMsg.includes("content") &&
+          errorMsg.includes(".statement")
+        ) {
+          message =
+            this.collTypeName() +
+            " not saved - The Statement of all Porg. Exercises must be defined";
+        }*/
+        bus.$emit("errorSnackbar", this.getMesssage([this.component, "save", "error"]))
+        return false;
       }
-      this.loading.save = false
+    },
+    async delete() {
+      try {
+        await this.deleteCollectionType([
+          this.deleteDialog.item.id,
+          this.collectionType
+        ]);
+        bus.$emit("successSnackbar", this.getMesssage([this.component, "delete", "success"]))
+        this.exitContentType()
+      } catch (error) {
+        bus.$emit("errorSnackbar", this.getMesssage([this.component, "delete", "error"]))
+      }
     },
     async exit() {
       if (!this.changed) {
-        let contentCollType = localStorage.getItem("menuItem") || "";
-        if (this.contentType=="occurrences"){
-          if (contentCollType=="student"){
-            bus.$emit("changePage", "student,Occurrences");
-          } else {
-            bus.$emit("changePage", "home,Home");
-          }
-        } else {
-          if (contentCollType=="home"){
-            bus.$emit("changePage", "home,Home");
-          } else {
-            await bus.$emit("changePage", "content,Content");
-          }
-        }
-        this.deleteStructure();
+        this.exitContentType()
       } else {
         this.yesNoDialog = {
           open: true,
           question: "Do you want to save your changes before exiting?",
-          buttons: [{ name: "DON`T SAVE", msg: "dontSave" }, { name: "SAVE", msg: "save" }]
+          buttons: [
+            { name: "DON`T SAVE", msg: "dontSave" },
+            { name: "SAVE", msg: "save" }
+          ]
+        };
+      }
+    },
+    async search(input) {
+      try {
+        let params = {
+          filters: {
+            name: {
+              $containsi: input
+            }
+          }
+        };
+        this.searchData.entries = await this.fetchContents(params);
+      } catch (error) {
+        bus.$emit("errorSnackbar", this.getMesssage(["", "search", "error"]))
+      }
+    },
+    async exitContentType(){
+      let contentCollType = localStorage.getItem("menuItem") || "";
+      if (this.collectionType == "occurrences") {
+        if (contentCollType == "student") {
+          await bus.$emit("changePage", "student,DashboardStudent");
+        } else {
+          await bus.$emit("changePage", "home,Home");
+        }
+      } else {
+        if (contentCollType == "home") {
+          await bus.$emit("changePage", "home,Home");
+        } else {
+          await bus.$emit("changePage", "content,Content");
         }
       }
+      this.deleteStructure();
     },
     addCollectionType(item) {
       switch (item) {
         case "Course":
-          this.fetchEmptyCourse();
+          //this.fetchEmptyCourse();
+          this.createNewCollectionType("course")
           bus.$emit("changePage", "content,Course");
           break;
         case "Expositive":
@@ -780,142 +742,25 @@ export default {
             break;
         }
       } catch (error) {
-        console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong fetching the "+item.collectionType)
+        console.log(error);
+        bus.$emit("errorSnackbar",this.getMesssage([this.component, "get", "error"]))
       }
     },
     remove() {
-      this.deleteDialog = true;
-      if (this.contentType =="courses"){
-        this.toDeleteItem = this.getCourse
-      } else if (this.contentType == "expositives"){
-        this.toDeleteItem = this.getExpositive
-      } else if (this.contentType == "evaluatives"){
-        this.toDeleteItem = this.getEvaluative
-      } else if (this.contentType == "questions"){
-        this.toDeleteItem = this.getQuestion
-      } else if (this.contentType == "occurrences"){
-        this.toDeleteItem = this.getOccurrence
+      this.deleteDialog.open = true;
+      if (this.collectionType == "courses") {
+        this.deleteDialog.item = this.getCourse;
+      } else if (this.collectionType == "expositives") {
+        this.deleteDialog.item = this.getExpositive;
+      } else if (this.collectionType == "evaluatives") {
+        this.deleteDialog.item = this.getEvaluative;
+      } else if (this.collectionType == "questions") {
+        this.deleteDialog.item = this.getQuestion;
+      } else if (this.collectionType == "occurrences") {
+        this.deleteDialog.item = this.getOccurrence;
       }
     },
-    async copyCourseMenu() {
-      this.menuOpen = !this.menuOpen
-      this.cloneSelection = [];
-      this.cloneOpen = [];
-      let cloneBody = [];
-      try {
-        cloneBody = await this.fetchCloneBody(this.getCourse.id);
-      } catch (error) {
-        console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong fetching the Clone Menu")
-      }
-      this.cloneItems = cloneBody;
-    },
-    async copyCourse() {
-      let cloneData = this.cloneItems;
-      delete cloneData.idMenu;
-      if (cloneData.children) {
-        cloneData.modules = cloneData.children;
-        cloneData.modules.forEach(module => {
-          if (this.cloneSelection.includes(module.idMenu)) {
-            module.clone = true;
-          }
-          delete module.idMenu;
-          delete module.id;
-          module.name = module.name.substring(3);
-          if (module.children) {
-            module.lessons = module.children;
-            module.lessons.forEach(lesson => {
-              if (this.cloneSelection.includes(lesson.idMenu)) {
-                lesson.clone = true;
-              }
-              delete lesson.idMenu;
-              delete lesson.id;
-              lesson.name = lesson.name.substring(3);
-              if (lesson.children) {
-                lesson.expositives = [];
-                lesson.evaluatives = [];
-                lesson.children.forEach(children => {
-                  let element = children;
-                  if (this.cloneSelection.includes(element.idMenu)) {
-                    element.clone = true;
-                  }
-                  let name = element.name
-                  element.name = element.name.substring(5);
-                  delete element.idMenu;
-                  delete element.id;
-                  if (name.includes("Exp.")) {
-                    lesson.expositives.push(element);
-                  } else {
-                    lesson.evaluatives.push(element);
-                  }
-                });
-                delete lesson.children;
-              }
-            });
-            delete module.children;
-          }
-        });
-        delete cloneData.children;
-      }
-      this.cloneItems = []
-      this.cloneSelection = []
-      this.cloneOpen = []
-      try {
-        await this.fetchClone(cloneData);
-        bus.$emit("successSnackbar", this.collTypeName() + " copied")
-        bus.$emit("changePage", "content,Course");
-      } catch (error) {
-        console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong copying the "+this.collTypeName())
-      }
-    },
-    findParentofCloneBody(idMenu) {
-      const items = this.cloneItems.children;
-      for (let i = 0; i < items.length; i++) {
-        const module = items[i];
-        if (module.idMenu == idMenu) {
-          return null;
-        }
-        if (module.children) {
-          for (let j = 0; j < module.children.length; j++) {
-            const lesson = module.children[j];
-            if (lesson.idMenu == idMenu) {
-              return [module.idMenu];
-            }
-            if (lesson.children) {
-              for (let k = 0; k < lesson.children.length; k++) {
-                const ex = lesson.children[k];
-                if (ex.idMenu == idMenu) {
-                  return [module.idMenu, lesson.idMenu];
-                }
-              }
-            }
-          }
-        }
-      }
-      return null;
-    },
-    findChilrens(idMenu){
-      const items = this.cloneItems.children;
-      let array = []
-      if (items.find(i => i.idMenu == idMenu)){
-        let item = items.find(i => i.idMenu == idMenu)
-        item.children.forEach(c => {
-          array.push(c.idMenu)
-          c.children.forEach(ch => {
-            array.push(ch.idMenu)
-          })
-        })
-      } else if (items.flatMap(i => i.children).find(i => i.idMenu == idMenu)){
-        let item = items.flatMap(i => i.children).find(i => i.idMenu == idMenu)
-        item.children.forEach(c => {
-          array.push(c.idMenu)
-        })
-      }
-      return array
-    },
-  },
+  }
 };
 </script>
 
@@ -925,7 +770,9 @@ export default {
   padding: 0 !important;
 }
 
-#header>>>.v-text-field fieldset, .v-text-field .v-input__control, .v-text-field .v-input__slot{
+#header >>> .v-text-field fieldset,
+.v-text-field .v-input__control,
+.v-text-field .v-input__slot {
   border-radius: 20px !important;
 }
 </style>

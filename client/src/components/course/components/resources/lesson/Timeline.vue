@@ -1,18 +1,19 @@
 <template>
   <div id="timeline">
-    <v-card 
-      :outlined="!isExpositive" 
-      :class="isExpositive ? 'shadow' : ''" v-if="resource != undefined"
-      :style="{backgroundColor : $vuetify.theme.currentTheme.studentboxes}"
+    <v-card
+      :outlined="!isExpositive"
+      :class="isExpositive ? 'shadow' : ''"
+      v-if="resource != undefined"
+      :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     >
-      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'" >
-        <v-list-item-content class="align-self-start" >
+      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'">
+        <v-list-item-content class="align-self-start">
           <v-list-item-title :class="getTitleClass">
             TIMELINE
           </v-list-item-title>
           <v-list-item-subtitle
             :class="getSmallTextClass"
-            v-if="'type' in resource && resource.type!=null"
+            v-if="'type' in resource && resource.type != null"
             >Jump in the {{ resource.type.toUpperCase() }} for specific
             topics!</v-list-item-subtitle
           >
@@ -37,7 +38,8 @@
         pages
       </v-subheader>-->
 
-      <v-timeline class="pt-2 pb-0 mb-3 mr-2 overflow-hidden"
+      <v-timeline
+        class="pt-2 pb-0 mb-3 mr-2 overflow-hidden"
         align-top
         dense
         v-if="
@@ -46,9 +48,9 @@
         "
         :class="getSmallTextClass"
       >
-        <v-timeline-item 
+        <v-timeline-item
           v-for="(milestone, i) in resource.milestones"
-          :small="getButtonMediumSize=='small'"
+          :small="getButtonMediumSize == 'small'"
           class="milestone mb-3 pa-0"
           @click.native="goto(parseInt(milestone.frame))"
           :icon="getIcon(milestone)"
@@ -56,11 +58,11 @@
           :key="i"
         >
           <!--Student + Viewer-->
-          <v-row 
-            v-if="isStudent || isViewer" 
-            no-gutters 
+          <v-row
+            v-if="isStudent || isViewer"
+            no-gutters
             :style="isMD ? 'height: 24px;' : 'height: 38px;'"
-            class="d-flex align-center" 
+            class="d-flex align-center"
           >
             <v-col>
               <span
@@ -69,17 +71,16 @@
             </v-col>
           </v-row>
           <!--Author-->
-          <v-row 
-            v-if="isAuthor" 
-            no-gutters 
-            :style="isMD ? 'height: 24px;' : 'height: 38px;'" 
+          <v-row
+            v-if="isAuthor"
+            no-gutters
+            :style="isMD ? 'height: 24px;' : 'height: 38px;'"
             class="d-flex align-center"
           >
-            <v-col cols="2" class="pr-1" >
+            <v-col cols="2" class="pr-1">
               <Editable
                 type="milestone"
-                :value="milestone.frame != null ? 
-                  String(milestone.frame) : ''"
+                :value="milestone.frame != null ? String(milestone.frame) : ''"
                 :id="milestone.id"
                 field="frame"
                 placeholder="Frame"
@@ -103,8 +104,8 @@
             <v-col cols="2" class="pl-1">
               <v-btn
                 icon
-                :x-small="getButtonSmallSize=='x-small'"
-                :small="getButtonSmallSize=='small'"
+                :x-small="getButtonSmallSize == 'x-small'"
+                :small="getButtonSmallSize == 'small'"
                 @click="deleteMilestone(milestone.id)"
               >
                 <v-icon :size="getIconSmallSize">mdi-delete</v-icon>
@@ -113,11 +114,11 @@
           </v-row>
         </v-timeline-item>
         <v-timeline-item hide-dot v-if="isAuthor" class="pb-2">
-          <v-btn 
-            class="mt-1" 
-            @click="addMilestoneByExpositiveId(resource.id)" 
-            :small="getButtonMediumSize=='small'"
-            :medium="getButtonMediumSize=='medium'"
+          <v-btn
+            class="mt-1"
+            @click="addMilestoneByExpositiveId(resource.id)"
+            :small="getButtonMediumSize == 'small'"
+            :medium="getButtonMediumSize == 'medium'"
             color="button"
           >
             <v-icon>mdi-plus</v-icon>Add Milestone
@@ -128,7 +129,6 @@
     </v-card>
   </div>
 </template>
-
 
 <script>
 import { mapGetters, mapMutations } from "vuex";
@@ -150,25 +150,25 @@ export default {
     isExpositive: {
       type: Boolean,
       default: () => false
-    },
+    }
   },
 
   data: () => ({
-    valid:true,
+    valid: true,
 
     selected: 0,
     duration: 0
   }),
 
   computed: {
-    ...mapGetters("main",[
+    ...mapGetters("main", [
       "getRole",
       "isStudent",
       "isTeacher",
       "isViewer",
-      "isAuthor",
+      "isAuthor"
     ]),
-    ...mapGetters("style",[
+    ...mapGetters("style", [
       "getTitleClass",
       "getSmallTextClass",
       "getAvatarMediumSize",
@@ -178,17 +178,17 @@ export default {
       "isMD",
       "getButtonMediumSize",
       "getButtonSmallSize"
-    ]),
+    ])
   },
   methods: {
-    ...mapMutations("main",[
+    ...mapMutations("main", [
       "editableInput",
       "addMilestoneByExpositiveId",
       "deleteMilestone"
     ]),
     goto(index) {
       this.selected = index;
-      if(index>0){
+      if (index > 0) {
         this.$emit("onMilestone", index);
       }
     },
@@ -204,31 +204,30 @@ export default {
       }
     },
     getColor(milestone) {
-      let ids = this.resource.milestones.map(m => m.id)
+      let ids = this.resource.milestones.map(m => m.id);
       if (milestone.frame == this.selected) {
         return "black";
-      } else if (ids[0]==milestone.id){
+      } else if (ids[0] == milestone.id) {
         return "green";
-      } else if (ids[ids.length-1]==milestone.id){
+      } else if (ids[ids.length - 1] == milestone.id) {
         return "red";
       } else {
-        return "blue"
+        return "blue";
       }
     },
     getIcon(milestone) {
-      let ids = this.resource.milestones.map(m => m.id)
-      if (ids[0]==milestone.id){
+      let ids = this.resource.milestones.map(m => m.id);
+      if (ids[0] == milestone.id) {
         return "mdi-flag-triangle";
-      } else if (ids[ids.length-1]==milestone.id){
+      } else if (ids[ids.length - 1] == milestone.id) {
         return "mdi-flag-triangle";
       } else {
-        return "mdi-play"
+        return "mdi-play";
       }
     }
   }
 };
 </script>
-
 
 <style scoped>
 .milestone:hover {

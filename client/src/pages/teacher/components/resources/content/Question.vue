@@ -1,30 +1,37 @@
 <template>
   <div id="question" ref="ques">
-    <Quiz :resource="{questions:[getQuestion]}" :isQuestion="true" class="ma-n3" v-if="getQuestion"/>
+    <div style="max-width: 1200px;" class="ma-auto">
+      <Quiz
+        :resource="{ questions: [getQuestion] }"
+        :isQuestion="true"
+        class="ma-n3"
+        v-if="getQuestion"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters, mapMutations } from "vuex";
 
-import Quiz from '../../../../../components/course/components/resources/quiz/Quiz.vue';
+import Quiz from "../../../../../components/course/components/resources/quiz/Quiz.vue";
 
 export default {
-  name:"Question",
+  name: "Question",
 
-  components:{
-    Quiz,
+  components: {
+    Quiz
   },
 
-  data(){
-    return{
-      resource:{},
+  data() {
+    return {
+      resource: {}
     };
   },
 
-  created(){
+  created() {
     this.updateParentDivWidth = this.updateParentDivWidth.bind(this);
-    this.setItems()
+    this.setItems();
   },
 
   mounted() {
@@ -36,19 +43,23 @@ export default {
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
-  beforeDestroy(){
+  beforeDestroy() {
     clearTimeout(this.updateParentDivWidthTimeout);
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
-  computed:{
-    ...mapGetters("main", ["getQuestion"]),
+  computed: {
+    ...mapGetters("main", ["getQuestion"])
   },
 
-  methods:{
-    ...mapMutations("style",["setScreenSize"]),
-    ...mapMutations("main", ["addAnswerByQuestionId", "editableInput", "deleteAnswer"]),
-    setItems(){
+  methods: {
+    ...mapMutations("style", ["setScreenSize"]),
+    ...mapMutations("main", [
+      "addAnswerByQuestionId",
+      "editableInput",
+      "deleteAnswer"
+    ]),
+    setItems() {
       this.resource = this.getQuestion;
     },
     updateParentDivWidth() {
@@ -57,8 +68,8 @@ export default {
         this.setScreenSize(this.$refs.ques.offsetWidth);
       }, 200);
     }
-  },
-}
+  }
+};
 </script>
 
 <style scoped></style>

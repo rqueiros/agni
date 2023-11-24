@@ -83,7 +83,11 @@
                           LOGIN
                           <v-icon right> mdi-login-variant </v-icon>
                         </v-btn>
-                        <div class="d-flex align-center ma-2" style="color:red" v-if="loginError">
+                        <div
+                          class="d-flex align-center ma-2"
+                          style="color:red"
+                          v-if="loginError"
+                        >
                           Invalid login credentials. Please try again.
                         </div>
                       </v-col>
@@ -156,11 +160,7 @@
                       </v-col>
                       <v-spacer></v-spacer>
                       <v-col class="d-flex ml-auto" cols="12" sm="3" xsm="12">
-                        <v-btn
-                          outlined
-                          disabled
-                          @click="validate"
-                        >
+                        <v-btn outlined disabled @click="validate">
                           REGISTER
                           <v-icon right> mdi-login-variant </v-icon>
                         </v-btn>
@@ -187,7 +187,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions("main",["login"]),
+    ...mapActions("main", ["login"]),
     ...mapMutations("main", ["setLogin"]),
     async studentLogin() {
       await this.login(["Student Lastname", "123456"]);
@@ -198,10 +198,10 @@ export default {
     async validate() {
       if (this.$refs.loginForm.validate()) {
         try {
-          this.loginError=false
+          this.loginError = false;
           await this.login([this.loginEmail, this.loginPassword]);
-        } catch(err){
-          this.loginError=true
+        } catch (err) {
+          this.loginError = true;
         }
       }
     },
@@ -213,12 +213,12 @@ export default {
     }
   },
   data: () => ({
-    loginError:false,
+    loginError: false,
 
     dialog: true,
     tab: 0,
     tabs: [
-      { name: "Guest", icon: "mdi-account-box-multiple"},
+      { name: "Guest", icon: "mdi-account-box-multiple" },
       { name: "Login", icon: "mdi-account" },
       { name: "Register", icon: "mdi-account-outline" }
     ],

@@ -1,48 +1,50 @@
 <template>
   <div id="evaluative" ref="eval">
-    <NewEval 
-      :isEvaluative="true" 
-      v-if="getEvaluative && getEvaluative.contentType==''" 
-      class="ma-n3" 
-    />
-    <Code 
-      :resource="getEvaluative" 
-      :isEvaluative="true" 
-      v-if="getEvaluative && getEvaluative.contentType=='code'" 
-      class="ma-n3" 
-    />
-    <Quiz 
-      :resource="getEvaluative" 
-      :isEvaluative="true" 
-      v-if="getEvaluative && getEvaluative.contentType=='quiz'" 
-      class="ma-n3" 
-    />
+    <div style="max-width: 1200px;" class="ma-auto">
+      <NewEval
+        :isEvaluative="true"
+        v-if="getEvaluative && getEvaluative.contentType == ''"
+        class="ma-n3"
+      />
+      <Code
+        :resource="getEvaluative"
+        :isEvaluative="true"
+        v-if="getEvaluative && getEvaluative.contentType == 'code'"
+        class="ma-n3"
+      />
+      <Quiz
+        :resource="getEvaluative"
+        :isEvaluative="true"
+        v-if="getEvaluative && getEvaluative.contentType == 'quiz'"
+        class="ma-n3"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters, mapMutations } from "vuex";
 
-import Code from '../../../../../components/course/components/resources/code/Code.vue';
-import Quiz from '../../../../../components/course/components/resources/quiz/Quiz.vue';
-import NewEval from '../../../../../components/course/components/resources/newEval/NewEval.vue';
+import Code from "../../../../../components/course/components/resources/code/Code.vue";
+import Quiz from "../../../../../components/course/components/resources/quiz/Quiz.vue";
+import NewEval from "../../../../../components/course/components/resources/newEval/NewEval.vue";
 
 export default {
   name: "Evaluative",
 
-  components:{
+  components: {
     Code,
     Quiz,
-    NewEval,
+    NewEval
   },
 
-  data(){
+  data() {
     return {
-      resource:{}
+      resource: {}
     };
   },
 
-  created(){
+  created() {
     this.updateParentDivWidth = this.updateParentDivWidth.bind(this);
   },
 
@@ -55,17 +57,17 @@ export default {
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
-  beforeDestroy(){
+  beforeDestroy() {
     clearTimeout(this.updateParentDivWidthTimeout);
     window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
-  computed:{
-    ...mapGetters("main", ["getEvaluative"]),
+  computed: {
+    ...mapGetters("main", ["getEvaluative"])
   },
 
-  methods:{
-    ...mapMutations("style",["setScreenSize"]),
+  methods: {
+    ...mapMutations("style", ["setScreenSize"]),
     updateParentDivWidth() {
       clearTimeout(this.updateParentDivWidthTimeout);
       this.updateParentDivWidthTimeout = setTimeout(() => {
@@ -73,8 +75,7 @@ export default {
       }, 200);
     }
   }
-
-}
+};
 </script>
 
 <style scoped></style>

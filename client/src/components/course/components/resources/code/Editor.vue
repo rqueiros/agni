@@ -1,5 +1,5 @@
 <template>
-  <div id="editor" :class="getSmallTextClass" >
+  <div id="editor" :class="getSmallTextClass">
     <div :class="isMD ? 'mx-2' : 'mx-4'">
       <div v-if="isEvaluative" class="pt-2 pb-2" :class="getSubtitleClass">
         <Editable
@@ -14,9 +14,8 @@
         />
         <span v-if="isViewer">
           {{ resource.name }}
-        </span>        
+        </span>
       </div>
-
 
       <div v-if="isEvaluative" :class="getSmallTextClass" class="pb-2">
         <!--
@@ -32,11 +31,11 @@
         />-->
         <span v-if="isViewer">
           {{ resource.statement }}
-        </span> 
-        <vue-editor 
+        </span>
+        <vue-editor
           v-if="isAuthor"
-          v-model="resource.statement" 
-          :style="{backgroundColor : $vuetify.theme.currentTheme.editable}"
+          v-model="resource.statement"
+          :style="{ backgroundColor: $vuetify.theme.currentTheme.editable }"
           style="border-radius: 8px;"
           :editor-toolbar="customToolbar"
           placeholder="Evaluative statement"
@@ -99,8 +98,8 @@
             v-if="isAuthor"
             icon
             @click="deleteSkeleton"
-            :x-small="getButtonSmallSize=='x-small'"
-            :small="getButtonSmallSize=='small'"
+            :x-small="getButtonSmallSize == 'x-small'"
+            :small="getButtonSmallSize == 'small'"
             style="position:absolute; top:auto; right: 8px;"
           >
             <v-icon :size="getIconSmallSize">mdi-delete</v-icon>
@@ -122,10 +121,10 @@
     </div>
 
     <div class="pt-2 pb-4" v-if="isTeacher">
-      <v-card 
+      <v-card
         flat
         outlined
-        class="d-flex align-center" 
+        class="d-flex align-center"
         style="border-left: 0; border-right: 0;"
       >
         <v-btn
@@ -134,8 +133,8 @@
           @click="addContextByEvaluativeId(resource.id)"
           color="button"
         >
-        <v-icon>mdi-plus</v-icon>Context
-      </v-btn>
+          <v-icon>mdi-plus</v-icon>Context
+        </v-btn>
         <v-layout column>
           <v-app-bar flat color="white" class="pa-0" rounded height="32">
             <v-tabs
@@ -147,15 +146,15 @@
               show-arrows
               hide-slider
             >
-              <v-tab 
-                v-for="(item, i) in resource.contexts" 
-                :key="i" 
+              <v-tab
+                v-for="(item, i) in resource.contexts"
+                :key="i"
                 style="width:100px"
                 :class="getSmallTextClass"
               >
                 <!--Student & Viewer-->
                 <span v-if="isStudent || isViewer">
-                  {{item.name}}
+                  {{ item.name }}
                 </span>
 
                 <!--Author-->
@@ -169,11 +168,11 @@
                     @input="editableInput"
                     onclick="event.stopPropagation()"
                   />
-                  <v-btn 
-                    v-if="isAuthor" 
-                    icon 
-                    :x-small="getButtonSmallSize=='x-small'"
-                    :small="getButtonSmallSize=='small'"
+                  <v-btn
+                    v-if="isAuthor"
+                    icon
+                    :x-small="getButtonSmallSize == 'x-small'"
+                    :small="getButtonSmallSize == 'small'"
                     onclick="event.stopPropagation()"
                     @click="deleteCont(item.id)"
                   >
@@ -186,15 +185,15 @@
             </v-tabs>
 
             <!--Author-->
-            <v-btn 
+            <v-btn
               v-if="contextLen"
               min-width="0"
               width="32px"
               height="28px"
               class="ma-1"
               @click="addContextByEvaluativeId(resource.id)"
-              :small="getButtonMediumSize=='small'" 
-              :medium="getButtonMediumSize=='medium'"
+              :small="getButtonMediumSize == 'small'"
+              :medium="getButtonMediumSize == 'medium'"
               color="button"
             >
               <v-icon> mdi-plus </v-icon>
@@ -202,33 +201,26 @@
           </v-app-bar>
 
           <v-tabs-items v-model="tab">
-            <v-tab-item
-              v-for="(item, i) in resource.contexts"
-              :key="i"
-            >
-            <AceEditor
-              ref="context"
-              v-model="code2"
-              @init="editorInit"
-              @onchange="editorChange"
-              v-if="contextLen"
-              theme="ambiance"
-              width="100%"
-              height="10rem"
-              :options="editorOp"
-              :commands="com"
-            />
+            <v-tab-item v-for="(item, i) in resource.contexts" :key="i">
+              <AceEditor
+                ref="context"
+                v-model="code2"
+                @init="editorInit"
+                @onchange="editorChange"
+                v-if="contextLen"
+                theme="ambiance"
+                width="100%"
+                height="10rem"
+                :options="editorOp"
+                :commands="com"
+              />
             </v-tab-item>
           </v-tabs-items>
-        </v-layout>  
+        </v-layout>
       </v-card>
     </div>
 
-    <span 
-      v-if="isStudent" 
-      class="caption ml-2" 
-      :class="isMD ? 'ml-2' : 'ml-4'"
-    >
+    <span v-if="isStudent" class="caption ml-2" :class="isMD ? 'ml-2' : 'ml-4'">
       (autosave each 10 seconds)
     </span>
 
@@ -248,8 +240,8 @@
         class="mb-2"
         @click="dataSumit"
         :disabled="statusSaveButton"
-        :small="getButtonMediumSize=='small'"
-        :medium="getButtonMediumSize=='medium'"
+        :small="getButtonMediumSize == 'small'"
+        :medium="getButtonMediumSize == 'medium'"
       >
         SAVE
         <pre>(Ctrl+S)</pre>
@@ -260,8 +252,8 @@
         dark
         class="mb-2"
         @click="getTeachersCode"
-        :small="getButtonMediumSize=='small'"
-        :medium="getButtonMediumSize=='medium'"
+        :small="getButtonMediumSize == 'small'"
+        :medium="getButtonMediumSize == 'medium'"
       >
         TEACHER'S CODE<v-icon right dark> mdi-account-switch </v-icon>
       </v-btn>
@@ -299,7 +291,7 @@ export default {
     isEvaluative: {
       type: Boolean,
       default: () => false
-    },
+    }
   },
 
   components: {
@@ -314,13 +306,10 @@ export default {
       content: "<h1>Some initial content</h1>",
       customToolbar: [
         ["bold", "italic", "underline"],
-        [
-          { align: "" },
-          { align: "center" },
-        ],
+        [{ align: "" }, { align: "center" }],
         ["code-block"],
         [{ list: "bullet" }],
-        [{ color: [] }, { background: [] }],
+        [{ color: [] }, { background: [] }]
       ],
 
       tab: 0,
@@ -336,7 +325,7 @@ export default {
 
       showSkeleton: false,
       hasSkeleton: false,
-      contextDeleted:false,
+      contextDeleted: false,
 
       options: [
         { label: "blank", value: "blank" },
@@ -365,7 +354,7 @@ export default {
       ]
     };
   },
- 
+
   watch: {
     "resource.skeleton"(value) {
       if (value.length > 0) {
@@ -374,17 +363,17 @@ export default {
         this.hasSkeleton = false;
       }
     },
-    tab(newV, oldV){
-      if (newV != undefined && !this.contextDeleted){
-        this.saveContext(this.resource.contexts[oldV].id, this.code2)
-        this.code2 = this.resource.contexts[newV].text
-      } else if (this.contextDeleted){
-        this.code2 = this.resource.contexts[newV].text
-        this.contextDeleted=false
+    tab(newV, oldV) {
+      if (newV != undefined && !this.contextDeleted) {
+        this.saveContext(this.resource.contexts[oldV].id, this.code2);
+        this.code2 = this.resource.contexts[newV].text;
+      } else if (this.contextDeleted) {
+        this.code2 = this.resource.contexts[newV].text;
+        this.contextDeleted = false;
       }
     },
-    "resource.solution"(value){
-      this.code = value
+    "resource.solution"(value) {
+      this.code = value;
     },
     "resource.statement"(value) {
       const obj2 = {
@@ -394,10 +383,10 @@ export default {
         type: "evaluative"
       };
       this.editableInput(obj2);
-    },
+    }
   },
 
-  beforeDestroy(){
+  beforeDestroy() {
     this.saveDate();
     clearInterval(this.saveHandler);
   },
@@ -405,28 +394,29 @@ export default {
   created() {
     if (this.isStudent) {
       if (
-        this.getStatusByResourceId(this.resource.id).answer[0].code ==
-          "" &&
+        this.getStatusByResourceId(this.resource.id).answer[0].code == "" &&
         this.resource.skeleton
       ) {
         this.code = this.resource.skeleton;
       } else if (
         this.getStatusByResourceId(this.resource.id).answer[0].code != ""
       ) {
-        this.code = this.getStatusByResourceId(
-          this.resource.id
-        ).answer[0].code;
+        this.code = this.getStatusByResourceId(this.resource.id).answer[0].code;
       } else {
         this.code = "";
       }
     } else if (this.isTeacher) {
       this.code = this.resource.solution;
       this.code1 = this.resource.skeleton;
-      if (this.resource.contexts.length>0){
+      if (this.resource.contexts.length > 0) {
         this.code2 = this.resource.contexts[this.tab].text;
       }
     }
-    if ("skeleton" in this.resource && this.resource.skeleton != null && this.resource.skeleton.length > 0) {
+    if (
+      "skeleton" in this.resource &&
+      this.resource.skeleton != null &&
+      this.resource.skeleton.length > 0
+    ) {
       this.hasSkeleton = true;
     } else {
       this.hasSkeleton = false;
@@ -434,17 +424,17 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main",[
+    ...mapGetters("main", [
       "getLessonByResourceId",
       "getStatusByResourceId",
-      "isStudent", 
-      "isTeacher", 
+      "isStudent",
+      "isTeacher",
       "isViewer",
-      "isAuthor",
+      "isAuthor"
     ]),
-    ...mapGetters("style",[
-      "getSmallTextClass", 
-      "getIconBigSize", 
+    ...mapGetters("style", [
+      "getSmallTextClass",
+      "getIconBigSize",
       "getIconSmallSize",
       "isMD",
       "getButtonSmallSize",
@@ -454,26 +444,24 @@ export default {
     ]),
     contextLen() {
       return this.resource.contexts.length > 0;
-    },
+    }
   },
 
   methods: {
-    ...mapActions("main",[
-      "setProgress"
-    ]),
-    ...mapMutations("main",[
+    ...mapActions("main", ["setProgress"]),
+    ...mapMutations("main", [
       "editableInput",
       "setTeacherProgress",
       "addContextByEvaluativeId",
       "deleteContext"
     ]),
-    deleteCont(id){
-      this.contextDeleted=true
-      let index = this.resource.contexts.findIndex(c => c.id == id)
-      let verify = this.resource.contexts.length-1 > index
-      let verify2 = this.tab <= index
-      this.deleteContext(id)
-      if (verify && verify2){
+    deleteCont(id) {
+      this.contextDeleted = true;
+      let index = this.resource.contexts.findIndex(c => c.id == id);
+      let verify = this.resource.contexts.length - 1 > index;
+      let verify2 = this.tab <= index;
+      this.deleteContext(id);
+      if (verify && verify2) {
         this.code2 = this.resource.contexts[this.tab].text;
       }
     },
@@ -514,14 +502,12 @@ export default {
     loadCode() {
       if (this.isStudent) {
         if (
-          this.getStatusByResourceId(this.resource.id).answer[0].code ==
-            "" &&
+          this.getStatusByResourceId(this.resource.id).answer[0].code == "" &&
           this.resource.skeleton
         ) {
           this.code = this.resource.skeleton;
         } else if (
-          this.getStatusByResourceId(this.resource.id).answer[0].code !=
-          ""
+          this.getStatusByResourceId(this.resource.id).answer[0].code != ""
         ) {
           this.code = this.getStatusByResourceId(
             this.resource.id
@@ -534,7 +520,7 @@ export default {
         this.code1 = this.resource.skeleton.split(" ")[0];
       }
     },
-    saveDate(){
+    saveDate() {
       const obj = {
         id: this.resource.id,
         value: this.code,
@@ -549,13 +535,13 @@ export default {
         type: "evaluative"
       };
       this.editableInput(obj2);
-      if (this.tab != undefined && this.resource.contexts.length>0){
-        this.saveContext(this.resource.contexts[this.tab].id, this.code2)
+      if (this.tab != undefined && this.resource.contexts.length > 0) {
+        this.saveContext(this.resource.contexts[this.tab].id, this.code2);
       }
     },
     async dataSumit() {
-      let originalCode = this.code;
-      let originalCode1 = this.code1;
+      //let originalCode = this.code;
+      //let originalCode1 = this.code1;
 
       const errors = [];
       const logs = [];
@@ -568,6 +554,13 @@ export default {
             answer: [{ __component: "solution.code", code: this.code }]
           }
         });
+        const obj = {
+          id: this.resource.id,
+          value: [{ __component: "solution.code", code: this.code }],
+          field: "answer",
+          type: "status"
+        };
+        this.editableInput(obj)
       } else if (this.isTeacher) {
         //this.setTeacherProgress({ id: this.resource.id, code: this.code })
         const obj = {
@@ -584,8 +577,8 @@ export default {
           type: "evaluative"
         };
         this.editableInput(obj2);
-        if (this.tab != undefined && this.resource.contexts.length>0){
-          this.saveContext(this.resource.contexts[this.tab].id, this.code2)
+        if (this.tab != undefined && this.resource.contexts.length > 0) {
+          this.saveContext(this.resource.contexts[this.tab].id, this.code2);
         }
       }
 
@@ -656,8 +649,8 @@ export default {
       // Emit errors for parent component to show errors
       this.$emit("onErrors", errors);
       this.$emit("onLogs", logs);
-      this.code = originalCode;
-      this.code1 = originalCode1;
+      //this.code = originalCode;
+      //this.code1 = originalCode1;
     },
     getLineNumberError(err) {
       const caller_line = err.stack.split("\n")[4];
@@ -700,7 +693,7 @@ export default {
       return editorRef.getSelection().getAllRanges().length;
     },
     editorInit: function(_editor) {
-      if(this.isViewer){
+      if (this.isViewer) {
         _editor.setReadOnly(true);
       }
 
@@ -723,6 +716,7 @@ export default {
         }
       });
  */
+
       
       if (this.saveHandler == "") {
         this.saveHandler = setInterval(this.dataSumit, 10000);
@@ -795,40 +789,41 @@ export default {
   display: none;
 }
 
-
 /* Tab bar styles */
-.theme--light.v-tabs .v-tab--active:hover::before, .theme--light.v-tabs .v-tab--active::before{
-  opacity:0.12;
+.theme--light.v-tabs .v-tab--active:hover::before,
+.theme--light.v-tabs .v-tab--active::before {
+  opacity: 0.12;
 }
-#editor>>>.v-toolbar__content, .v-toolbar__extension{
-  padding:0;
+#editor >>> .v-toolbar__content,
+.v-toolbar__extension {
+  padding: 0;
 }
-#editor>>>.v-toolbar__content > .v-tabs:first-child, .v-toolbar__extension > .v-tabs:first-child{
-  margin:0;
+#editor >>> .v-toolbar__content > .v-tabs:first-child,
+.v-toolbar__extension > .v-tabs:first-child {
+  margin: 0;
 }
-#editor>>>.v-slide-group__next, .v-slide-group__prev{
+#editor >>> .v-slide-group__next,
+.v-slide-group__prev {
   min-width: 24px;
 }
 
-
 /* Text editor */
-#editor>>>.ql-toolbar.ql-snow{
-  border:none;
+#editor >>> .ql-toolbar.ql-snow {
+  border: none;
   border-bottom: 1px solid #ccc;
 }
-#editor>>>.ql-container.ql-snow{
-  border:none;
+#editor >>> .ql-container.ql-snow {
+  border: none;
 }
-#editor>>>.ql-editor{
-  font-size:0.75rem;
+#editor >>> .ql-editor {
+  font-size: 0.75rem;
   min-height: 100px;
 }
-#editor>>>.quillWrapper .ql-snow.ql-toolbar .ql-formats{
-  margin-bottom:2px;
+#editor >>> .quillWrapper .ql-snow.ql-toolbar .ql-formats {
+  margin-bottom: 2px;
 }
-#editor>>>.quillWrapper .ql-snow.ql-toolbar{
-  padding-top:4px;
-  padding-bottom:4px
+#editor >>> .quillWrapper .ql-snow.ql-toolbar {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
-
 </style>

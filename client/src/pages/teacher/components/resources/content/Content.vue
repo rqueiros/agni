@@ -1,15 +1,16 @@
 <template>
   <div id="content" style="width: 100%;">
-    <v-container fluid class="pa-0 mb-4">
-
+    <v-container fluid class="pa-0 mb-4" style="max-width: 1200px;">
       <v-row dense>
-        <v-col style="max-width: 500px;" cols="12">
-          <v-card class="pa-2 shadow" color="boxes">
-            <v-radio-group 
-              v-model="collectionType" 
-              row 
-              hide-details 
-              inline 
+
+        <!--Collection Type Selection-->
+        <v-col cols="12" class="collectionSelect">
+          <v-card class="pa-2 shadow d-flex justify-center" color="boxes">
+            <v-radio-group
+              v-model="collectionType"
+              row
+              hide-details
+              inline
               class="ma-0 pa-0"
             >
               <v-radio label="Course" value="courses"></v-radio>
@@ -20,59 +21,108 @@
           </v-card>
         </v-col>
 
-        <v-col style="max-width: 190px;" cols="12">
-          <v-card 
-            width="100%" 
-            class="pa-2 shadow"
-            color="boxes"
-          >
+        <!--<v-col style="max-width: 190px;" cols="12">
+          <v-card width="100%" class="pa-2 shadow" color="boxes">
             <v-radio-group row hide-details inline class="ma-0 pa-0">
-              <v-checkbox 
-                v-model="checkboxes" 
-                label="My" 
-                value="my" 
-                hide-details 
-                class="ma-0 pa-0 mr-4"/>
-              <v-checkbox 
-                v-model="checkboxes" 
-                label="Draft" 
-                value="draft" 
+              <v-checkbox
+                v-model="checkboxes"
+                label="My"
+                value="my"
+                hide-details
+                class="ma-0 pa-0 mr-4"
+              />
+              <v-checkbox
+                v-model="checkboxes"
+                label="Draft"
+                value="draft"
                 hide-details
                 class="ma-0 pa-0 mr-4"
               />
             </v-radio-group>
           </v-card>
-        </v-col>
+        </v-col>-->
 
-        <v-col cols="12" style="max-width: 330px;">
-          <v-text-field 
-            v-model="search" 
+        <!--Search-->
+        <v-col style="min-width: 176px">
+          <v-text-field
+            v-model="search"
             style="height:100%"
             :background-color="$vuetify.theme.currentTheme.boxes"
-            prepend-inner-icon="mdi-magnify" 
+            prepend-inner-icon="mdi-magnify"
             label="Search"
-            single-line 
+            single-line
             solo
-            class="pa-0 ma-0 shadow"  
+            class="pa-0 ma-0 shadow"
             dense
             hide-details
           />
         </v-col>
       </v-row>
 
+      <!--Data Table-->
       <v-row dense>
         <v-col>
           <v-card width="100%" class="shadow" color="boxes">
-            <v-data-table 
-              class="my-data-table" 
-              :itemsPerPage="itemsPerPage" 
-              :headers="headers[collectionType]" 
+            <v-data-table
+              show-select
+              :itemsPerPage="itemsPerPage"
+              :headers="headers[collectionType]"
               :items="items"
-              :search="search" 
-              @click:row="openCollectionType" 
+              :search="search"
+              @click:row="openCollectionType"
+              @current-items="setCurrentItems"
               :loading="loading"
               style="background-color: transparent;"
+              mobile-breakpoint="0"
             >
+              <!--Error-->
+              <template v-slot:body v-if="error">
+                <tr>
+                  <td 
+                    :colspan="headers[collectionType].length+1" 
+                    class="pa-10 pb-15 text-center"
+                  >
+                    <ErrorChip/>
+                  </td>
+                </tr>
+              </template>
+
+              <!--CheckBox Thins-->
+              <template v-slot:header.data-table-select>
+                <v-checkbox 
+                  hide-details
+                  class="mt-0" 
+                  color="darkgrey"
+                  :indeterminate="allCheckInd"
+                  v-model="allCheck"
+                  @click.stop="clickCheckbox"
+                />
+              </template>
+              <template v-slot:header>
+                <v-btn 
+                  color="error" 
+                  small 
+                  class="px-1" 
+                  style="position: absolute; top:10px; left:50px"
+                  v-if="selected.length>0"
+                  @click="remove(selected)"
+                >
+                  Delete
+                </v-btn>
+              </template>
+              <template v-slot:item.data-table-select="{ item }">
+                <v-checkbox 
+                  v-if="item.my" 
+                  v-model="selected"
+                  :value="item.id"
+                  hide-details 
+                  class="mt-0" 
+                  @click.stop="() => {}" 
+                  color="darkgrey"
+                />
+              </template>
+
+              <!--Table Slots-->
               <template v-slot:item.my="{ item }">
                 <v-chip :color="color.my" outlined v-if="item.my">
                   My
@@ -89,21 +139,27 @@
                 </v-chip>
               </template>
               <template v-slot:item.question="{ item }">
-                {{ item.question.substring(3, item.question.length-4) }}
+                <div 
+                  style="max-height: 40px; overflow-y: auto;" 
+                  v-html="item.question"
+                ></div>
+              </template>
+              <template v-slot:item.name="{ item }">
+                <div style="max-height: 40px; overflow-y: auto;">
+                  {{ item.name }}
+                </div>
               </template>
               <template v-slot:item.actions="{ item }">
-
-                <v-menu 
-                  offset-y 
+                <v-menu
+                  offset-y
                   :nudge-width="350"
-                  :close-on-content-click="false" 
-                  v-if="collectionType=='courses'"
+                  :close-on-content-click="false"
+                  v-if="collectionType == 'courses'"
                 >
                   <template v-slot:activator="{ on, attrs }">
-                    <v-btn 
-                      v-bind="attrs" 
-                      v-on="on" 
-                      @click="copyMenu(item)"
+                    <v-btn
+                      v-bind="attrs"
+                      v-on="on"
                       onclick="event.stopPropagation()"
                       icon
                       small
@@ -113,30 +169,12 @@
                       </v-icon>
                     </v-btn>
                   </template>
-                  <v-list>
-                    <v-list-item>
-                      <v-treeview 
-                        selectable 
-                        dense 
-                        selection-type="independent" 
-                        v-model="cloneSelection"
-                        :items="cloneItems.children" 
-                        :open.sync="cloneOpen" 
-                        :item-key="'idMenu'"
-                      />
-                    </v-list-item>
-                    <v-list-item>
-                      <v-btn width="100%" @click="copy()">
-                        Clone
-                      </v-btn>
-                    </v-list-item>
-                  </v-list>
+                  <CopyCourseMenu :course="item"/>
                 </v-menu>
-
-                <v-btn 
-                  v-else 
-                  @click="copy2(item)" 
-                  onclick="event.stopPropagation()" 
+                <v-btn
+                  v-else
+                  @click="copy(item)"
+                  onclick="event.stopPropagation()"
                   icon
                   small
                 >
@@ -144,10 +182,9 @@
                     mdi-content-copy
                   </v-icon>
                 </v-btn>
-
-                <v-btn 
-                  v-if="item.my" 
-                  @click="remove(item)" 
+                <v-btn
+                  v-if="item.my"
+                  @click="remove([item.id])"
                   onclick="event.stopPropagation()"
                   icon
                   small
@@ -164,22 +201,25 @@
     </v-container>
 
     <DeleteDialog :dialog="deleteDialog" :collectionType="collectionType" />
-
   </div>
 </template>
 
+
 <script>
 import { bus } from "@/main.js";
-
 import { mapActions, mapGetters } from "vuex";
 
 import DeleteDialog from "../../../../../components/gerneral/DeleteDialog.vue";
+import ErrorChip from "../../../../../components/gerneral/ErrorChip.vue"
+import CopyCourseMenu from "../../../../../components/gerneral/CopyCourseMenu.vue"
 
 export default {
   name: "Content",
 
   components: {
-    DeleteDialog
+    DeleteDialog,
+    ErrorChip,
+    CopyCourseMenu
   },
 
   data() {
@@ -187,125 +227,144 @@ export default {
       collectionType: "courses",
       search: "",
       loading: true,
+      error: false,
       items: [],
-      checkboxes: [],
-      itemsPerPage: 7,
-
-      cloneItems: [],
-      cloneSelection: [],
-      cloneOpen: [],
+      //checkboxes: [],
+      itemsPerPage: 5,
 
       deleteDialog: false,
-      toDeleteItem: "",
+      toDeleteItem: [],
 
-      headers: {
-        courses: [
-          { text: "", value: "type", align: "center", width: "15%" },
-          { text: "Id", value: "id", cellClass: "text-body-1" },
-          { text: "Name", value: "name", cellClass: "text-body-1" },
-          { text: "Author", value: "my" },
-          { text: "State", value: "state" },
-          { text: "", value: "actions", sortable: false, width: "15%", align: "center" }
-        ],
-        expositives: [
-          { text: "", value: "type", align: "center", width:"15%"},
-          { text: "Id", value: "id" },
-          { text: "Name", value: "name" },
-          { text: "Author", value: "my" },
-          { text: "State", value: "state" },
-          { text: "", value: "actions", sortable: false, width: "15%", align: "center" }
-        ],
-        evaluatives: [
-          { text: "", value: "type", align: "center", width:"15%"},
-          { text: "Id", value: "id" },
-          { text: "Name", value: "name" },
-          { text: "Author", value: "my" },
-          { text: "State", value: "state" },
-          { text: "", value: "actions", sortable: false, width:"15%", align: "center" }
-        ],
-        questions: [
-          { text: "Id", value: "id", align: "center", width:"15%"},
-          { text: "Question", value: "question" },
-          { text: "Author", value: "my" },
-          { text: "State", value: "state" },
-          { text: "", value: "actions", sortable: false, width:"15%", align: "center" }
-        ]
-      },
+      selected: [],
+      allCheck:false,
+      allCheckInd:false,
+      currentItems:[],
+
+      screenHeight:0,
 
       color: {
         Published: "green",
         Draft: "primary",
         my: "green"
-      }
+      },
+
+      headers: {
+        courses: [
+          { text: "", value: "type", align: "center", width: "12%", sortable: false },
+          { text: "Id", value: "id", cellClass:"columnWidth3" },
+          { text: "Name", value: "name" },
+          { text: "Author", value: "my", cellClass:"columnWidth1" },
+          { text: "State", value: "state", cellClass:"columnWidth2" },
+          { text: "", value: "actions", sortable: false, width: "90px" }
+        ],
+        expositives: [
+          { text: "", value: "type", align: "center", width: "12%", sortable: false },
+          { text: "Id", value: "id", cellClass:"columnWidth3" },
+          { text: "Name", value: "name" },
+          { text: "Author", value: "my", cellClass:"columnWidth1" },
+          { text: "State", value: "state", cellClass:"columnWidth2" },
+          { text: "", value: "actions", sortable: false, width: "90px" }
+        ],
+        evaluatives: [
+          { text: "", value: "type", align: "center", width: "12%", sortable: false },
+          { text: "Id", value: "id", cellClass:"columnWidth3" },
+          { text: "Name", value: "name" },
+          { text: "Author", value: "my", cellClass:"columnWidth1" },
+          { text: "State", value: "state", cellClass:"columnWidth2" },
+          { text: "", value: "actions", sortable: false, width: "90px" }
+        ],
+        questions: [
+          { text: "Id", value: "id", cellClass:"columnWidth3" },
+          { text: "Question", value: "question" },
+          { text: "Author", value: "my", cellClass:"columnWidth1" },
+          { text: "State", value: "state", cellClass:"columnWidth2" },
+          { text: "", value: "actions", sortable: false, width: "90px" }
+        ]
+      },
     };
   },
 
   created() {
+    this.updateParentDivWidth = this.updateParentDivWidth.bind(this);
+
+    let contentCollType = localStorage.getItem("contentCollType") || "";
+    if (contentCollType != "") {
+      this.collectionType = contentCollType;
+    }
+
+    this.setItems();
+
     bus.$on("deleteDialog", payload => {
       this.deleteDialog = payload;
     });
     bus.$on("deleteDialogResult", async payload => {
-      this.deleteDialog = false
+      this.deleteDialog = false;
       if (this.toDeleteItem != "") {
         try {
           if (payload == "ok") {
-            await this.deleteCollectionType([this.toDeleteItem.id, this.collectionType]);
+            for (let id of this.toDeleteItem){
+              await this.deleteCollectionType([id,this.collectionType]);
+            }
             await this.setItems();
-            this.toDeleteItem = "";
-            bus.$emit("successSnackbar", this.collTypeName() + " deleted")
+            bus.$emit("successSnackbar", " deleted");
           }
         } catch (error) {
-          console.log(error)
-          this.toDeleteItem = "";
-          bus.$emit("errorSnackbar", "Something went wrong deleting the "+this.collTypeName())
+          console.log(error);
+          bus.$emit("errorSnackbar", "Something went wrong deleting the ");
         }
+        this.toDeleteItem = [];
+        this.selected = [];
       }
     });
-    let contentCollType = localStorage.getItem("contentCollType") || "";
-    if (contentCollType != ""){
-      this.collectionType = contentCollType
-    }
-    this.setItems();
   },
 
-  beforeDestroy(){
-    localStorage.setItem('contentCollType', this.collectionType);
+  beforeDestroy() {
+    localStorage.setItem("contentCollType", this.collectionType);
+    clearTimeout(this.updateParentDivWidthTimeout);
+    window.removeEventListener("resize", this.updateParentDivWidth);
+  },
+
+  mounted() {
+    this.screenHeight = window.innerHeight
+    window.addEventListener("resize", this.updateParentDivWidth);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateParentDivWidth);
   },
 
   watch: {
+    selected(newVal){
+      const selectableItems = this.currentItems.filter(i => i.my).length;
+      if (newVal.length === selectableItems && selectableItems > 0) {
+        this.allCheck = true;
+        this.allCheckInd = false;
+      } else if (newVal.length > 0) {
+        this.allCheckInd = true;
+        this.allCheck = false;
+      } else {
+        this.allCheckInd = false;
+        this.allCheck = false;
+      }
+    },
     collectionType() {
+      this.selected= [];
       this.setItems();
     },
-    checkboxes() {
-      this.setItems();
-    },
-    cloneSelection(newV, oldV) {
-      if (newV.length > oldV.length) {
-        const newItem = newV.find(v => !oldV.includes(v));
-        const parent = this.findParentofCloneBody(newItem);
-        if (parent != null) {
-          let addIds = [];
-          parent.forEach(v => {
-            if (!newV.includes(v)) {
-              addIds.push(v);
-            }
-          });
-          this.cloneSelection.push(...addIds);
-        }
-        let addIds = this.findChilrens(newItem)
-        this.cloneSelection.push(...addIds)
-      } else if (newV.length < oldV.length){
-        const remItem = oldV.find(v => !newV.includes(v));
-        let remIds = this.findChilrens(remItem)
-        this.cloneSelection = this.cloneSelection.filter(id => !remIds.includes(id))
+    screenHeight(newV){
+      if(newV > 800){
+        this.itemsPerPage=10
+      } else {
+        this.itemsPerPage=5
       }
     }
+    /*checkboxes() {
+      this.setItems();
+    },*/
   },
 
   computed: {
     ...mapGetters("style", [
-      "getErrorSnackbar", 
-      "getSuccessSnackbar", 
       "getIcon"
     ]),
   },
@@ -314,28 +373,35 @@ export default {
     ...mapActions("main", [
       "fetchCollectionTypes",
       "fetchPrepareCollectionType",
-      "fetchEmptyCourse",
       "deleteCollectionType",
-      "fetchCloneBody",
-      "fetchClone",
-      "copyCollectionType",
+      "copyCollectionType"
     ]),
+
+    updateParentDivWidth() {
+      clearTimeout(this.updateParentDivWidthTimeout);
+      this.updateParentDivWidthTimeout = setTimeout(() => {
+        this.screenHeight = window.innerHeight
+      }, 200);
+    },
+
+    setCurrentItems(items) {
+      this.currentItems = items;
+    },
 
     async setItems() {
       const parameters = {
         collectionType: this.collectionType,
-        my: this.checkboxes.includes("my"),
-        draft: this.checkboxes.includes("draft")
+        //my: this.checkboxes.includes("my"),
+        //draft: this.checkboxes.includes("draft")
       };
       this.loading = true;
       try {
         this.items = await this.fetchCollectionTypes(parameters);
-        this.loading = false;
       } catch (error) {
-        console.log(error)
-        this.loading = false;
-        bus.$emit("errorSnackbar", "Something went wrong fetching the "+this.collTypeName())
+        console.log(error);
+        this.error = true;
       }
+      this.loading = false;
     },
 
     async openCollectionType(item) {
@@ -356,170 +422,98 @@ export default {
             break;
         }
       } catch (error) {
-        console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong fetching the "+this.collTypeName())
+        console.log(error);
+        bus.$emit("errorSnackbar", "Something went wrong fetching the ");
       }
     },
 
-    async copyMenu(item) {
-      this.cloneSelection = [];
-      this.cloneOpen = [];
-      let cloneBody = [];
-      try {
-        cloneBody = await this.fetchCloneBody(item.id);
-      } catch (error) {
-        console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong fetching the Clone Menu")
+    clickCheckbox(){
+      if (this.currentItems.filter(i => i.my).length == this.selected.length){
+        this.selected = []
+      } else {
+        this.selected = this.currentItems.filter(i => i.my).flatMap(i => i.id)
       }
-      this.cloneItems = cloneBody;
-    },
-    async copy() {
-      let cloneData = this.cloneItems;
-      delete cloneData.idMenu
-      if (cloneData.children) {
-        cloneData.modules = cloneData.children;
-        cloneData.modules.forEach(module => {
-          if (this.cloneSelection.includes(module.idMenu)) {
-            module.clone = true;
-          }
-          delete module.idMenu;
-          delete module.id;
-          module.name = module.name.substring(3);
-          if (module.children) {
-            module.lessons = module.children;
-            module.lessons.forEach(lesson => {
-              if (this.cloneSelection.includes(lesson.idMenu)) {
-                lesson.clone = true;
-              }
-              delete lesson.idMenu;
-              delete lesson.id;
-              lesson.name = lesson.name.substring(3);
-              if (lesson.children) {
-                lesson.expositives = [];
-                lesson.evaluatives = [];
-                lesson.children.forEach(children => {
-                  let element = children;
-                  if (this.cloneSelection.includes(element.idMenu)) {
-                    element.clone = true;
-                  }
-                  let name = element.name
-                  element.name = element.name.substring(5);
-                  delete element.idMenu;
-                  delete element.id;
-                  if (name.includes("Exp.")) {
-                    lesson.expositives.push(element);
-                  } else {
-                    lesson.evaluatives.push(element);
-                  }
-                });
-                delete lesson.children;
-              }
-            });
-            delete module.children;
-          }
-        });
-        delete cloneData.children;
-      }
-      this.cloneItems = []
-      this.cloneSelection = []
-      this.cloneOpen = []
-      try {
-        await this.fetchClone(cloneData);
-        bus.$emit("successSnackbar", "Course copied")
-        bus.$emit("changePage", "content,Course");
-      } catch (error) {
-        console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong copying the Course")
-      }
-    },
-    findParentofCloneBody(idMenu) {
-      const items = this.cloneItems.children;
-      for (let i = 0; i < items.length; i++) {
-        const module = items[i];
-        if (module.idMenu == idMenu) {
-          return null;
-        }
-        if (module.children) {
-          for (let j = 0; j < module.children.length; j++) {
-            const lesson = module.children[j];
-            if (lesson.idMenu == idMenu) {
-              return [module.idMenu];
-            }
-            if (lesson.children) {
-              for (let k = 0; k < lesson.children.length; k++) {
-                const ex = lesson.children[k];
-                if (ex.idMenu == idMenu) {
-                  return [module.idMenu, lesson.idMenu];
-                }
-              }
-            }
-          }
-        }
-      }
-      return null;
-    },
-    findChilrens(idMenu){
-      const items = this.cloneItems.children;
-      let array = []
-      if (items.find(i => i.idMenu == idMenu)){
-        let item = items.find(i => i.idMenu == idMenu)
-        item.children.forEach(c => {
-          array.push(c.idMenu)
-          c.children.forEach(ch => {
-            array.push(ch.idMenu)
-          })
-        })
-      } else if (items.flatMap(i => i.children).find(i => i.idMenu == idMenu)){
-        let item = items.flatMap(i => i.children).find(i => i.idMenu == idMenu)
-        item.children.forEach(c => {
-          array.push(c.idMenu)
-        })
-      }
-      return array
     },
 
-    async copy2(item){
+    async copy(item) {
       try {
-        await this.copyCollectionType([item.id,this.collectionType])
+        await this.copyCollectionType([item.id, this.collectionType]);
         switch (this.collectionType) {
           case "expositives":
             bus.$emit("changePage", "content,Expositive");
-            bus.$emit("successSnackbar", "Expositive copied")
+            bus.$emit("successSnackbar", "Expositive copied");
             break;
           case "evaluatives":
             bus.$emit("changePage", "content,Evaluative");
-            bus.$emit("successSnackbar", "Evaluative copied")
+            bus.$emit("successSnackbar", "Evaluative copied");
             break;
           case "questions":
             bus.$emit("changePage", "content,Question");
-            bus.$emit("successSnackbar", "Question copied")
+            bus.$emit("successSnackbar", "Question copied");
             break;
         }
       } catch (error) {
-        console.log(error)
-        bus.$emit("errorSnackbar", "Something went wrong copying the "+this.collTypeName())
+        console.log(error);
+        bus.$emit("errorSnackbar", "Something went wrong copying the ");
       }
     },
 
-    remove(item) {
-      this.toDeleteItem = item;
+    remove(list) {
+      this.toDeleteItem = list;
       this.deleteDialog = true;
     },
-
-    collTypeName(){
-      return this.collectionType.charAt(0).toUpperCase() + this.collectionType.slice(1,-1)
-    },
-  },
+  }
 };
 </script>
 
+
 <style scoped>
-.my-data-table tbody tr:hover {
+#content>>> tbody tr:hover {
   cursor: pointer;
 }
-#content>>>.v-text-field.v-text-field--solo:not(.v-text-field--solo-flat) > .v-input__control > .v-input__slot{
+#content
+  >>> .v-text-field.v-text-field--solo:not(.v-text-field--solo-flat)
+  > .v-input__control
+  > .v-input__slot {
   box-shadow: none;
 }
 
+#content>>> .v-data-table > .v-data-table__wrapper > table > tbody > tr > td{
+  padding: 0 16px 0 16px !important;
+}
+#content>>> .v-data-table > .v-data-table__wrapper > table > thead > tr:last-child > th{
+  padding:0 16px 0 16px !important;
+}
 
+.collectionSelect{
+  max-width: 475px;
+}
+
+@media only screen and (max-width: 768px) {
+  .collectionSelect{
+    max-width: none;
+  }
+}
+
+@media only screen and (max-width: 1000px) {
+  #content>>> .v-data-table > .v-data-table__wrapper > table > tbody > tr > td{
+    padding: 0 0px 0 16px !important;
+  }
+  #content>>> .v-data-table > .v-data-table__wrapper > table > thead > tr:last-child > th{
+    padding:0 0px 0 16px !important;
+  }
+}
+</style>
+
+
+<style>
+.columnWidth1{
+  min-width: 87px;
+}
+.columnWidth2{
+  min-width: 120px;
+}
+.columnWidth3{
+  min-width: 61px;
+}
 </style>
