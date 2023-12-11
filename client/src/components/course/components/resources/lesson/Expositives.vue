@@ -82,7 +82,7 @@
                   <v-icon
                     v-if="isAuthor && !isExpositive"
                     :size="getIconSmallSize"
-                    @click="deleteExpositive(item.id)"
+                    @click="deleteExpositiveByID(item.id)"
                   >
                     mdi-delete
                   </v-icon>
@@ -155,7 +155,7 @@
 
 <script>
 import { bus } from "@/main.js";
-import { mapActions, mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import Editable from "../../../../gerneral/Editable.vue";
 import SelectDialog from "../../../../gerneral/SelectDialog.vue";
@@ -204,7 +204,7 @@ export default {
   created() {},
 
   computed: {
-    ...mapGetters("main", ["isStudent", "isTeacher", "isAuthor", "isViewer"]),
+    ...mapGetters("request", ["isStudent", "isTeacher", "isAuthor", "isViewer"]),
     ...mapGetters("style", [
       "getIconSmallSize",
       "getIconMediumSize",
@@ -219,18 +219,18 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", [
-      "addExpositiveByLessonId",
-      "deleteExpositive",
+    ...mapActions("main", [
+      "addExpositiveByLessonID",
+      "deleteExpositiveByID",
       "editableInput"
     ]),
-    ...mapActions("main", ["addExistingExpositives"]),
+    ...mapActions("request", ["addExistingExpositives"]),
     setMilestone(index) {
       this.$refs["expo" + this.tab][0].setMilestone(index);
     },
     addExpositive(title) {
       if (title == "NEW") {
-        this.addExpositiveByLessonId(this.resource.id);
+        this.addExpositiveByLessonID(this.resource.id);
       } else if (title == "SELECT") {
         this.dialog = true;
       }

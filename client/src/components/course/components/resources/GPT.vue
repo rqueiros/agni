@@ -2,14 +2,14 @@
   <v-sheet
     class="mb-2 mt-n4 rounded-lg"
     :class="openChat ? 'elevation-5' : ''"
-    :color="openChat ? '#74AA9C' : 'transparent'"
+    :color="openChat ? 'gptGreen' : 'transparent'"
     style="position:fixed; z-index: 150; bottom:40px; right:60px"
     v-click-outside="closeChat"
   >
     <!--Closed-->
     <div v-if="!openChat">
       <v-avatar
-        color="#74AA9C"
+        color="gptGreen"
         size="45"
         class="elevation-5 gptAvater mr-1"
         @click="openChat = !openChat"
@@ -21,11 +21,19 @@
           class="pa-1"
         />
       </v-avatar>
+      <v-progress-circular
+        :size="40"
+        :width="12"
+        v-if="loading && !dialog"
+        indeterminate
+        color="grey darken-3"
+        style="position:absolute; top:2px; left: 2px"
+      ></v-progress-circular>
     </div>
 
     <!--Open-->
     <div style="font-size: 14px;" class="pa-2" v-if="openChat">
-      <v-card flat color="#343541" dark>
+      <v-card flat color="gptGrey" dark>
         <div class="pa-1">
           Chat GPT 3.5
         </div>
@@ -121,6 +129,7 @@
               hide-details
               style="font-size: 12px; line-height: 0.5"
               :disabled="loading"
+              @keyup.enter="answerTopic"
             ></v-textarea>
             <v-btn
               @click="answerTopic"
@@ -219,81 +228,82 @@
       </v-card>
     </div>
 
-    <v-dialog width="800" v-model="dialog">
-      <v-card max-height="80vh">
-        <v-card-title class="text-h5">
+    <v-dialog width="800" v-model="dialog" :persistent="loading">
+      <v-card max-height="80vh" color="gptGreen" class="pa-2">
+        <v-card color="gptGrey" dark>
+          <v-card-title class="text-h5">
           GPT generated Exercises
-        </v-card-title>
-        <v-card-text>
-          <v-list two-line max-height="50vh" class="overflow-y-auto">
-            <v-list-item-group
-              v-model="selected"
-              active-class="primary--text"
-              multiple
-            >
-              <template v-for="(item, index) in exercises">
-                <v-list-item :key="index+'a'" v-if="true">
-                  <template v-slot:default="{ active }">
-                    <v-list-item-action>
-                      <v-icon
-                        v-if="!active"
-                        color="grey lighten-1"
-                      >
-                        mdi-star-outline
-                      </v-icon>
+          </v-card-title>
+          <v-card-text>
+            <v-list two-line max-height="50vh" class="overflow-y-auto" style="background-color: transparent;">
+              <v-list-item-group
+                v-model="selected"
+                active-class="gptGreen--text"
+                multiple
+              >
+                <template v-for="(item, index) in exercises">
+                  <v-list-item :key="index+'a'" v-if="true">
+                    <template v-slot:default="{ active }">
+                      <v-list-item-action>
+                        <v-icon
+                          v-if="!active"
+                          color="grey lighten-1"
+                        >
+                          mdi-star-outline
+                        </v-icon>
 
-                      <v-icon
-                        v-else
-                        color="primary"
-                      >
-                        mdi-star
-                      </v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="item.name" class="mb-1"/>
+                        <v-icon
+                          v-else
+                          color="gptGreen"
+                        >
+                          mdi-star
+                        </v-icon>
+                      </v-list-item-action>
+                      <v-list-item-content>
+                        <v-list-item-title v-text="item.name" class="mb-1"/>
 
-                      <div v-html="item.statement" class="text--primary"></div>
+                        <div v-html="item.statement" class="gptSubtitle--text"></div>
 
-                      <!--
-                      <div v-html="item.solution" class="text--secondary"></div>-->
-                    </v-list-item-content>
-                  </template>
-                </v-list-item>
+                        <!--
+                        <div v-html="item.solution" class="text--secondary"></div>-->
+                      </v-list-item-content>
+                    </template>
+                  </v-list-item>
 
-                <v-divider
-                  v-if="index < exercises.length - 1"
-                  :key="index"
-                ></v-divider>
-              </template>
-            </v-list-item-group>
-          </v-list>
-          <div class="d-flex justify-center pt-2">
-            <v-btn 
-              color="#74AA9C" 
-              text 
-              outlined 
-              small 
-              @click="generateExercise" 
-              :disabled="loading"
-            >
-              <v-progress-circular
-                :size="20"
-                v-if="loading"
-                indeterminate
-              ></v-progress-circular>
-              Generate 3 More ...
+                  <v-divider
+                    v-if="index < exercises.length - 1"
+                    :key="index"
+                  ></v-divider>
+                </template>
+              </v-list-item-group>
+            </v-list>
+            <div class="d-flex justify-center pt-2">
+              <v-btn 
+                color="gptGreen" 
+                small 
+                @click="generateMoreExercises" 
+                :disabled="loading"
+              >
+                <v-progress-circular
+                  :size="15"
+                  v-if="loading"
+                  indeterminate
+                  class="mr-2"
+                ></v-progress-circular>
+                Generate 3 More ...
+              </v-btn>
+            </div>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="white" outlined text @click="closeDialog" :disabled="loading">
+              Cancel
             </v-btn>
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="closeDialog">
-            Cancel
-          </v-btn>
-          <v-btn color="primary" text @click="addExercises">
-            Add
-          </v-btn>
-        </v-card-actions>
+            <v-btn color="white" outlined text @click="addExercises" :disabled="loading">
+              Add
+            </v-btn>
+          </v-card-actions>
+        </v-card>
       </v-card>
     </v-dialog>
   </v-sheet>
@@ -301,10 +311,11 @@
 
 
 <script>
-import Vue from 'vue';
+//import Vue from 'vue';
 
-import { mapActions, mapMutations } from "vuex";
+import { mapActions } from "vuex";
 
+/*
 Vue.directive('click-outside', {
   bind: function (el, binding, vnode) {
     el.clickOutsideEvent = function (event) {
@@ -317,7 +328,7 @@ Vue.directive('click-outside', {
   unbind: function (el) {
     document.body.removeEventListener('click', el.clickOutsideEvent)
   },
-});
+});*/
 
 export default {
   name: "GPT",
@@ -354,7 +365,8 @@ export default {
       messageResp:{
         withinOrLesson:"",
         howMany:0,
-        topic:""
+        topic:"",
+        alreadyCreated:[]
       },
       messageGPT:{
         start : "Hello! I can generate Programming Exercises for you. But I cannot guarente that they are 100% correct.",
@@ -375,20 +387,21 @@ export default {
     async openChat(newV){
       if (newV){
         await this.startMessage()
-      } else {
+      } else if (!this.dialog && !this.loading) {
         this.resetData()
       }
     },
     dialog (newV){
       if (!newV){
         this.exercises = []
+        this.resetData()
       }
     }
   },
 
   methods: {
-    ...mapActions("main", ["generateProgrammingEx"]),
-    ...mapMutations("main", ["addGPTExercises"]),
+    ...mapActions("request", ["generateProgrammingEx"]),
+    ...mapActions("main", ["addEvaluativeByLessonID2"]),
     /* Opens Closes */
     closeChat() {
       if (this.openChat){
@@ -407,7 +420,8 @@ export default {
       this.messageResp = {
         withinOrLesson:"",
         howMany:0,
-        topic:""
+        topic:"",
+        alreadyCreated:[]
       }
       this.messageGPTDisplayed = {
         start:"",
@@ -459,8 +473,13 @@ export default {
       this.messageResp.topic = this.messageInput
       this.messageInput = ""
       this.scrollToBottom()
-      await this.generateExercise()
-      this.dialog = true
+      try{
+        await this.generateExercise()
+        this.dialog = true
+        this.openChat = false
+      } catch (err){
+        console.log(err)
+      }
     },
     displayMessage(message) {
       return new Promise((resolve) => {
@@ -497,11 +516,17 @@ export default {
     },
 
     /* GPT Use */
+    async generateMoreExercises(){
+      console.log(this.exercises)
+      this.messageResp.alreadyCreated = this.exercises.map(e => e.name)
+      await this.generateExercise()
+    },
     async generateExercise() {
       this.loading = true;
       try{
         let data = await this.generateProgrammingEx([this.messageResp, this.resource.id]);
         this.displayExercises(data.exercises)
+        this.error = false
       } catch(error){
         console.log(error)
         this.messageResp.topic = ""
@@ -517,7 +542,10 @@ export default {
     },
     addExercises(){
       let ex = this.selected.map(s => this.exercises[s])
-      this.addGPTExercises([this.resource.id, ex])
+      console.log(ex)
+      ex.forEach(e =>{
+        this.addEvaluativeByLessonID2([this.resource.id, e])
+      })
       this.dialog = false
       this.resetData()
     },

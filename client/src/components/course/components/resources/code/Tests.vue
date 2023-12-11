@@ -5,7 +5,7 @@
       :class="isEvaluative ? 'shadow' : ''"
       :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     >
-      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'">
+      <v-list-item class="px-2">
         <v-list-item-content class="align-self-start">
           <v-list-item-title :class="getTitleClass">
             TESTS
@@ -40,8 +40,7 @@
       >
         <template v-slot:top>
           <div
-            class="py-1 d-flex"
-            :class="!isMDsmaller ? '' : isMD ? 'px-2' : 'px-4'"
+            class="py-1 d-flex px-2"
           >
             <v-btn
               @click="run"
@@ -275,59 +274,6 @@
               </v-menu>
             </div>
           </div>
-          <!--
-          <v-card v-if="isStudent">
-            <v-card-title>
-              <span class="headline">{{ formTitle }}</span>
-            </v-card-title>
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field
-                      v-model="editedItem.input"
-                      label="Input data"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field
-                      v-model="editedItem.expected"
-                      label="Expected"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="close">
-                Cancel
-              </v-btn>
-              <v-btn color="blue darken-1" text @click="save"> 
-                Save 
-              </v-btn>
-            </v-card-actions>
-          </v-card>-->
-
-          <!--
-          <v-dialog v-model="dialogDelete" max-width="500px">
-            <v-card>
-              <v-card-title class="headline"
-                >Are you sure you want to delete this test?</v-card-title
-              >
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeDelete"
-                  >Cancel</v-btn
-                >
-                <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                  >OK</v-btn
-                >
-                <v-spacer></v-spacer>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>-->
         </template>
 
         <template
@@ -355,6 +301,11 @@
           </th>
         </template>
 
+        <template v-slot:header.input="{}">
+          <span>Input</span><br>
+          <span>Expected</span>
+        </template>
+
         <template v-slot:item.input="{ item }">
           <div :class="getSmallTextClass">
             <span v-if="isStudent">
@@ -369,6 +320,7 @@
                 placeholder="Input"
                 @input="editableInput"
                 :required="true"
+                style="margin-top:2px; margin-bottom:2px"
               ></Editable>
               <Editable
                 :type="'test'"
@@ -378,6 +330,7 @@
                 placeholder="Expected"
                 @input="editableInput"
                 :required="true"
+                style="margin-bottom:2px"
               ></Editable>
             </span>
             <span v-if="isViewer">
@@ -410,7 +363,7 @@
 
         <template v-slot:item.type="{ item }">
           <div :class="getSmallTextClass">
-            <span v-if="isAuthor">
+            <span v-if="isAuthor" class="black--text">
               <vue-cascader-select
                 :options="options"
                 @select="selected => setTypes(item.id, selected.value)"
@@ -423,6 +376,7 @@
                     ? item.type
                     : ''
                 "
+                :style="validate(item) ? 'border: 2px solid red; border-radius: 6px' : ''"
               />
             </span>
             <span v-if="isViewer">
@@ -462,7 +416,7 @@
         <template v-slot:item.actions="{ item }">
           <v-btn
             icon
-            @click="deleteTest(item.id)"
+            @click="deleteTestByID(item.id)"
             :x-small="getButtonSmallSize == 'x-small'"
             :small="getButtonSmallSize == 'small'"
           >
@@ -475,7 +429,7 @@
         <template v-slot:footer v-if="isAuthor">
           <v-btn
             width="100%"
-            @click="addTestByEvaluativeId(resource.id)"
+            @click="addTestByEvaluativeID(resource.id)"
             :small="getButtonMediumSize == 'small'"
             :medium="getButtonMediumSize == 'medium'"
             class="mb-2 mt-1"
@@ -516,7 +470,7 @@
 import Swal from "sweetalert2";
 import { html2dom } from "@/assets/utils/html2dom.js";
 import "sweetalert2/src/sweetalert2.scss";
-import { mapActions, mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 /* import * as LJS from "@/assets/utils/test.js";
  */
 import Vue from "vue";
@@ -546,7 +500,7 @@ export default {
   },
 
   data: () => ({
-    valid: true,
+    //valid: true,
 
     dialog: false,
     dialogDelete: false,
@@ -565,7 +519,7 @@ export default {
       ],
       author: [
         { text: "Output", value: "output", align: "center" },
-        { text: "Input \n Expected", value: "input", align: "center" },
+        { text: "Input Expected", value: "input", align: "center" },
         { text: "Type", value: "type", align: "center" },
         { text: "", value: "show", align: "center" },
         { text: "", value: "actions" }
@@ -622,10 +576,16 @@ export default {
     ]
   }),
 
+  created(){
+    this.run()
+  },
+
   computed: {
     ...mapGetters("main", [
-      "getStatusByResourceId",
-      "getStatusTeacher",
+      "getStatusByResourceID",
+      "getValidated"
+    ]),
+    ...mapGetters("request", [
       "isStudent",
       "isTeacher",
       "isViewer",
@@ -647,10 +607,11 @@ export default {
     },
     getErrors() {
       return this.errors.some(error => error.type == "error");
-    }
+    },
     /* tests2() {
       return this.resource.tests.filter((test) => test.type == "metric");
     }, */
+
   },
 
   watch: {
@@ -670,12 +631,15 @@ export default {
   },
 
   methods: {
-    ...mapActions("main", ["setProgress"]),
-    ...mapMutations("main", [
-      "addTestByEvaluativeId",
-      "deleteTest",
+    ...mapActions("request", ["setProgress"]),
+    ...mapActions("main", [
+      "addTestByEvaluativeID",
+      "deleteTestByID",
       "editableInput"
     ]),
+    validate(test){
+      return test.type == null && this.getValidated
+    },
     changeTestVisibility(id, value) {
       const obj = {
         id: id,
@@ -755,14 +719,13 @@ export default {
       });
     }, */
     run() {
-      console.log(123);
       // Save the code
       this.$emit("onSaveCode");
 
       setTimeout(async () => {
         this.nTestsSuccess = 0;
         if (this.isStudent) {
-          this.code = this.getStatusByResourceId(
+          this.code = this.getStatusByResourceID(
             this.resource.id
           ).answer[0].code;
         } else if (this.isTeacher) {
@@ -779,7 +742,7 @@ export default {
         }
 
         // Expressions
-        this.resource.tests.forEach(test => {
+        this.resource.tests.forEach((test, index) => {
           let res;
           //console.log("2. run test->" + test.type);
           if (test.type == "log") {
@@ -824,19 +787,49 @@ export default {
             }
           } else {
             let fct = eval(`(${this.code})`);
-            let arr = test.input.split(" ").map(Number);
+            let arr
+            if (test.input.startsWith('[') && test.input.endsWith(']')) {
+              try {
+                arr = [JSON.parse(test.input.replace(/'/g, '"'))];
+              } catch (e) {
+                console.error("String is not a valid JSON array:", e);
+                arr = null
+              }
+            } else {
+              arr = test.input.split(" ").map(Number);
+            }
             if (test.input == "") {
               res = fct.call(null);
             } else {
               res = fct.call(null, ...arr);
             }
           }
-          console.log(res);
-          test.output = String(res);
 
-          if (test.output == test.expected || res == true) {
+          console.log(res, test.expected)
+          if (Array.isArray(res)){
+            try {
+              let expectedArray = JSON.parse(test.expected.replace(/'/g, '"'));
+              if (expectedArray.length === res.length && expectedArray.every((element, index) => element === res[index])){
+                test.correct=true
+                this.nTestsSuccess++
+              } else {
+                test.correct = false
+              }
+            } catch(err){
+              test.correct = false
+              console.log(err)
+            }
+          } else if (String(res) == test.expected || res === true) {
+            test.correct=true
             this.nTestsSuccess++;
+          } else {
+            test.correct = false
           }
+
+          Vue.set(this.resource.tests, index, {
+            ...test,
+            output: typeof(res)=="object" ? JSON.stringify(res) : String(res),
+          });
           //res == test.expOutput
           // ? (trs[index + 1].style.backgroundColor = "green")
           //: (trs[index + 1].style.backgroundColor = "red");
@@ -860,7 +853,7 @@ export default {
       if (item.output == "") return "white";
       else if (
         item.output == item.expected ||
-        (item.type == "metric" && item.output == "true")
+        (item.type == "metric" && item.output == "true") || item.correct
       ) {
         return "green";
       } else return "red";

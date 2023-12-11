@@ -20,7 +20,7 @@
 
     <!--Large Screen-->
     <v-carousel 
-      v-else-if="occurrencePairs.length > 0 && $vuetify.breakpoint.mdAndUp" 
+      v-else-if="occurrencePairs.length > 0 && $vuetify.breakpoint.lgAndUp" 
       cycle height="100%" 
       hide-delimiter-background
       :show-arrows="occurrencePairs.length > 1" 
@@ -127,11 +127,11 @@ export default {
   },
 
   methods: {
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchCollectionTypes",
       "fetchPrepareCollectionType",
-      "fetchEmptyOccurrence",
     ]),
+    ...mapActions("main", ["createNewCollectionType"]),
     setHover(index, value) {
       this.$set(this.isHovered, index, value);
     },
@@ -171,7 +171,7 @@ export default {
       }
     },
     addOccurrence() {
-      this.fetchEmptyOccurrence();
+      this.createNewCollectionType("occurrence");
       bus.$emit("changePage", "student,Occurrence");
     },
   }

@@ -144,19 +144,19 @@ export default {
       let lessons = this.getLessons;
       /*
       if (this.type == "course") {
-        lessons = this.getLessonsByCourse(this.resource);
+        lessons = this.getLessonsByCourseID(this.resource);
       } else {
-        lessons = this.getLessonsByModule(this.resource);
+        lessons = this.getLessonsByModuleID(this.resource);
       }*/
       this.sheets = [];
       lessons.forEach(lesson => {
         const id =
-          this.getModuleByLesson(lesson.id).internalId +
+          this.getModuleByLessonID(lesson.id).internalId +
           ":" +
           lesson.internalId;
         const rid = lesson.id;
         const name = lesson.name;
-        let status = this.getCompletationStatusByLesson(lesson.id);
+        let status = this.getCompletationStatusByLessonID(lesson.id);
         if (status) {
           status = status.toFixed(2)
           this.sheets.push({ id, rid, name, status });
@@ -196,14 +196,16 @@ export default {
   },
   computed: {
     ...mapGetters("main", [
-      "getLessonsByCourse",
-      "getCompletationStatusByLesson",
-      "getModuleByLesson",
-      "getLessonsByModule",
+      "getLessonsByCourseID",
+      "getCompletationStatusByLessonID",
+      "getModuleByLessonID",
+      "getLessonsByModuleID",
+      "getLessons"
+    ]),
+    ...mapGetters("request", [
       "getRole",
       "isStudent",
       "isTeacher",
-      "getLessons"
     ]),
     ...mapGetters("style", [
       "getTitleClass",

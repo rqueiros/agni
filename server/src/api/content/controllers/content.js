@@ -10,6 +10,9 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
+const Ajv = require("ajv")
+const ajv = new Ajv();
+
 module.exports = {
   async find(ctx, next) {
     try {
@@ -35,6 +38,9 @@ module.exports = {
       const data = ctx.request.body.data
 
       let prompt = "Create "+data.howMany+" JavaScript programming exercise for the topic: " + data.topic
+      if (data.alreadyCreated.length >0){
+        prompt = prompt + ". Do not create the following exercises: " + data.alreadyCreated.join(", ")
+      }
 
       const schema = {
         "type":"object",
@@ -89,8 +95,17 @@ module.exports = {
         functions: [{ name: "set_exercise", parameters: schema }],
         function_call: { name: "set_exercise" }
       });
+
+      let d = JSON.parse(chatCompletion.choices[0].message.function_call.arguments)
+      const validate = ajv.compile(schema)
+      const valid = validate(data)
+      if (!valid){
+        ctx.badRequest("JSON wrongly foramtted", { moreDetails: "err" });
+      }
+
       ctx.body = chatCompletion.choices[0].message
     } catch (err){
+      console.log(err)
       ctx.badRequest("Post report controller error", { moreDetails: err });
     }
   },

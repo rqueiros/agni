@@ -106,7 +106,7 @@
                 icon
                 :x-small="getButtonSmallSize == 'x-small'"
                 :small="getButtonSmallSize == 'small'"
-                @click="deleteMilestone(milestone.id)"
+                @click="deleteMilestoneByID(milestone.id)"
               >
                 <v-icon :size="getIconSmallSize">mdi-delete</v-icon>
               </v-btn>
@@ -116,7 +116,7 @@
         <v-timeline-item hide-dot v-if="isAuthor" class="pb-2">
           <v-btn
             class="mt-1"
-            @click="addMilestoneByExpositiveId(resource.id)"
+            @click="addMilestoneByExpositiveID(resource.id)"
             :small="getButtonMediumSize == 'small'"
             :medium="getButtonMediumSize == 'medium'"
             color="button"
@@ -131,7 +131,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 import Editable from "../../../../gerneral/Editable.vue";
 
@@ -161,7 +161,7 @@ export default {
   }),
 
   computed: {
-    ...mapGetters("main", [
+    ...mapGetters("request", [
       "getRole",
       "isStudent",
       "isTeacher",
@@ -181,10 +181,10 @@ export default {
     ])
   },
   methods: {
-    ...mapMutations("main", [
+    ...mapActions("main", [
       "editableInput",
-      "addMilestoneByExpositiveId",
-      "deleteMilestone"
+      "addMilestoneByExpositiveID",
+      "deleteMilestoneByID"
     ]),
     goto(index) {
       this.selected = index;

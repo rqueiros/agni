@@ -51,9 +51,9 @@
 
 <script>
 import { bus } from "@/main.js";
-import { mapActions, mapGetters } from "vuex";
+import { mapGetters } from "vuex";
 
-import AppBar from "./components/appBar/AppBar.vue";
+import AppBar from "./components/AppBar.vue";
 import Resource from "./components/resources/Resource.vue";
 import Menu from "./components/Menu.vue";
 import Snackbar from "./../../components/gerneral/Snackbar.vue";
@@ -94,8 +94,11 @@ export default {
     );
   },
 
+  computed: {
+    ...mapGetters("style", ["getErrorSnackbar", "getSuccessSnackbar"])
+  },
+
   methods: {
-    ...mapActions("main", ["fetchEmptyCourse"]),
     validate() {
       console.log(this.$refs.loginForm.validate());
     }
@@ -119,9 +122,6 @@ export default {
     });
   },
 
-  computed: {
-    ...mapGetters("style", ["getErrorSnackbar", "getSuccessSnackbar"])
-  }
 };
 </script>
 

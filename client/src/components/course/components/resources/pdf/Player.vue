@@ -64,7 +64,7 @@
 import pdf from "vue-pdf";
 //import Swal from "sweetalert2";
 import "sweetalert2/src/sweetalert2.scss";
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "Player",
@@ -105,7 +105,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main", [
+    ...mapGetters("request", [
       "getDomain",
       "isAuthor",
       "isStudent",
@@ -116,7 +116,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", ["setExpositiveField"]),
+    ...mapActions("main", ["setExpositiveField"]),
     getCurrentPage: () => this.page,
     pageUrl(page) {
       this.page = page;

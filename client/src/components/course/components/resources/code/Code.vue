@@ -208,7 +208,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
+    ...mapGetters("request", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
     ...mapGetters("style", ["isSMsmaller"])
   }
 };

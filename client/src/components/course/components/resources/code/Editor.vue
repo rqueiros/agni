@@ -43,12 +43,14 @@
       </div>
 
       <div class="pb-2" v-if="isTeacher">
-        <vue-cascader-select
+        <vue-cascader-select 
+          class="black--text"
           :options="options"
           @select="selected => setType(resource.id, selected.value)"
           :value="resource.type != null ? resource.type : ''"
           v-if="isAuthor"
           style="width: fit-content"
+          :style="valid ? 'border: 2px solid red; border-radius: 6px' : ''"
         />
         <div v-if="isViewer">Type: {{ resource.type }}</div>
       </div>
@@ -130,7 +132,7 @@
         <v-btn
           width="100%"
           v-if="isAuthor && !contextLen"
-          @click="addContextByEvaluativeId(resource.id)"
+          @click="addContextByEvaluativeID(resource.id)"
           color="button"
         >
           <v-icon>mdi-plus</v-icon>Context
@@ -191,7 +193,7 @@
               width="32px"
               height="28px"
               class="ma-1"
-              @click="addContextByEvaluativeId(resource.id)"
+              @click="addContextByEvaluativeID(resource.id)"
               :small="getButtonMediumSize == 'small'"
               :medium="getButtonMediumSize == 'medium'"
               color="button"
@@ -269,7 +271,7 @@ import { html2dom } from "@/assets/utils/html2dom.js";
 import Swal from "sweetalert2";
 import "sweetalert2/src/sweetalert2.scss";
 import AceEditor from "vuejs-ace-editor";
-import { mapActions, mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import Editable from "../../../../gerneral/Editable.vue";
 
@@ -394,14 +396,14 @@ export default {
   created() {
     if (this.isStudent) {
       if (
-        this.getStatusByResourceId(this.resource.id).answer[0].code == "" &&
+        this.getStatusByResourceID(this.resource.id).answer[0].code == "" &&
         this.resource.skeleton
       ) {
         this.code = this.resource.skeleton;
       } else if (
-        this.getStatusByResourceId(this.resource.id).answer[0].code != ""
+        this.getStatusByResourceID(this.resource.id).answer[0].code != ""
       ) {
-        this.code = this.getStatusByResourceId(this.resource.id).answer[0].code;
+        this.code = this.getStatusByResourceID(this.resource.id).answer[0].code;
       } else {
         this.code = "";
       }
@@ -425,8 +427,11 @@ export default {
 
   computed: {
     ...mapGetters("main", [
-      "getLessonByResourceId",
-      "getStatusByResourceId",
+      "getLessonByResourceID",
+      "getStatusByResourceID",
+      "getValidated",
+    ]),
+    ...mapGetters("request", [
       "isStudent",
       "isTeacher",
       "isViewer",
@@ -444,23 +449,26 @@ export default {
     ]),
     contextLen() {
       return this.resource.contexts.length > 0;
-    }
+    },
+    valid(){
+      return this.resource.type == null && this.getValidated
+    },
   },
 
   methods: {
-    ...mapActions("main", ["setProgress"]),
-    ...mapMutations("main", [
+    ...mapActions("request", ["setProgress"]),
+    ...mapActions("main", [
       "editableInput",
       "setTeacherProgress",
-      "addContextByEvaluativeId",
-      "deleteContext"
+      "addContextByEvaluativeID",
+      "deleteContextByID"
     ]),
     deleteCont(id) {
       this.contextDeleted = true;
       let index = this.resource.contexts.findIndex(c => c.id == id);
       let verify = this.resource.contexts.length - 1 > index;
       let verify2 = this.tab <= index;
-      this.deleteContext(id);
+      this.deleteContextByID(id);
       if (verify && verify2) {
         this.code2 = this.resource.contexts[this.tab].text;
       }
@@ -496,20 +504,20 @@ export default {
     },
 
     backToSheet() {
-      const lesson = this.getLessonByResourceId(this.resource.id);
+      const lesson = this.getLessonByResourceID(this.resource.id);
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
     loadCode() {
       if (this.isStudent) {
         if (
-          this.getStatusByResourceId(this.resource.id).answer[0].code == "" &&
+          this.getStatusByResourceID(this.resource.id).answer[0].code == "" &&
           this.resource.skeleton
         ) {
           this.code = this.resource.skeleton;
         } else if (
-          this.getStatusByResourceId(this.resource.id).answer[0].code != ""
+          this.getStatusByResourceID(this.resource.id).answer[0].code != ""
         ) {
-          this.code = this.getStatusByResourceId(
+          this.code = this.getStatusByResourceID(
             this.resource.id
           ).answer[0].code;
         } else {
@@ -764,6 +772,10 @@ export default {
 .vcs {
   position: initial;
 }
+/*
+#editor >>> .vcs__picker input{
+  border: 2px solid red
+}*/
 #editor >>> .vcs__select-menu {
   z-index: 10;
   width: 13em;

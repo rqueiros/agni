@@ -370,7 +370,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchCollectionTypes",
       "fetchPrepareCollectionType",
       "deleteCollectionType",
@@ -397,6 +397,7 @@ export default {
       this.loading = true;
       try {
         this.items = await this.fetchCollectionTypes(parameters);
+        this.error = false;
       } catch (error) {
         console.log(error);
         this.error = true;

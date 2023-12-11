@@ -12,7 +12,7 @@
               <v-col cols="6">
                 <v-btn
                   outlined
-                  @click="changeEvaluativeTypeById([getEvaluative.id, 'quiz'])"
+                  @click="changeEvaluativeTypeByID([getEvaluative.id, 'quiz'])"
                   width="100%"
                   height="100%"
                   style="border-color: rgba(0, 0, 0, 0.12);"
@@ -23,7 +23,7 @@
               <v-col cols="6">
                 <v-btn
                   outlined
-                  @click="changeEvaluativeTypeById([getEvaluative.id, 'code'])"
+                  @click="changeEvaluativeTypeByID([getEvaluative.id, 'code'])"
                   width="100%"
                   height="100%"
                   style="border-color: rgba(0, 0, 0, 0.12);"
@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "NewEval",
@@ -58,7 +58,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", ["changeEvaluativeTypeById"])
+    ...mapActions("main", ["changeEvaluativeTypeByID"])
   }
 };
 </script>

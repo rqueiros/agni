@@ -313,7 +313,7 @@
 
 <script>
 import { bus } from "@/main.js";
-import { mapActions, mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 
 export default {
@@ -397,10 +397,10 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", [
+    ...mapActions("main", [
       "editableInput",
     ]),
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchCollectionTypes",
       "fetchCollectionType"
     ]),

@@ -51,7 +51,7 @@
                         <v-btn
                           icon
                           class="ml-2"
-                          @click="deleteGoal(goal.id)"
+                          @click="deleteGoalByID(goal.id)"
                           :x-small="getButtonSmallSize == 'x-small'"
                           :small="getButtonSmallSize == 'small'"
                         >
@@ -69,7 +69,7 @@
                   <v-list-item v-if="isAuthor" class="pa-0">
                     <v-list-item-content class="pa-1">
                       <v-btn
-                        @click="addGoalByCourseId(dialogItem.id)"
+                        @click="addGoalByCourseID(dialogItem.id)"
                         :small="getButtonMediumSize == 'small'"
                         :medium="getButtonMediumSize == 'medium'"
                       >
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import { bus } from "@/main.js";
 
 import Vue from "vue";
@@ -153,7 +153,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
+    ...mapGetters("request", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
     ...mapGetters("style", [
       "getIconSmallSize",
       "getButtonSmallSize",
@@ -164,10 +164,9 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", [
-      "editableInput",
-      "addGoalByCourseId",
-      "deleteGoal",
+    ...mapActions("main", [
+      "addGoalByCourseID",
+      "deleteGoalByID",
       "editableInput"
     ]),
     setType(id, value) {

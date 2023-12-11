@@ -100,7 +100,7 @@ export default {
   computed: {},
 
   methods: {
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchCloneBody",
       "fetchClone",
     ]),

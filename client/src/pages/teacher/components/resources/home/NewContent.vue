@@ -20,13 +20,13 @@
       <!--Loading-->
       <div 
         v-else-if="loading" 
-        class="d-flex justify-center align-center fill-height"
+        class="d-flex justify-center align-center pa-10"
       >
         <v-progress-circular
           :size="120"
           indeterminate
           color="grey"
-          :width="10"
+          :width="7"
         ></v-progress-circular>
       </div>
 
@@ -95,7 +95,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchPrepareCollectionType",
       "fetchNewContents",
     ]),

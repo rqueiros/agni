@@ -47,6 +47,7 @@
         :hide-default-footer="isAuthor"
         class="my-data-table"
         style="background-color: transparent;"
+        v-model="selected"
       >
         <template v-slot:top>
           <v-list-item>
@@ -116,7 +117,7 @@
             <Editable
               type="evaluative"
               :value="item.name"
-              :id="item.rid"
+              :id="item.id"
               field="name"
               @input="editableInput"
               placeholder="Exercise name"
@@ -154,7 +155,7 @@
             :x-small="getButtonSmallSize == 'x-small'"
             :small="getButtonSmallSize == 'small'"
             icon
-            @click="deleteEvaluative(item.rid)"
+            @click="deleteEvaluativeByID(item.id)"
             onclick="event.stopPropagation()"
           >
             <v-icon :size="getIconSmallSize"> mdi-delete </v-icon>
@@ -177,56 +178,12 @@
       @addExternalExercises="addExternalExercises"
       @closeSelectDialog="externalDialog = false"
     />
-
-    <!--
-    <v-dialog v-model="externalDialog" max-width="500">
-      <v-card>
-        <v-card-title>
-          Choose an external library
-        </v-card-title>
-
-        <v-card-text class="pb-2">
-          <v-container>
-            <v-row>
-              <v-col>
-                <v-hover
-                  v-slot="{ hover }"
-                >
-                  <v-card 
-                    class="d-flex justify-center align-center hover" 
-                    :style="hover ? 'background-color:#eeeeee' : ''"
-                  >
-                    <v-img :src="require('@/assets/authorkit.png')" height="150" contain></v-img>
-                  </v-card>
-                </v-hover>
-              </v-col>
-              <v-col>
-                <v-card style="min-height:100%" class="d-flex justify-center align-center">
-                  Other Repositories will come
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-
-        <v-card-actions class="pt-0">
-          <v-spacer></v-spacer>
-          <v-btn text @click="externalDialog=false">
-            Cancel
-          </v-btn>
-          <v-btn text>
-            Add
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    -->
   </div>
 </template>
 
 <script>
 import { bus } from "@/main.js";
-import { mapActions, mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import Editable from "../../../../gerneral/Editable.vue";
 import SelectDialog from "../../../../gerneral/SelectDialog.vue";
@@ -251,25 +208,26 @@ export default {
   data() {
     return {
       valid: true,
+      selected:[],
 
       dialog: false,
       externalDialog: false,
       headers: {
         student: [
-          { text: "#", align: "start", sortable: true, value: "id" },
+          { text: "#", align: "start", sortable: true, value: "number" },
           { text: "Name", value: "name" },
           { text: "Type", value: "type" },
           { text: "Solving status (%)", value: "grade" },
           { text: "Actions", value: "action" }
         ],
         author: [
-          { text: "#", align: "start", sortable: true, value: "id" },
+          { text: "#", align: "start", sortable: true, value: "number" },
           { text: "Type", value: "type" },
           { text: "Name", value: "name" },
           { text: "", value: "action" }
         ],
         viewer: [
-          { text: "#", align: "start", sortable: true, value: "id" },
+          { text: "#", align: "start", sortable: true, value: "number" },
           { text: "Type", value: "type" },
           { text: "Name", value: "name" }
         ]
@@ -285,15 +243,30 @@ export default {
 
   created() {
     this.loadResource;
+    if (this.getValidated){
+      const notValid = this.resource.evaluatives.filter(e => !e.valid)
+      this.selected = this.loadResource.filter(e => notValid.map(ev => ev.id).includes(e.id))
+    }
     bus.$on("addExternalExercises", payload => {
       this.addExternalExercises(payload);
     });
   },
 
+  watch:{
+    "getValids"(){
+      if (this.getValidated){
+        const notValid = this.resource.evaluatives.filter(e => !e.valid)
+        this.selected = this.loadResource.filter(e => notValid.map(ev => ev.id).includes(e.id))
+      }
+    }
+  },
+
   computed: {
     ...mapGetters("main", [
-      "getResourceById",
-      "getStatusByResourceId",
+      "getStatusByResourceID",
+      "getValidated"
+    ]),
+    ...mapGetters("request", [
       "getRole",
       "isStudent",
       "isTeacher",
@@ -309,6 +282,9 @@ export default {
       "getButtonMediumSize",
       "getButtonSmallSize"
     ]),
+    getValids(){
+      return this.resource.evaluatives.map(e => e.valid)
+    }, 
     loadResource() {
       let ev = [];
       if (
@@ -320,11 +296,11 @@ export default {
         let i = 1;
         this.resource.evaluatives.forEach(evaluative => {
           let grade = Number(
-            this.getStatusByResourceId(evaluative.id).grade.toFixed(1)
+            this.getStatusByResourceID(evaluative.id).grade.toFixed(1)
           );
           ev.push({
-            id: i,
-            rid: evaluative.id,
+            number: i,
+            id: evaluative.id,
             name: evaluative.name,
             type: evaluative.type,
             grade: grade,
@@ -336,8 +312,8 @@ export default {
         let i = 1;
         this.resource.evaluatives.forEach(evaluative => {
           ev.push({
-            id: i,
-            rid: evaluative.id,
+            number: i,
+            id: evaluative.id,
             name: evaluative.name,
             type: evaluative.type,
             contentType: evaluative.contentType
@@ -353,20 +329,19 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", [
-      "addEvaluativeByLessonId",
-      "deleteEvaluative",
+    ...mapActions("main", [
       "editableInput",
-      "addQuizByLessonId",
-      "addProgExByLessonId",
-      "addExternalExByLessonId"
+      "addQuizByLessonID",
+      "addProgExByLessonID",
+      "addEvaluativeByLessonID2",
+      "deleteEvaluativeByID",
     ]),
-    ...mapActions("main", ["addExistingEvaluatives"]),
+    ...mapActions("request", ["addExistingEvaluatives"]),
     addEvaluative(type) {
       if (type == "quiz") {
-        this.addQuizByLessonId(this.resource.id);
+        this.addQuizByLessonID(this.resource.id);
       } else if (type == "prog") {
-        this.addProgExByLessonId(this.resource.id);
+        this.addProgExByLessonID(this.resource.id);
       } else if (type == "select") {
         this.dialog = true;
       } else if (type == "external") {
@@ -374,7 +349,7 @@ export default {
       }
     },
     play(value) {
-      bus.$emit("changeIt", [value.rid, "evaluative"]);
+      bus.$emit("changeIt", [value.id, "evaluative"]);
     },
     async addExistingEval(ids) {
       await this.addExistingEvaluatives([this.resource.id, ids]);
@@ -382,7 +357,9 @@ export default {
     },
     addExternalExercises(exercises) {
       this.externalDialog = false;
-      this.addExternalExByLessonId([this.resource.id, exercises]);
+      exercises.forEach(e => {
+        this.addEvaluativeByLessonID2([this.resource.id, e]);
+      })
     },
     getColor(status) {
       status = +status;
@@ -397,5 +374,23 @@ export default {
 <style scoped>
 .my-data-table tbody tr:hover {
   cursor: pointer;
+}
+
+#evaluatives>>> .v-data-table__selected{
+  background-color: transparent;
+}
+#evaluatives>>> .v-data-table__selected td:first-child {
+  border-top: 2px solid red;
+  border-bottom: 2px solid red;
+  border-left: 2px solid red;
+}
+#evaluatives>>> .v-data-table__selected td:not(:first-child):not(:last-child) {
+  border-top: 2px solid red;
+  border-bottom: 2px solid red;
+}
+#evaluatives>>> .v-data-table__selected td:last-child {
+  border-top: 2px solid red;
+  border-bottom: 2px solid red;
+  border-right: 2px solid red;
 }
 </style>

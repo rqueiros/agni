@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 import Papa from "papaparse";
 
@@ -164,8 +164,8 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", [
-      "addClassByOccurrenceId2",
+    ...mapActions("main", [
+      "addClassByOccurrenceID2",
       "addStudentByClassName"
     ]),
     extractKeys(obj) {
@@ -241,7 +241,7 @@ export default {
             name: cla[classKey],
             students: students
           };
-          this.addClassByOccurrenceId2([this.getOccurrence.id, c]);
+          this.addClassByOccurrenceID2([this.getOccurrence.id, c]);
         });
       } else {
         let students = this.findObjectsWithKey(this.jsonFile, studentKey);
@@ -267,7 +267,7 @@ export default {
             name: cla,
             students: students
           };
-          this.addClassByOccurrenceId2([this.getOccurrence.id, c]);
+          this.addClassByOccurrenceID2([this.getOccurrence.id, c]);
         });
       } else {
         let students = this.csvFile.map(o => {

@@ -259,7 +259,7 @@
 
 
 <script>
-import { mapActions, mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import Chart from "./Chart.vue";
 import ErrorChip from "../../../../../components/gerneral/ErrorChip.vue";
@@ -323,8 +323,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", []),
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchStudentStat",
       "fetchOccStat",
       "fetchClassStat",

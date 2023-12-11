@@ -94,7 +94,7 @@
 
 <script>
 import Vue from "vue";
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import { bus } from "@/main.js";
 
 import VueCascaderSelect from "vue-cascader-select";
@@ -148,7 +148,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
+    ...mapGetters("request", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
     ...mapGetters("style", [
       "getIconSmallSize",
       "getSmallTextClass",
@@ -157,7 +157,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", ["editableInput"]),
+    ...mapActions("main", ["editableInput"]),
     setType(id, value) {
       const obj = {
         id: id,

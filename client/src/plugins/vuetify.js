@@ -27,7 +27,10 @@ export default new Vuetify({
         button: "#f5f5f5",
         editable: "#E2E2E2",
         text: "#000000",
-        studentboxes: colors.white
+        studentboxes: colors.white,
+        gptGreen: "#74AA9C",
+        gptGrey: "#343541",
+        gptSubtitle: colors.grey
       },
       dark: {
         background: "#1B1D25",
@@ -42,7 +45,10 @@ export default new Vuetify({
         button: "#484747",
         editable: colors.grey.darken1,
         text: "#FFFFFF",
-        studentboxes: "#1E1E1E"
+        studentboxes: "#1E1E1E",
+        gptGreen: "#74AA9C",
+        gptGrey: "#343541",
+        gptSubtitle: colors.grey
       }
     }
   },
@@ -51,7 +57,7 @@ export default new Vuetify({
       xs: 480,
       sm: 768,
       md: 1024,
-      lg: 1280
+      lg: 1280,
     },
     scrollBarWidth: 24
   }

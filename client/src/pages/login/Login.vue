@@ -2,7 +2,15 @@
   <div id="app">
     <v-app>
       <v-dialog v-model="dialog" persistent max-width="600px" min-width="360px">
-        <div>
+        <div v-if="loading" class="pa-8 text-center">
+          <v-progress-circular
+            :size="200"
+            indeterminate
+            color="pink accent-4"
+            :width="7"
+          ></v-progress-circular>
+        </div>
+        <div v-else>
           <v-tabs
             v-model="tab"
             show-arrows
@@ -187,8 +195,9 @@ export default {
     }
   },
   methods: {
-    ...mapActions("main", ["login"]),
-    ...mapMutations("main", ["setLogin"]),
+    ...mapActions("request", ["login"]),
+    ...mapMutations("request", ["setLogin"]),
+    ...mapMutations("main", ["setGpt"]),
     async studentLogin() {
       await this.login(["Student Lastname", "123456"]);
     },
@@ -214,6 +223,7 @@ export default {
   },
   data: () => ({
     loginError: false,
+    loading:true,
 
     dialog: true,
     tab: 0,
@@ -245,6 +255,22 @@ export default {
       required: value => !!value || "Required.",
       min: v => (v && v.length >= 6) || "Min 6 characters"
     }
-  })
+  }),
+
+  async created(){
+    // http://localhost:8080/login?id=teachertest@gmail.com&pw=1234567&gpt=false
+    const params = this.$route.query
+    if ("id" in params && "pw" in params){
+      try{
+        await this.login([params.id, params.pw]);
+      } catch(error){
+        console.log(error)
+      }
+    }
+    if ("gpt" in params && params.gpt=="false"){
+      this.setGpt(false)
+    }
+    this.loading = false
+  }
 };
 </script>

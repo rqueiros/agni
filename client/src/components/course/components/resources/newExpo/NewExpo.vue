@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapActions } from "vuex";
 export default {
   name: "Expositives",
 
@@ -35,14 +35,14 @@ export default {
     file: function(newFile, oldFile) {
       if (newFile !== oldFile) {
         if (newFile != [] && newFile != undefined) {
-          this.changeExpositiveTypeById([this.resource.id, newFile]);
+          this.changeExpositiveTypeByID([this.resource.id, newFile]);
         }
       }
     }
   },
 
   methods: {
-    ...mapMutations("main", ["changeExpositiveTypeById"])
+    ...mapActions("main", ["changeExpositiveTypeByID"])
   }
 };
 </script>

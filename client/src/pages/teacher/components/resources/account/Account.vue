@@ -324,7 +324,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import Editable from "../../../../../components/gerneral/Editable.vue";
 
@@ -363,7 +363,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main", ["getUser", "getAccountEditable", "getDomain"])
+    ...mapGetters("request", ["getUser", "getDomain", "getAccountEditable"])
   },
 
   watch: {
@@ -383,8 +383,8 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", ["editableInput"]),
-    ...mapActions("main", [
+    ...mapActions("main", ["editableInput"]),
+    ...mapActions("request", [
       "changePW",
       "getTeachersContent",
       "updateUserImage"

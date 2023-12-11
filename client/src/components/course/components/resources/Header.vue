@@ -1,8 +1,7 @@
 <template>
   <div id="header" class="text-left">
     <v-list-item
-      :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'"
-      class="align-start"
+      class="align-start px-2"
     >
       <v-btn
         @click="backToSheet"
@@ -19,10 +18,10 @@
           <!--Student + Viewer-->
           <div v-if="isStudent || isViewer">
             {{
-              getModuleByResourceId(resource.id, resource.contentType)
+              getModuleByResourceID(resource.id, resource.contentType)
                 .internalId
             }}.
-            {{ getModuleByResourceId(resource.id, resource.contentType).name }}
+            {{ getModuleByResourceID(resource.id, resource.contentType).name }}
           </div>
           <!--Author-->
           <Editable
@@ -31,9 +30,9 @@
             field="name"
             placeholder="Module Name"
             :value="
-              getModuleByResourceId(resource.id, resource.contentType).name
+              getModuleByResourceID(resource.id, resource.contentType).name
             "
-            :id="getModuleByResourceId(resource.id, resource.contentType).id"
+            :id="getModuleByResourceID(resource.id, resource.contentType).id"
             @input="editableInput"
             :required="true"
           />
@@ -45,8 +44,8 @@
         >
           <!--Student + Viewer-->
           <div v-if="isStudent || isViewer" class="red--text text--lighten-1">
-            {{ getLessonByResourceId(resource.id).internalId }}.
-            {{ getLessonByResourceId(resource.id).name }}
+            {{ getLessonByResourceID(resource.id).internalId }}.
+            {{ getLessonByResourceID(resource.id).name }}
           </div>
           <!--Author-->
           <Editable
@@ -54,8 +53,8 @@
             type="lesson"
             field="name"
             placeholder="Lesson name"
-            :value="getLessonByResourceId(resource.id).name"
-            :id="getLessonByResourceId(resource.id).id"
+            :value="getLessonByResourceID(resource.id).name"
+            :id="getLessonByResourceID(resource.id).id"
             @input="editableInput"
             :required="true"
           />
@@ -100,7 +99,7 @@
 
     <v-card-text class="pa-0" v-if="resource.contentType != 'lesson'">
       <v-list-item
-        :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'"
+        class="px-2"
         style="min-height:0px"
       >
         <v-list-item-content class="pb-2 pt-0">
@@ -128,25 +127,13 @@
     <!--Student + Viewer-->
     <v-card-text
       v-if="resource.description && (isStudent || isViewer)"
-      :class="
-        !isMDsmaller
-          ? 'px-4 ' + getSmallTextClass
-          : isMD
-          ? 'px-2 ' + getSmallTextClass
-          : 'px-4 ' + getSmallTextClass
-      "
+      class="px-2"
       v-html="resource.description"
     ></v-card-text>
     <!--Author-->
     <v-card-text
       v-if="resource.contentType == 'lesson' && isAuthor"
-      :class="
-        !isMDsmaller
-          ? 'px-4 ' + getSmallTextClass
-          : isMD
-          ? 'px-2 ' + getSmallTextClass
-          : 'px-4 ' + getSmallTextClass
-      "
+      class="px-2"
     >
       <Editable
         type="lesson"
@@ -162,25 +149,13 @@
     <!--Student + Viewer-->
     <v-card-text
       v-if="resource.statement && (isStudent || isViewer)"
-      :class="
-        !isMDsmaller
-          ? 'px-4 ' + getSmallTextClass
-          : isMD
-          ? 'px-2 ' + getSmallTextClass
-          : 'px-4 ' + getSmallTextClass
-      "
+      class="px-2"
       v-html="resource.statement"
     ></v-card-text>
     <!--Author-->
     <v-card-text
       v-if="resource.contentType == 'code' && isAuthor"
-      :class="
-        !isMDsmaller
-          ? 'px-4 ' + getSmallTextClass
-          : isMD
-          ? 'px-2 ' + getSmallTextClass
-          : 'px-4 ' + getSmallTextClass
-      "
+      class="px-2"
     >
     <!--
       <v-sheet
@@ -257,12 +232,10 @@
 <script>
 import { bus } from "@/main.js";
 
-import { mapGetters, mapMutations, mapActions } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import Editable from "../../../gerneral/Editable.vue";
 
 import { VueEditor } from "vue2-editor";
-
-import { EventBus } from "@/event-bus.js";
 
 export default {
   name: "Header",
@@ -299,8 +272,10 @@ export default {
 
   computed: {
     ...mapGetters("main", [
-      "getModuleByResourceId",
-      "getLessonByResourceId",
+      "getModuleByResourceID",
+      "getLessonByResourceID",
+    ]),
+    ...mapGetters("request", [
       "isStudent",
       "isTeacher",
       "isAuthor",
@@ -331,22 +306,15 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", ["editableInput"]),
-    ...mapActions("main", ["generateProgrammingEx"]),
+    ...mapActions("main", ["editableInput"]),
     /*html_escape(html_str) {
       const lines = html_str.split("\n");
       return lines;
     },*/
     backToSheet() {
-      const lesson = this.getLessonByResourceId(this.resource.id);
+      const lesson = this.getLessonByResourceID(this.resource.id);
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
     },
-    async generateExercise() {
-      this.generateWaiting = true;
-      await this.generateProgrammingEx([this.chat, this.resource.id]);
-      this.generateWaiting = false;
-      EventBus.$emit("runTests");
-    }
   }
 };
 </script>

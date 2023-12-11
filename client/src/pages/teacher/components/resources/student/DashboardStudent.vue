@@ -116,10 +116,10 @@
                 <v-card
                   width="100%"
                   height="100%"
-                  class="py-4 px-8 text-h6 d-flex justify-center align-center shadow"
+                  class="py-4 px-8 text-h6 d-flex justify-center align-center shadow font-weight-regular"
                   color="boxes"
                 >
-                  There are no current Occurrences!
+                  There are no current Occurrences !!
                 </v-card>
               </v-col>
             </v-row>
@@ -134,7 +134,7 @@
             <div class="py-1 text-body-1 font-weight-medium text-center">
               Draft/Future
             </div>
-            <v-card outlined elevation="1">
+            <v-card outlined elevation="1" style="background-color: transparent;">
               <v-text-field
                 class="smallSearch mt-0"
                 v-model="draftSearch"
@@ -156,8 +156,9 @@
                 @click:row="openCollectionType"
                 :loading="loading"
                 class="overflow-y-auto"
-                style="height:175px"
+                style="height:175px; background-color: transparent;"
                 mobile-breakpoint="0"
+                no-data-text="There are no draft/future Occurrences."
               >
                 <!--Error-->
                 <template v-slot:body v-if="error">
@@ -178,26 +179,30 @@
                   </v-icon>
                 </template>
                 <template v-slot:item.actions="{ item }">
-                  <v-btn
-                    small
-                    @click="copy(item.id)"
-                    onclick="event.stopPropagation()"
-                    icon
-                  >
-                    <v-icon size="large">
-                      mdi-content-copy
-                    </v-icon>
-                  </v-btn>
-                  <v-btn
-                    icon
-                    small
-                    onclick="event.stopPropagation()"
-                    @click="remove(item.id)"
-                  >
-                    <v-icon size="large">
-                      mdi-delete
-                    </v-icon>
-                  </v-btn>
+                  <div class="d-flex justify-end">
+                    <div style="width:60px">
+                      <v-btn
+                        small
+                        @click="copy(item.id)"
+                        onclick="event.stopPropagation()"
+                        icon
+                      >
+                        <v-icon size="large">
+                          mdi-content-copy
+                        </v-icon>
+                      </v-btn>
+                      <v-btn
+                        icon
+                        small
+                        onclick="event.stopPropagation()"
+                        @click="remove(item.id)"
+                      >
+                        <v-icon size="large">
+                          mdi-delete
+                        </v-icon>
+                      </v-btn>
+                    </div>
+                  </div>
                 </template>
                 <template v-slot:item.courseName="{ item }">
                   <div style="max-height: 24px; overflow-y: auto;">
@@ -215,7 +220,7 @@
             <div class="py-1 text-body-1 font-weight-medium text-center">
               Past
             </div>
-            <v-card outlined elevation="1">
+            <v-card outlined elevation="1" style="background-color: transparent;">
               <v-text-field
                 class="smallSearch"
                 v-model="pastSearch"
@@ -237,8 +242,9 @@
                 @click:row="openCollectionType"
                 :loading="loading"
                 class="overflow-y-auto"
-                style="height:175px"
+                style="height:175px; background-color: transparent;"
                 mobile-breakpoint="0"
+                no-data-text="There are no past Occurrences."
               >
                 <!--Error-->
                 <template v-slot:body v-if="error">
@@ -259,26 +265,30 @@
                   </v-icon>
                 </template>
                 <template v-slot:item.actions="{ item }">
-                  <v-btn
-                    small
-                    @click="copy(item.id)"
-                    onclick="event.stopPropagation()"
-                    icon
-                  >
-                    <v-icon size="large">
-                      mdi-content-copy
-                    </v-icon>
-                  </v-btn>
-                  <v-btn
-                    small
-                    onclick="event.stopPropagation()"
-                    @click="remove(item.id)"
-                    icon
-                  >
-                    <v-icon size="large">
-                      mdi-delete
-                    </v-icon>
-                  </v-btn>
+                  <div class="d-flex justify-end">
+                    <div style="width:60px">
+                      <v-btn
+                        small
+                        @click="copy(item.id)"
+                        onclick="event.stopPropagation()"
+                        icon
+                      >
+                        <v-icon size="large">
+                          mdi-content-copy
+                        </v-icon>
+                      </v-btn>
+                      <v-btn
+                        small
+                        onclick="event.stopPropagation()"
+                        @click="remove(item.id)"
+                        icon
+                      >
+                        <v-icon size="large">
+                          mdi-delete
+                        </v-icon>
+                      </v-btn>
+                    </div>
+                  </div>
                 </template>
                 <template v-slot:item.courseName="{ item }">
                   <div style="max-height: 24px; overflow-y: auto;">
@@ -326,13 +336,13 @@ export default {
         { text: "Type", value: "courseType", align: "center" },
         { text: "Year", value: "year", align: "start" },
         { text: "Course", value: "courseName", align: "center" },
-        { text: "", value: "actions", sortable: false, align: "end", cellClass:"columnWidth5" }
+        { text: "", value: "actions", sortable: false, align: "end" }
       ],
       pastHeader: [
         { text: "Type", value: "courseType", align: "center" },
         { text: "Year", value: "year", align: "start" },
         { text: "Course", value: "courseName", align: "center" },
-        { text: "", value: "actions", sortable: false, align: "end", cellClass:"columnWidth5" }
+        { text: "", value: "actions", sortable: false, align: "end"}
       ],
 
       deleteDialog: false,
@@ -373,7 +383,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchPrepareCollectionType",
       "fetchCollectionTypes",
       "deleteCollectionType",

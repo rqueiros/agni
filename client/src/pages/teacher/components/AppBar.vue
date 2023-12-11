@@ -275,6 +275,7 @@
                   @click="saveAccount"
                   v-bind="attrs"
                   v-on="on"
+                  :disabled="true"
                 >
                   <v-progress-circular
                     :size="20"
@@ -298,6 +299,7 @@
                   @click="setAccountEditable(true)"
                   v-bind="attrs"
                   v-on="on"
+                  :disabled="true"
                 >
                   <v-progress-circular
                     :size="20"
@@ -315,9 +317,9 @@
     </v-app-bar>
 
     <YesNoDialog
-      :dialog="yesNoDialog.open"
-      :question="yesNoDialog.question"
-      :buttons="yesNoDialog.buttons"
+      :dialog="yesNoDialog1.open"
+      :question="yesNoDialog1.question"
+      :buttons="yesNoDialog1.buttons"
     />
 
     <DeleteDialog :dialog="deleteDialog.open" :collectionType="collectionType"/>
@@ -329,9 +331,9 @@ import { bus } from "@/main.js";
 
 import { mapGetters, mapActions, mapMutations, mapState } from "vuex";
 
-import DeleteDialog from "../../../../components/gerneral/DeleteDialog.vue";
-import YesNoDialog from "../../../../components/gerneral/YesNoDialog.vue";
-import CopyCourseMenu from "../../../../components/gerneral/CopyCourseMenu.vue";
+import DeleteDialog from "../../../components/gerneral/DeleteDialog.vue";
+import YesNoDialog from "../../../components/gerneral/YesNoDialog.vue";
+import CopyCourseMenu from "../../../components/gerneral/CopyCourseMenu.vue";
 
 export default {
   name: "Header",
@@ -424,7 +426,7 @@ export default {
         item: null,
       },
 
-      yesNoDialog: {
+      yesNoDialog1: {
         open: false,
         question: "",
         buttons: []
@@ -442,19 +444,19 @@ export default {
 
   created() {
     bus.$on("yesNoDialog", payload => {
-      this.yesNoDialog.open = payload;
+      this.yesNoDialog1.open = payload;
     });
     bus.$on("deleteDialog", payload => {
       this.deleteDialog.open = payload;
     });
     bus.$on("yesNoDialogResult", async payload => {
-      this.yesNoDialog.open = false;
-      if (payload == "save" && this.yesNoDialog.question!="") {
+      this.yesNoDialog1.open = false;
+      if (payload == "save" && this.yesNoDialog1.question!="") {
         const saveSuccess = await this.save();
         if (saveSuccess){
           this.exitContentType();
         }
-      } else if (payload == "dontSave" && this.yesNoDialog.question!="") {
+      } else if (payload == "dontSave" && this.yesNoDialog1.question!="") {
         this.exitContentType();
       } // else if (payload == "cancel") {}
     });
@@ -494,13 +496,15 @@ export default {
       "getMesssage"
     ]),
     ...mapGetters("main", [
-      "isAuthor",
       "getPublishedAt",
       "getCourse",
       "getExpositive",
       "getEvaluative",
       "getQuestion",
       "getOccurrence",
+    ]),
+    ...mapGetters("request", [
+      "isAuthor",
       "getAccountEditable"
     ]),
     component() {
@@ -552,24 +556,23 @@ export default {
   },
 
   methods: {
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchContents",
       "fetchPrepareCollectionType",
-      "fetchEmptyOccurrence",
-      "fetchEmptyCourse",
       "deleteCollectionType",
       "saveCollectionType",
       "publishCollectionType",
       "copyCollectionType",
       "updateUser",
-      "createNewCollectionType"
+    ]),
+    ...mapActions("main", [
+      "createNewCollectionType",
     ]),
     ...mapMutations("main", [
-      "createNewQuestion",
-      "createNewExpositive",
-      "createNewEvaluative",
       "deleteStructure",
-      "setAccountEditable",
+    ]),
+    ...mapMutations("request", [
+      "setAccountEditable"
     ]),
     async saveAccount() {
       this.setAccountEditable(false);
@@ -610,7 +613,6 @@ export default {
       this.loading.publish = false;
     },
     async save() {
-      //TODO check if all fields are declared
       try {
         this.loading.save = true;
         await this.saveCollectionType(this.collectionType);
@@ -619,26 +621,12 @@ export default {
         return true;
       } catch (error) {
         console.log(error);
-        /*
-        let message = "Something went wrong saving the " + this.collTypeName();
-        let errorMsg = error.response.data.error.details.errors[0].message;
-        if (errorMsg.includes(".tests") && errorMsg.includes(".type")) {
-          message =
-            this.collTypeName() +
-            " not saved - The Type of all Tests must be defined";
-        } else if (errorMsg.includes("content") && errorMsg.includes(".type")) {
-          message =
-            this.collTypeName() +
-            " not saved - The Type of all Porg. Exercises must be defined";
-        } else if (
-          errorMsg.includes("content") &&
-          errorMsg.includes(".statement")
-        ) {
-          message =
-            this.collTypeName() +
-            " not saved - The Statement of all Porg. Exercises must be defined";
-        }*/
-        bus.$emit("errorSnackbar", this.getMesssage([this.component, "save", "error"]))
+        if (error == "Missing Evaluative Type or Test Type") {
+          bus.$emit("errorSnackbar", error)
+        } else {
+          bus.$emit("errorSnackbar", this.getMesssage([this.component, "save", "error"]))
+        }
+        this.loading.save = false;
         return false;
       }
     },
@@ -658,7 +646,7 @@ export default {
       if (!this.changed) {
         this.exitContentType()
       } else {
-        this.yesNoDialog = {
+        this.yesNoDialog1 = {
           open: true,
           question: "Do you want to save your changes before exiting?",
           buttons: [
@@ -700,47 +688,18 @@ export default {
       this.deleteStructure();
     },
     addCollectionType(item) {
-      switch (item) {
-        case "Course":
-          //this.fetchEmptyCourse();
-          this.createNewCollectionType("course")
-          bus.$emit("changePage", "content,Course");
-          break;
-        case "Expositive":
-          this.createNewExpositive();
-          bus.$emit("changePage", "content,Expositive");
-          break;
-        case "Evaluative":
-          this.createNewEvaluative();
-          bus.$emit("changePage", "content,Evaluative");
-          break;
-        case "Question":
-          this.createNewQuestion();
-          bus.$emit("changePage", "content,Question");
-          break;
-        case "Occurrence":
-          this.fetchEmptyOccurrence();
-          bus.$emit("changePage", "student,Occurrence");
-          break;
+      this.createNewCollectionType(item.toLowerCase())
+      if (item == "Occurrence"){
+        bus.$emit("changePage", "student,Occurrence");
+      } else {
+        bus.$emit("changePage", `content,${item}`);
       }
     },
     async openCollectionType(item) {
       try {
         await this.fetchPrepareCollectionType([item.id, item.collectionType]);
-        switch (item.collectionType) {
-          case "courses":
-            bus.$emit("changePage", "content,Course");
-            break;
-          case "expositives":
-            bus.$emit("changePage", "content,Expositive");
-            break;
-          case "evaluatives":
-            bus.$emit("changePage", "content,Evaluative");
-            break;
-          case "questions":
-            bus.$emit("changePage", "content,Question");
-            break;
-        }
+        let name = item.collectionType.charAt(0).toUpperCase() + item.collectionType.slice(1, -1);
+        bus.$emit("changePage", `content,${name}`);
       } catch (error) {
         console.log(error);
         bus.$emit("errorSnackbar",this.getMesssage([this.component, "get", "error"]))

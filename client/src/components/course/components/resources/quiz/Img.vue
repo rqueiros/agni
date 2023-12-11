@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "Img",
@@ -108,7 +108,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main", ["getDomain", "isAuthor"]),
+    ...mapGetters("request", ["getDomain", "isAuthor"]),
     ...mapGetters("style", [
       "getAvatarMediumSize",
       "getSmallTextClass",
@@ -124,7 +124,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", ["editableInput"]),
+    ...mapActions("main", ["editableInput"]),
     loadImage() {
       this.imageData = null;
       if (this.question && "image" in this.question) {

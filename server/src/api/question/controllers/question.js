@@ -22,10 +22,13 @@ module.exports = createCoreController(uid, () => {
          const author = ctx.state.user
          const params = {"$or":[{author:{id:{"$eq":author.id}}},{publishedAt:{"$null":null}}]}
          let filters;
-         if (Object.keys(ctx.query).length == 0){
-            filters = {filters: params}
-         } else {
+         if ("filters" in ctx.query){
             filters = {filters : {"$and":[params,ctx.query.filters]}}
+         } else {
+            filters = {filters: params}
+         }
+         if ("sort" in ctx.query){
+            filters.sort = ctx.query.sort
          }
          const entity = await strapi.entityService.findMany(uid, {
             ...filters,

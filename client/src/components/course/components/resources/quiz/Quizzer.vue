@@ -173,7 +173,7 @@
                           class="ma-1"
                           width="100%"
                           @click="
-                            addAnswerByQuestionId(resource.questions[n - 1].id)
+                            addAnswerByQuestionID(resource.questions[n - 1].id)
                           "
                           :small="getButtonMediumSize == 'small'"
                           :medium="getButtonMediumSize == 'medium'"
@@ -315,7 +315,7 @@ export default {
   },
 
   created() {
-    //this.quiz = this.getQuizByResourceId(this.resource.quizId);
+    //this.quiz = this.getQuizByResourceID(this.resource.quizId);
     if (this.isTeacher) {
       this.selected = this.resource.questions[
         this.question - 1
@@ -371,8 +371,10 @@ export default {
 
   computed: {
     ...mapGetters("main", [
-      "getLessonByResourceId",
-      "getQuizByResourceId",
+      "getLessonByResourceID",
+      "getQuizByResourceID",
+    ]),
+    ...mapGetters("request", [
       "isStudent",
       "isTeacher",
       "isViewer",
@@ -398,16 +400,17 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", [
+    ...mapActions("main", [
       "editableInput",
-      "addAnswerByQuestionId",
-      "addQuestionByQuestionId",
-      "deleteAnswer",
-      "deleteQuestion",
-      "addQuestionByResourceId",
+      "addAnswerByQuestionID",
+      "deleteAnswerByID",
+      "deleteQuestionByID",
+      "addQuestionByResourceID",
+    ]),
+    ...mapMutations("main", [
       "setChanged"
     ]),
-    ...mapActions("main", [
+    ...mapActions("request", [
       "setProgress",
       "fetchCollectionTypes",
       "addExistingQuestions"
@@ -417,7 +420,7 @@ export default {
       this.dialog = false;
     },
     deleteAns(id) {
-      this.deleteAnswer(id);
+      this.deleteAnswerByID(id);
       this.selected = this.resource.questions[
         this.question - 1
       ].correctAnswer.map(v => v - 1);
@@ -428,7 +431,7 @@ export default {
       }
     },
     deleteQue(id) {
-      this.deleteQuestion(id);
+      this.deleteQuestionByID(id);
       if (this.question > this.resource.questions.length && this.question > 1) {
         this.question = this.question - 1;
       }
@@ -487,7 +490,7 @@ export default {
         confirmButtonText: "OK"
       });
 
-      const lesson = this.getLessonByResourceId(this.resource.id); //TODO problem with contentType
+      const lesson = this.getLessonByResourceID(this.resource.id); //TODO problem with contentType
       console.log(lesson);
 
       bus.$emit("changeIt", [lesson.id, lesson.contentType]);
@@ -502,7 +505,7 @@ export default {
     },
     addQuestion(type, id) {
       if (type == "NEW") {
-        this.addQuestionByResourceId(id);
+        this.addQuestionByResourceID(id);
       } else if (type == "SELECT") {
         this.dialog = true;
       }

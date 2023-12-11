@@ -2,14 +2,15 @@
   <div id="resource" :class="isSMsmaller ? 'pt-sm-10 pl-sm-0' : 'resource'">
     <component :is="getComponent" :resource="resource"></component>
     <GPT 
-      v-if="(resource.contentType == 'lesson' || resource.contentType=='code') && isTeacher" 
+      v-if="(resource.contentType == 'lesson') && isAuthor && gpt"
       :resource="resource" 
     />
   </div>
+  <!-- resource.contentType=='code' -->
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 
 import GPT from "./GPT.vue"
 
@@ -28,8 +29,9 @@ export default {
   },
 
   computed: {
+    ...mapState("main", { gpt: state => state.gpt }),
     ...mapGetters("style", ["isSMsmaller"]),
-    ...mapGetters("main", ["isTeacher"]),
+    ...mapGetters("request", ["isAuthor"]),
     getComponent() {
       const componentName =
         this.resource.contentType.charAt(0).toUpperCase() +

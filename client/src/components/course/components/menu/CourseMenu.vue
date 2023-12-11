@@ -242,8 +242,6 @@ export default {
     DialogModuleLesson
   },
 
-  props: {},
-
   data: () => ({
     valid: true,
 
@@ -277,13 +275,15 @@ export default {
   computed: {
     ...mapState("main", { courses: state => state.courses }),
     ...mapGetters("main", [
+      "getCoursesState",
+      "getCompletationStatusBySheetID",
+    ]),
+    ...mapGetters("request", [
       "isStudent",
       "isTeacher",
       "isAuthor",
       "isViewer",
-      "getCourses",
-      "getCompletationStatusBySheetId",
-      "getUsername"
+      "getUsername",
     ]),
     ...mapGetters("style", [
       "getIconSmallSize",
@@ -297,19 +297,18 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", [
-      "moveLesson",
-      "deleteModule",
-      "moveModule",
-      "editableInput",
-      "addConditionByLMId"
-    ]),
     ...mapActions("main", [
-      "logout", 
       "addLessonByModuleID", 
       "deleteLessonByModuleID",
       "addModuleByCourseID",
-      "deleteModuleByID"
+      "deleteModuleByID",
+      "addConditionByLMID",
+      "moveLesson",
+      "moveModule",
+      "editableInput",
+    ]),
+    ...mapMutations("request", [
+      "logout", 
     ]),
     toggleTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
@@ -322,12 +321,12 @@ export default {
 
     //--------------------------Student-----------------------------------------
     setCourse() {
-      this.items = this.getCourses;
+      this.items = this.getCoursesState;
     },
     getCompletationStatus(item) {
       //TODO reimplemet it
       if (item.file == "sheet") {
-        if (this.getCompletationStatusBySheetId(item.id) == 100)
+        if (this.getCompletationStatusBySheetID(item.id) == 100)
           return "mdi-book-check";
         else return "";
       }
@@ -337,14 +336,14 @@ export default {
       let type;
       if (item == -1) {
         id = item;
-        type = -1;
+        type = "-1";
       } else {
         if (item.length > 0) {
           id = item[0].id;
           type = item[0].contentType;
         } else {
           id = 0;
-          type = 0;
+          type = "0";
         }
       }
       this.$emit("onResourceClicked", id, type);
@@ -407,7 +406,7 @@ export default {
     async openDialog(item) {
       if (item.contentType != "course") {
         if (item.condition == null) {
-          await this.addConditionByLMId([item.id, item.contentType]);
+          await this.addConditionByLMID([item.id, item.contentType]);
         }
         this.dialogModuleLesson = true;
         this.dialogModuleLessonItem = item;

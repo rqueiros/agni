@@ -201,13 +201,14 @@ export default {
 
   computed: {
     ...mapState("main", { changed: state => state.changed }),
-    ...mapState("main", { user: state => state.user }),
-    ...mapGetters("main", ["getUsername", "getUser", "getDomain"]),
+    ...mapState("request", { user: state => state.user }),
+    ...mapGetters("request", ["getUsername", "getUser", "getDomain"]),
     ...mapGetters("style", ["getIcon"])
   },
 
   methods: {
-    ...mapMutations("main", ["logout", "deleteStructure"]),
+    ...mapMutations("main", ["deleteStructure"]),
+    ...mapMutations("request", ["logout"]),
     setPage(resource) {
       if (this.changed){
         this.yesNoDialog = {

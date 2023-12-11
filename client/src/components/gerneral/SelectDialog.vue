@@ -144,7 +144,7 @@ export default {
   computed: {},
 
   methods: {
-    ...mapActions("main", ["fetchCollectionTypes"]),
+    ...mapActions("request", ["fetchCollectionTypes"]),
     addExisting() {
       this.$emit("addExisting" + this.type, this.checkboxes);
     },

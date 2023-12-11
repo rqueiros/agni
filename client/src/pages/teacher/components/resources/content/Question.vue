@@ -54,11 +54,6 @@ export default {
 
   methods: {
     ...mapMutations("style", ["setScreenSize"]),
-    ...mapMutations("main", [
-      "addAnswerByQuestionId",
-      "editableInput",
-      "deleteAnswer"
-    ]),
     setItems() {
       this.resource = this.getQuestion;
     },

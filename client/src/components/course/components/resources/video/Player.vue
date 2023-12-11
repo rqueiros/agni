@@ -29,7 +29,7 @@
 
 <script>
 import Vue from "vue";
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 import vuePlayer from "@algoz098/vue-player";
 
@@ -59,7 +59,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters("main", ["getDomain", "isAuthor"]),
+    ...mapGetters("request", ["getDomain", "isAuthor"]),
     getURL() {
       if (
         this.resource.file.data.attributes.url.startsWith("https://youtube")
@@ -72,7 +72,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", ["setExpositiveField"]),
+    ...mapActions("main", ["setExpositiveField"]),
     /*
     onPlayerReady() {},
     onPlayerPlay() {

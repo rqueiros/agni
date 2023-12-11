@@ -75,7 +75,7 @@
                         </v-col>
                       </v-row>
                     </v-list-item-content>
-                    <v-btn icon small @click="deleteClass(cla.id)">
+                    <v-btn icon small @click="deleteClassByID(cla.id)">
                       <v-icon size="large"> mdi-delete </v-icon>
                     </v-btn>
                   </v-list-item>
@@ -120,7 +120,7 @@
                           mdi-cog
                         </v-icon>
                       </v-btn>
-                      <v-btn icon small @click="deleteStudent(item.id)">
+                      <v-btn icon small @click="deleteStudentByID(item.id)">
                         <v-icon size="large">
                           mdi-delete
                         </v-icon>
@@ -186,7 +186,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 import Editable from "../../../../../components/gerneral/Editable.vue";
 import ImportDialog from "../../../../../components/gerneral/ImportDialog.vue";
@@ -234,12 +234,12 @@ export default {
   },
 
   methods: {
-    ...mapMutations("main", [
+    ...mapActions("main", [
       "editableInput",
-      "addClassByOccurrenceId",
-      "addStudentByClassId",
-      "deleteClass",
-      "deleteStudent"
+      "addClassByOccurrenceID",
+      "addStudentByClassID",
+      "deleteClassByID",
+      "deleteStudentByID"
     ]),
     openStudentDialog(classID) {
       this.dialogClassID = classID
@@ -251,11 +251,11 @@ export default {
         name: this.$refs.nameInput.$refs.input.value,
         email: this.$refs.emailInput.$refs.input.value
       }
-      this.addStudentByClassId([this.dialogClassID, obj])
+      this.addStudentByClassID([this.dialogClassID, obj])
       this.dialogClassID = null
     },
     addClass() {
-      this.addClassByOccurrenceId(this.getOccurrence.id);
+      this.addClassByOccurrenceID(this.getOccurrence.id);
     }
   }
 };

@@ -196,7 +196,7 @@ export default {
   }),
 
   methods: {
-    ...mapActions("main", ["sendEmail"])
+    ...mapActions("request", ["sendEmail"])
   }
 };
 </script>

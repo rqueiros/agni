@@ -88,6 +88,7 @@
                       :color="getColor(item.performance)"
                       text-color="white"
                       small
+                      style="width:44px"
                     >
                       {{ item.performance }}
                     </v-chip>
@@ -149,7 +150,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("main", [
+    ...mapActions("request", [
       "fetchOccStat"
     ]),
     async setItems(){

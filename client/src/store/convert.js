@@ -269,7 +269,7 @@ const convert = {
       }
       return [newQuestion, files];
     },
-    async prepareOccForServer(state, occ) {
+    async prepareOccurrenceForServer(state, occ) {
       if (occ.new) {
         delete occ.id;
       }
@@ -286,7 +286,7 @@ const convert = {
         classe.students.forEach(async student => {
           if (student.new) {
             delete student.id;
-            let id = await this.dispatch("main/createStudentUser",student)
+            let id = await this.dispatch("request/createStudentUser",student)
             delete student.email
             student.student = id
           }
@@ -300,7 +300,6 @@ const convert = {
       });
       return [occ, []];
     },
-
 
 
     prepareCloneCourse(state, resp) {
@@ -352,7 +351,7 @@ const convert = {
       delete course.attributes;
       return course;
     },
-    async prepareCourse(state, [resp, isCopy]) {
+    async prepareCourses(state, [resp, isCopy]) {
       let course = resp;
 
       let moduleCount = 1;
@@ -375,7 +374,7 @@ const convert = {
           let newEvaluatives = [];
           lesson.expositives = lesson.expositives.data;
           for (let i = 0; i < lesson.expositives.length; i++) {
-            let expo = await this.dispatch("convert/prepareExpositive", [
+            let expo = await this.dispatch("convert/prepareExpositives", [
               lesson.expositives[i],
               false
             ]);
@@ -383,7 +382,7 @@ const convert = {
           }
           lesson.evaluatives = lesson.evaluatives.data;
           for (let i = 0; i < lesson.evaluatives.length; i++) {
-            let evalu = await this.dispatch("convert/prepareEvaluative", [
+            let evalu = await this.dispatch("convert/prepareEvaluatives", [
               lesson.evaluatives[i],
               false
             ]);
@@ -423,7 +422,7 @@ const convert = {
       this.commit("main/setMaxID", count);
       return course;
     },
-    async prepareExpositive(state, [resp, isCopy]) {
+    async prepareExpositives(state, [resp, isCopy]) {
       let expositive = resp;
       expositive.id = resp.id;
       //expositive.name=resp.attributes.name
@@ -440,9 +439,10 @@ const convert = {
       }
       return expositive;
     },
-    async prepareEvaluative(state, [resp, isCopy]) {
+    async prepareEvaluatives(state, [resp, isCopy]) {
       let evaluative = {};
       evaluative.id = resp.id;
+      evaluative.valid = true;
 
       Object.keys(resp.attributes).forEach(key => {
         evaluative[key] = resp.attributes[key];
@@ -469,7 +469,7 @@ const convert = {
               i < resp.attributes.content[0].questions.data.length;
               i++
             ) {
-              let que = await this.dispatch("convert/prepareQuestion", [
+              let que = await this.dispatch("convert/prepareQuestions", [
                 resp.attributes.content[0].questions.data[i],
                 false
               ]);
@@ -483,6 +483,7 @@ const convert = {
             newTests.forEach(test => {
               test.id = testsCount;
               test.new = true;
+              test.correct = false;
               --testsCount;
             });
             evaluative[key] = newTests;
@@ -499,7 +500,7 @@ const convert = {
       //let evaluative = {name:"eval", id:resp.id}
       return evaluative;
     },
-    async prepareQuestion(state, [resp, isCopy]) {
+    async prepareQuestions(state, [resp, isCopy]) {
       let question = {};
       question.id = resp.id;
       Object.keys(resp.attributes).forEach(key2 => {
@@ -526,7 +527,7 @@ const convert = {
       }
       return question;
     },
-    prepareOccurrence(state, [resp, isCopy]) {
+    prepareOccurrences(state, [resp, isCopy]) {
       let occ = {};
       //let occ = resp.attributes;
       occ.id = resp.id;
@@ -594,7 +595,7 @@ const convert = {
           course.attributes.publishedAt == null ? "Draft" : "Published";
         if (course.attributes.author.data != null) {
           newCourse.my =
-            rootGetters["main/getUserEmail"] ==
+            rootGetters["request/getUserEmail"] ==
             course.attributes.author.data.attributes.email;
         } else {
           newCourse.my = false;
@@ -612,7 +613,7 @@ const convert = {
         newExpositive.type = expositive.attributes.type;
         if (expositive.attributes.author.data != null) {
           newExpositive.my =
-            rootGetters["main/getUserEmail"] ==
+            rootGetters["request/getUserEmail"] ==
             expositive.attributes.author.data.attributes.email;
         } else {
           newExpositive.my = false;
@@ -634,7 +635,7 @@ const convert = {
         )[1];
         if (evaluative.attributes.author.data != null) {
           newEvaluative.my =
-            rootGetters["main/getUserEmail"] ==
+            rootGetters["request/getUserEmail"] ==
             evaluative.attributes.author.data.attributes.email;
         } else {
           newEvaluative.my = false;
@@ -653,7 +654,7 @@ const convert = {
         newQuestion.question = question.attributes.question;
         if (question.attributes.author.data != null) {
           newQuestion.my =
-            rootGetters["main/getUserEmail"] ==
+            rootGetters["request/getUserEmail"] ==
             question.attributes.author.data.attributes.email;
         } else {
           newQuestion.my = false;

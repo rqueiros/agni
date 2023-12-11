@@ -107,37 +107,47 @@ const style = {
     },
 
     //------------------Avatar--------------------------------------------------
-    getAvatarSmallSize: (state, getters) => {
+    getAvatarSmallSize: () => {
+      return "35"
+      /*
       if (getters.isSMsmaller) return "35";
       else if (getters.isMD) return "35";
-      else return "45";
+      else return "45";*/
     },
-    getAvatarMediumSize: (state, getters) => {
+    getAvatarMediumSize: () => {
+      return "55"
+      /*
       if (getters.isSMsmaller) return "65";
       else if (getters.isMD) return "55";
-      else return "65";
+      else return "65";*/
     },
 
     //------------------Text----------------------------------------------------
-    getSmallTextClass: (state, getters) => {
+    getSmallTextClass: () => {
+      return "text-caption"
+      /*
       if (getters.isSMsmaller) return "text-body-2";
       else if (getters.isMD) return "text-caption";
-      else return "text-body-2";
+      else return "text-body-2";*/
     },
-    getTextClass: (state, getters) => {
+    getTextClass: () => {
+      return "text-body-2"
+      /*
       if (getters.isSMsmaller) return "text-body-1";
       else if (getters.isMD) return "text-body-2";
-      else return "text-body-1";
+      else return "text-body-1";*/
     },
     getTitleClass: (state, getters) => {
-      if (getters.isSMsmaller) return "text-h4";
+      if (getters.isSMsmaller) return "text-h5";
       else if (getters.isMD) return "text-h5";
-      else return "text-h4";
+      else return "text-h5";
     },
-    getSubtitleClass: (state, getters) => {
+    getSubtitleClass: () => {
+      return "text-subtitle-1 font-weight-medium"
+      /*
       if (getters.isSMsmaller) return "text-h6";
       else if (getters.isMD) return "text-subtitle-1 font-weight-medium";
-      else return "text-h6";
+      else return "text-h6";*/
     },
 
     //-----------------Snackbar-------------------------------------------------

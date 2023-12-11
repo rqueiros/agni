@@ -80,7 +80,7 @@ export default {
 
   computed: {
     ...mapState("main", { courses: state => state.courses }),
-    ...mapGetters("main", ["getResourceById"])
+    ...mapGetters("main", ["getResourceByID"])
   },
 
   methods: {
@@ -89,7 +89,7 @@ export default {
       this.isResource = resourceId;
       this.type = type;
       if (resourceId != 0) {
-        this.resource = this.getResourceById(resourceId, type);
+        this.resource = this.getResourceByID(resourceId, type);
       } else {
         this.resource = null;
       }
@@ -118,64 +118,4 @@ export default {
   margin-top:1px;
 }*/
 
-/* Course Size */ /*
-.courseXS {
-  font-size: 1em;
-}
-.courseS {
-  font-size: 1em;
-}
-.courseM {
-  font-size: 0.85em;
-}
-.courseL {
-  font-size: 1em;
-}
-.courseXL {
-  font-size: 1em;
-}*/
-
-/*
-.v-stepper__header {
-  height: 4em !important;
-  align-content: center;
-}
-.v-stepper__step {
-  height: 100% !important;
-  padding: 0 0.5em !important;
-}
-.v-stepper__step__step {
-  min-height: 0 !important;
-  min-width: 0 !important;
-  font-size: 0.7em !important;
-  width: 2em !important;
-  height: 2em !important;
-}
-.v-stepper__header {
-  padding: 0 0.5em !important;
-}
-.v-stepper__header .v-divider {
-  margin: 0 !important;
-}
-
-.v-btn:not(.v-btn--round).v-size--default {
-  min-width: 0;
-}
-
-.v-application--is-ltr .v-data-footer__select {
-  margin-right: 1vw;
-}
-
-.v-application--is-ltr .v-data-footer__pagination {
-  margin-right: 1vw;
-  margin-left: 1vw;
-}
-
-.v-application--is-ltr .v-data-footer__icons-before .v-btn:last-child {
-  margin-right: 0.55vw;
-}
-
-.v-application--is-ltr .v-data-footer__icons-after .v-btn:first-child {
-  margin-left: 0.55vw;
-}*/
 </style>

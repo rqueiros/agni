@@ -47,5 +47,80 @@
         ]
       }
     ]
+  },
+  "goal":{
+    "new": true,
+    "goal": ""
+  },
+  "condition":{
+    "new": true,
+    "afterPercDone": "",
+    "afterWeek": "",
+    "type": null
+  },
+  "expositive":{
+    "new": true,
+    "name": "",
+    "milestones": [],
+    "type": null
+  },
+  "evaluative":{
+    "new": true,
+    "type": "new",
+    "contentType": "",
+    "name": "",
+    "questions": [],
+    "tests": [],
+    "contexts": [],
+    "skeleton": "",
+    "solution":"",
+    "statement":"",
+    "valid": true
+  },
+  "answer": {
+    "new": true,
+    "answer": ""
+  },
+  "milestone": {
+    "new": true,
+    "frame": 0,
+    "label": ""
+  },
+  "test":{
+    "new": true,
+    "input": "",
+    "expected": "",
+    "type": null,
+    "subtype": null,
+    "output": "",
+    "show": false,
+    "correct":false
+  },
+  "context":{
+    "new": true,
+    "format": "",
+    "name": "",
+    "text": "",
+    "show": false
+  },
+  "question":{
+    "new": true,
+    "question": "",
+    "correctAnswer": [],
+    "image": { "data": null },
+    "answers": [
+      { "answer": "" },
+      { "answer": "" }
+    ]
+  },
+  "class":{
+    "new": true,
+    "name": "",
+    "students": []
+  },
+  "occurrence":{
+    "new": true,
+    "year": 0,
+    "classes": []
   }
 }
