@@ -137,7 +137,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations, mapState } from "vuex";
+import { mapGetters, mapMutations, mapState, mapActions } from "vuex";
 import { bus } from "@/main.js";
 
 import YesNoDialog from "../../../components/gerneral/YesNoDialog.vue";
@@ -203,12 +203,46 @@ export default {
     ...mapState("main", { changed: state => state.changed }),
     ...mapState("request", { user: state => state.user }),
     ...mapGetters("request", ["getUsername", "getUser", "getDomain"]),
-    ...mapGetters("style", ["getIcon"])
+    ...mapGetters("style", ["getIcon", "getMesssage"]),
+    ...mapGetters("main", [
+      "getCoursesState",
+      "getExpositivesState",
+      "getEvaluativesState",
+      "getQuestionsState"
+    ])
   },
 
   methods: {
     ...mapMutations("main", ["deleteStructure"]),
     ...mapMutations("request", ["logout"]),
+    ...mapActions("request", ["saveCollectionType"]),
+    async save() {
+      let collectionType
+      if (this.getCoursesState.length >0){
+        collectionType = "courses"
+      } else if (this.getEvaluativesState.length>0){
+        collectionType = "evaluatives"
+      } else if (this.getExpositivesState.length>0){
+        collectionType = "expositives"
+      } else if (this.getQuestionsState.length>0) {
+        collectionType = "questions"
+      } else {
+        collectionType = "occurrences"
+      }
+      try {
+        await this.saveCollectionType(collectionType);
+        bus.$emit("successSnackbar", this.getMesssage([collectionType, "save", "success"]))
+        return true;
+      } catch (error) {
+        console.log(error);
+        if (error == "Missing Evaluative Type or Test Type") {
+          bus.$emit("errorSnackbar", error)
+        } else {
+          bus.$emit("errorSnackbar", this.getMesssage([collectionType, "save", "error"]))
+        }
+        return false;
+      }
+    },
     setPage(resource) {
       if (this.changed){
         this.yesNoDialog = {

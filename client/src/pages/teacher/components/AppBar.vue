@@ -320,6 +320,7 @@
       :dialog="yesNoDialog1.open"
       :question="yesNoDialog1.question"
       :buttons="yesNoDialog1.buttons"
+      :dialogID="dialogID"
     />
 
     <DeleteDialog :dialog="deleteDialog.open" :collectionType="collectionType"/>
@@ -426,6 +427,7 @@ export default {
         item: null,
       },
 
+      dialogID : "1",
       yesNoDialog1: {
         open: false,
         question: "",
@@ -443,13 +445,13 @@ export default {
   },
 
   created() {
-    bus.$on("yesNoDialog", payload => {
+    bus.$on("yesNoDialog1", payload => {
       this.yesNoDialog1.open = payload;
     });
     bus.$on("deleteDialog", payload => {
       this.deleteDialog.open = payload;
     });
-    bus.$on("yesNoDialogResult", async payload => {
+    bus.$on("yesNoDialogResult1", async payload => {
       this.yesNoDialog1.open = false;
       if (payload == "save" && this.yesNoDialog1.question!="") {
         const saveSuccess = await this.save();
@@ -646,6 +648,7 @@ export default {
       if (!this.changed) {
         this.exitContentType()
       } else {
+        this.help = true
         this.yesNoDialog1 = {
           open: true,
           question: "Do you want to save your changes before exiting?",

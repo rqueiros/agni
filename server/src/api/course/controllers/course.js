@@ -125,7 +125,19 @@ module.exports = createCoreController(uid, () => {
             return ctx.unauthorized(`No permission to update this content`);
          }
 
-         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
+         console.log(ctx.request.body)
+         console.log(typeof(ctx.request.body))
+         let data
+         if (typeof(ctx.request.body) == "string"){
+            let t = ctx.request.body
+            t.replace(/'/g, '"')
+            data = JSON.parse(t).data
+         } else if (typeof(ctx.request.body.data)=="string") {
+            data = JSON.parse(ctx.request.body.data.replace(/'/g, '"'))
+         } else {
+            console.log("asdfasdf")
+            data = ctx.request.body.data
+         }
 
          // check for wrong files
          let images = []
@@ -186,7 +198,12 @@ async function prepareCtx(ctx, images, files, data, type) {
    }
    data.author = ctx.state.user.id
    ctx.params = parm
-   ctx.request.body = {data:JSON.stringify(data)}
+   if (ctx.request.headers["content-type"].includes("json")){
+      console.log(1)
+      ctx.request.body = {data:data}
+   } else {
+      ctx.request.body = {data:JSON.stringify(data)}
+   }
    return ctx
 }
 

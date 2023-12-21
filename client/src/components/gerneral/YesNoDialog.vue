@@ -44,21 +44,25 @@ export default {
     dialog: {
       type: Boolean,
       default: () => false
+    },
+    dialogID: {
+      type: String,
+      default: () => ""
     }
   },
 
   watch: {
     dialog(newD) {
-      bus.$emit("yesNoDialog", newD);
+      bus.$emit("yesNoDialog"+this.dialogID, newD);
     }
   },
 
   methods: {
     cancel() {
-      bus.$emit("yesNoDialogResult", "cancel");
+      bus.$emit("yesNoDialogResult"+this.dialogID, "cancel");
     },
     ok(msg) {
-      bus.$emit("yesNoDialogResult", msg);
+      bus.$emit("yesNoDialogResult"+this.dialogID, msg);
     }
   }
 };

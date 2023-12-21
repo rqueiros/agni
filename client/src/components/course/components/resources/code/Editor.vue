@@ -727,7 +727,7 @@ export default {
 
       
       if (this.saveHandler == "") {
-        this.saveHandler = setInterval(this.dataSumit, 10000);
+        this.saveHandler = setInterval(this.dataSumit, 1000);
       }
     },
     editorChange() {
