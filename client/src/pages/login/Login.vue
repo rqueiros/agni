@@ -186,6 +186,8 @@
 </template>
 
 <script>
+import { bus } from "@/main.js";
+
 import { mapActions, mapMutations } from "vuex";
 
 export default {
@@ -195,7 +197,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions("request", ["login"]),
+    ...mapActions("request", ["login", "fetchCollectionTypes", "fetchPrepareCollectionType"]),
     ...mapMutations("request", ["setLogin"]),
     ...mapMutations("main", ["setGpt"]),
     async studentLogin() {
@@ -263,12 +265,22 @@ export default {
     if ("id" in params && "pw" in params){
       try{
         await this.login([params.id, params.pw]);
+        bus.$emit("changePage", "content,Course");
+
+        const parameters = { collectionType: "courses" };
+        let items = await this.fetchCollectionTypes(parameters);
+        let id = items[0].id
+        await this.fetchPrepareCollectionType([id, "courses"]);
+        if ("gpt" in params && params.gpt=="false"){
+          this.setGpt(false)
+          bus.$emit("openCourse", "no");
+        } else {
+          bus.$emit("openCourse", "gpt");
+        }
+        console.log("here")
       } catch(error){
         console.log(error)
       }
-    }
-    if ("gpt" in params && params.gpt=="false"){
-      this.setGpt(false)
     }
     this.loading = false
   }

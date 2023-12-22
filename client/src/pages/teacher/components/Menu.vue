@@ -161,7 +161,11 @@ export default {
   }),
 
   created() {
-    bus.$emit("changePage", this.resource);
+    if(!this.getUser.email.includes("evaluator")){
+      console.log(1111)
+      bus.$emit("changePage", this.resource);
+    }
+    //bus.$emit("changePage", this.resource);
     this.loadImage();
 
     bus.$on("yesNoDialog", payload => {

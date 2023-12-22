@@ -7,6 +7,7 @@ import Index from "../pages/index/Index.vue";
 import Login from "../pages/login/Login.vue";
 import Student from "../pages/student/Student.vue";
 import Teacher from "../pages/teacher/Teacher.vue";
+import Questionnaire from "../pages/questionnaire/Questionnaire.vue";
 
 Vue.use(VueRouter);
 
@@ -36,6 +37,11 @@ const routes = [
     meta: {
       requiresAuth: true
     }
+  },
+  {
+    path: "/questionnaire",
+    name: "Questionnaire",
+    component: Questionnaire,
   }
 ];
 

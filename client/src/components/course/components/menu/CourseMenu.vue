@@ -257,13 +257,21 @@ export default {
   }),
 
   created() {
+    this.setCourse();
     bus.$on("dialogCourseChange", payload => {
       this.dialogCourse = payload;
     });
     bus.$on("dialogModuleLessonChange", payload => {
       this.dialogModuleLesson = payload;
     });
-    this.setCourse();
+    bus.$on("openCourse", payload => {
+      this.open = [this.items[0], this.items[0].children[0]]
+      if (payload == "no"){
+        this.active = [this.items[0].children[0].children[0]]
+      } else {
+        this.active = [this.items[0].children[0].children[1]]
+      }
+    });
   },
 
   watch: {
