@@ -787,7 +787,7 @@ export default {
             }
           } else {
             let fct = eval(`(${this.code})`);
-            let arr
+            let arr = []
             if (test.input.startsWith('[') && test.input.endsWith(']')) {
               try {
                 arr = [JSON.parse(test.input.replace(/'/g, '"'))];
@@ -796,7 +796,23 @@ export default {
                 arr = null
               }
             } else {
-              arr = test.input.split(" ").map(Number);
+              //arr = test.input.split(" ");
+              //arr = arr.map(x => JSON.parse(x))
+              //console.log(arr)
+              const regex = /"([^"]+)"|(\b\d+\.?\d*|\.\d+\b)|(\b\w+\b)/g;
+              let matches;
+              while ((matches = regex.exec(test.input)) !== null) {
+                if (matches[1]) {
+                  // This is a matched quoted word, push it without the quotes
+                  arr.push(matches[1]);
+                } else if (matches[2]) {
+                  // This is a matched number, parse it and push
+                  arr.push(parseFloat(matches[2]));
+                } else if (matches[3]) {
+                  // This is a matched unquoted word
+                  arr.push(matches[3]);
+                }
+              }
             }
             if (test.input == "") {
               res = fct.call(null);
@@ -804,8 +820,6 @@ export default {
               res = fct.call(null, ...arr);
             }
           }
-
-          console.log(res, test.expected)
           if (Array.isArray(res)){
             try {
               let expectedArray = JSON.parse(test.expected.replace(/'/g, '"'));
@@ -819,7 +833,7 @@ export default {
               test.correct = false
               console.log(err)
             }
-          } else if (String(res) == test.expected || res === true) {
+          } else if (String(res) == test.expected.replace(/"/g, '') || res === true) {
             test.correct=true
             this.nTestsSuccess++;
           } else {
@@ -923,7 +937,9 @@ export default {
 }
 #tests >>> .vcs__arrow-container {
   padding-left: 6px;
-  right: 6px;
+  left : 0px;
+  display:flex;
+  justify-content: end;
 }
 #tests >>> .vcs__arrow {
   padding: 2px;

@@ -1,6 +1,6 @@
 <template>
   <div id="editor" :class="getSmallTextClass">
-    <div :class="isMD ? 'mx-2' : 'mx-4'">
+    <div class="mx-2">
       <div v-if="isEvaluative" class="pt-2 pb-2" :class="getSubtitleClass">
         <Editable
           v-if="isAuthor"
@@ -642,12 +642,14 @@ export default {
       const jshintEerrors = JSHINT.data().errors;
       if (jshintEerrors) {
         for (const error of jshintEerrors) {
-          errors.push({
-            type: error.code.startsWith("E") ? "error" : "info",
-            row: error.line - 1,
-            column: 0,
-            text: error.reason
-          });
+          if (!(error.evidence.startsWith("function") && error.reason.endsWith("is defined but never used."))){
+            errors.push({
+              type: error.code.startsWith("E") ? "error" : "info",
+              row: error.line - 1,
+              column: 0,
+              text: error.reason
+            });
+          }
         }
       }
 
@@ -792,7 +794,9 @@ export default {
 }
 #editor >>> .vcs__arrow-container {
   padding-left: 6px;
-  right: 6px;
+  left : 0px;
+  display:flex;
+  justify-content: end;
 }
 #editor >>> .vcs__arrow {
   padding: 2px;
