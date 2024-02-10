@@ -877,6 +877,8 @@ const main = {
       let evaluative = state.getters.getEvaluativeByID(id);
       let n = state.getters.getMinimumID(state.getters.getTests)
       let test = {...jsonData.test}
+      // take out afterwards
+      test.type = "function"
       test.id = n
       evaluative.tests.push(test);
       this.commit("main/setChanged", true);
