@@ -668,7 +668,7 @@ const main = {
             } else if (newExercise.solution.includes("function") && newExercise.solution.includes("return")){
               test.type = "function"
               test.subtype = null
-            } 
+            }
             newTests.push(test)
             countTests++
           })
