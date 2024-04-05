@@ -385,10 +385,14 @@ export default {
 
   watch:{
     async openChat(newV){
+      console.log(1111)
+      console.log(this.loading, this.error)
       if (newV){
         await this.startMessage()
-      } else if (!this.dialog && !this.loading) {
-        this.resetData()
+      } else if ((!this.dialog && !this.loading) || (this.loading && this.error)) {
+        this.error = false;
+        this.loading = false;
+        this.resetData();
       }
     },
     dialog (newV){
@@ -406,6 +410,8 @@ export default {
     closeChat() {
       if (this.openChat){
         this.openChat = false;
+        // = false;
+        //this.laoding = false;
       }
     },
     resetData(){
@@ -433,6 +439,8 @@ export default {
     },
     closeDialog(){
       this.dialog = false
+      this.loading = false
+      this.error = false
       this.resetData()
     },
 
@@ -477,6 +485,7 @@ export default {
         await this.generateExercise()
         this.dialog = true
         this.openChat = false
+        console.log(222)
       } catch (err){
         console.log(err)
       }
@@ -532,7 +541,9 @@ export default {
         this.messageResp.topic = ""
         this.messageShow.topicResp = false
         this.error = true
+        this.loading = false;
         this.scrollToBottom()
+        throw error;
       }
       this.loading = false;
       //EventBus.$emit("runTests");
