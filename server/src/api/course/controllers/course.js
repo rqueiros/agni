@@ -125,15 +125,12 @@ module.exports = createCoreController(uid, () => {
             return ctx.unauthorized(`No permission to update this content`);
          }
 
-         console.log(ctx.request.body)
-         console.log(typeof(ctx.request.body))
          let data
          if (typeof(ctx.request.body) == "string"){
             let t = ctx.request.body
-            t.replace(/'/g, '"')
             data = JSON.parse(t).data
          } else if (typeof(ctx.request.body.data)=="string") {
-            data = JSON.parse(ctx.request.body.data.replace(/'/g, '"'))
+            data = JSON.parse(ctx.request.body.data)
          } else {
             console.log("asdfasdf")
             data = ctx.request.body.data
