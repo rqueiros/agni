@@ -131,12 +131,12 @@ const main = {
         ...state.courses
           .flatMap(c => c.children)
           .filter(m => "condition" in m && m.condition != null)
-          .map(m => m.condition.id),
+          .map(m => m.condition),
         ...state.courses
           .flatMap(c => c.children)
           .flatMap(m => m.children)
           .filter(l => "condition" in l && l.condition != null)
-          .map(l => l.condition.id)
+          .map(l => l.condition)
       ]
     },
 
