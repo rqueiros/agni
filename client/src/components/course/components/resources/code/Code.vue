@@ -199,8 +199,8 @@ export default {
     setLogs(logs) {
       this.logs = logs;
     },
-    saveCode() {
-      this.$refs.editor.dataSumit();
+    saveCode(status) {
+      this.$refs.editor.dataSumit2(status);
     },
     handleClick(value) {
       this.$refs.editor.gotoLine(value.row);

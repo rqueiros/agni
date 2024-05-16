@@ -236,7 +236,7 @@ const main = {
     getQuestionByID: (state, getters) => id => {
       return getters.getQuestions.find(q => q.id == id);
     },
-    getQuestionsByAnswerID: (state, getters) => id => {
+    getQuestionByAnswerID: (state, getters) => id => {
       return getters.getQuestions
         .find(q => q.answers.map(a => a.id).includes(id));
     },

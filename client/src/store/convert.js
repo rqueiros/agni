@@ -484,7 +484,14 @@ const convert = {
               test.id = testsCount;
               test.new = true;
               test.correct = false;
+              test.output= "";
               --testsCount;
+            });
+            evaluative[key] = newTests;
+          } else if (key == "tests") {
+            let newTests = resp.attributes.content[0].tests;
+            newTests.forEach(test => {
+              test.output= "";
             });
             evaluative[key] = newTests;
           } else if (key != "id") {

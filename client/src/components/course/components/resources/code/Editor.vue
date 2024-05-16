@@ -320,6 +320,7 @@ export default {
       code2: "",
 
       saveHandler: "",
+      saveHandler2: "",
       statusSaveButton: false,
       statusResetButton: false,
       mapDetector: [],
@@ -391,6 +392,7 @@ export default {
   beforeDestroy() {
     this.saveDate();
     clearInterval(this.saveHandler);
+    clearInterval(this.saveHandler2);
   },
 
   created() {
@@ -547,6 +549,118 @@ export default {
         this.saveContext(this.resource.contexts[this.tab].id, this.code2);
       }
     },
+    async dataSumit2(status){
+//let originalCode = this.code;
+      //let originalCode1 = this.code1;
+
+      const errors = [];
+      const logs = [];
+      this.statusSaveButton = true;
+      //this.setProgress({ id: this.resource.id, code: this.code });
+      console.log("here")
+
+      if (this.isStudent) {
+        
+        this.setProgress({
+          id: this.resource.id,
+          data: {
+            answer: [{ __component: "solution.code", code: this.code }],
+            grade: status
+          }
+        });
+        const obj = {
+          id: this.resource.id,
+          value: [{ __component: "solution.code", code: this.code }],
+          field: "answer",
+          type: "status"
+        };
+        this.editableInput(obj)
+      } else if (this.isTeacher) {
+        //this.setTeacherProgress({ id: this.resource.id, code: this.code })
+        const obj = {
+          id: this.resource.id,
+          value: this.code,
+          field: "solution",
+          type: "evaluative"
+        };
+        this.editableInput(obj);
+        const obj2 = {
+          id: this.resource.id,
+          value: this.code1,
+          field: "skeleton",
+          type: "evaluative"
+        };
+        this.editableInput(obj2);
+        if (this.tab != undefined && this.resource.contexts.length > 0) {
+          this.saveContext(this.resource.contexts[this.tab].id, this.code2);
+        }
+      }
+
+      if (this.resource.html) {
+        this.code = `
+          ${html2dom.parse(this.resource.html)}\n
+          ${this.code.replaceAll("document", "docFragment")}
+          `;
+        //console.log(this.code);
+      }
+      // 1. Turn off window functions
+      window.prompt = (..._args) => {
+        console.log("windowPrompt", _args);
+      };
+      window.confirm = (..._args) => {
+        console.log("windowConfirm", _args);
+      };
+      window.alert = (..._args) => {
+        console.log("windowAlert", _args);
+      };
+
+      // 2. Replace console.log with stub implementation.
+      const originalLog = console.log;
+      console.log = (...args) => {
+        logs.push({ row: -1, type: "log", text: args });
+      };
+      const wrapperCode = this.infiniteLoopDetectorWrapper(this.code);
+      try {
+        eval(wrapperCode);
+      } catch (error) {
+        const message =
+          error.message === "infinite" ? "Infinite loop" : error.message;
+        errors.push({
+          type: "error",
+          row: 1,
+          column: 0,
+          text: message
+        });
+      } finally {
+        // Restore original implementation after testing.
+        console.log = originalLog;
+      }
+
+      // 3. Detect JSHINT errors and warnings
+      const options = {
+        undef: true,
+        unused: true,
+        devel: true,
+        browser: true,
+        esversion: 7
+      };
+      JSHINT(this.code, options);
+      const jshintEerrors = JSHINT.data().errors;
+      if (jshintEerrors) {
+        for (const error of jshintEerrors) {
+          if (!(error.evidence.startsWith("function") && error.reason.endsWith("is defined but never used."))){
+            errors.push({
+              type: error.code.startsWith("E") ? "error" : "info",
+              row: error.line - 1,
+              column: 0,
+              text: error.reason
+            });
+          }
+        }
+      }
+      this.$emit("onErrors", errors);
+      this.$emit("onLogs", logs);
+    },
     async dataSumit() {
       //let originalCode = this.code;
       //let originalCode1 = this.code1;
@@ -555,7 +669,10 @@ export default {
       const logs = [];
       this.statusSaveButton = true;
       //this.setProgress({ id: this.resource.id, code: this.code });
+      console.log("here")
+
       if (this.isStudent) {
+        
         this.setProgress({
           id: this.resource.id,
           data: {
@@ -730,6 +847,9 @@ export default {
       
       if (this.saveHandler == "") {
         this.saveHandler = setInterval(this.dataSumit, 1000);
+      }
+      if (this.saveHandler == "" && this.isStudent) {
+        this.saveHandler = setInterval(this.dataSumit2, 100000);
       }
     },
     editorChange() {

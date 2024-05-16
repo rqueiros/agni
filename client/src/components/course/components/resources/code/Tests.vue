@@ -577,7 +577,9 @@ export default {
   }),
 
   created(){
-    this.run()
+    if (this.isTeacher){
+      this.run()
+    }
   },
 
   computed: {
@@ -719,11 +721,158 @@ export default {
       });
     }, */
     run() {
+      console.log(1)
       // Save the code
-      this.$emit("onSaveCode");
 
-      setTimeout(async () => {
         this.nTestsSuccess = 0;
+        if (this.isStudent) {
+          this.code = this.getStatusByResourceID(
+            this.resource.id
+          ).answer[0].code;
+        } else if (this.isTeacher) {
+          this.code = this.resource.solution;
+        }
+
+        const originalCode = this.code;
+
+        if (this.resource.html) {
+          this.code = `          
+          ${html2dom.parse(this.resource.html)}\n          
+          ${this.code.replaceAll("document", "docFragment")}
+          `;
+        }
+
+        // Expressions
+        this.resource.tests.forEach((test) => {
+          let res;
+          //console.log("2. run test->" + test.type);
+          if (test.type == "log") {
+            res = this.logs.map(log => log.text).join("");
+            //console.log("3. result->" + res);
+          } else if (test.type == "expression") {
+            try {
+              if (test.subtype) {
+                eval(`${this.code}\n${test.input}`);
+                res = "no error";
+              } else {
+                res = eval(`${this.code}\n${test.input}`);
+                res = typeof res === "undefined" ? `No assigned value` : res;
+              }
+            } catch (error) {
+              if (test.subtype) {
+                res = "error";
+              } else {
+                res = error.message;
+              }
+            }
+          } else if (test.type == "metric") {
+            if (test.subtype == "lines") {
+              let count = 0;
+              const lines = this.code.split("\n");
+              lines.forEach(line => {
+                if (line.startsWith("//") || line == "") {
+                  count++;
+                }
+              });
+              res = eval(`${lines.length - count} ${test.expected}`);
+            } else if (test.subtype == "occurrences") {
+              const keyword = test.input.split(":")[1];
+              const nOccurrences = (
+                this.code.match(new RegExp(keyword, "g")) || []
+              ).length;
+              res = nOccurrences;
+            } else if (test.subtype == "keyword") {
+              res = this.code.includes(test.input.split(":")[1]);
+            } else {
+              res = true;
+            }
+          } else {
+            let fct = eval(`(${this.code})`);
+            let arr = []
+            if (test.input.startsWith('[') && test.input.endsWith(']')) {
+              try {
+                arr = [JSON.parse(test.input.replace(/'/g, '"'))];
+              } catch (e) {
+                console.error("String is not a valid JSON array:", e);
+                arr = null
+              }
+            } else {
+              //arr = test.input.split(" ");
+              //arr = arr.map(x => JSON.parse(x))
+              //console.log(arr)
+              const regex = /"([^"]+)"|(\b\d+\.?\d*|\.\d+\b)|(\b\w+\b)/g;
+              let matches;
+              while ((matches = regex.exec(test.input)) !== null) {
+                if (matches[1]) {
+                  // This is a matched quoted word, push it without the quotes
+                  arr.push(matches[1]);
+                } else if (matches[2]) {
+                  // This is a matched number, parse it and push
+                  arr.push(parseFloat(matches[2]));
+                } else if (matches[3]) {
+                  // This is a matched unquoted word
+                  arr.push(matches[3]);
+                }
+              }
+            }
+            if (test.input == "") {
+              res = fct.call(null);
+            } else {
+              res = fct.call(null, ...arr);
+            }
+          }
+          if (Array.isArray(res)){
+            try {
+              let expectedArray = JSON.parse(test.expected.replace(/'/g, '"'));
+              if (expectedArray.length === res.length && expectedArray.every((element, index) => element === res[index])){
+                test.correct=true
+                this.nTestsSuccess++
+              } else {
+                test.correct = false
+              }
+            } catch(err){
+              test.correct = false
+              console.log(err)
+            }
+          } else if (String(res) == test.expected.replace(/"/g, '') || res === true) {
+            test.correct=true
+            this.nTestsSuccess++;
+          } else {
+            test.correct = false
+          }
+
+          /*
+          Vue.set(this.resource.tests, index, {
+            ...test,
+            output: typeof(res)=="object" ? JSON.stringify(res) : String(res),
+          });*/
+          //res == test.expOutput
+          // ? (trs[index + 1].style.backgroundColor = "green")
+          //: (trs[index + 1].style.backgroundColor = "red");
+        });
+
+        //Update progress
+
+        
+        const status = (this.nTestsSuccess / this.resource.tests.length) * 100;
+
+        /*
+        if (this.isStudent) {
+          this.setProgress({
+            id: this.resource.id,
+            data: {
+              grade: status
+            }
+          });
+        }*/
+
+        this.code = originalCode;
+
+        this.$emit("onSaveCode", status);
+
+
+        setTimeout(async () => {
+          this.nTestsSuccess = 0;
         if (this.isStudent) {
           this.code = this.getStatusByResourceID(
             this.resource.id
@@ -840,28 +989,29 @@ export default {
             test.correct = false
           }
 
+
           Vue.set(this.resource.tests, index, {
             ...test,
             output: typeof(res)=="object" ? JSON.stringify(res) : String(res),
           });
+          console.log(test)
           //res == test.expOutput
           // ? (trs[index + 1].style.backgroundColor = "green")
           //: (trs[index + 1].style.backgroundColor = "red");
         });
-
-        //Update progress
-        const status = (this.nTestsSuccess / this.resource.tests.length) * 100;
-
-        if (this.isStudent) {
-          await this.setProgress({
-            id: this.resource.id,
-            data: {
-              grade: status
-            }
-          });
-        }
+        console.log(this.resource)
+        const obj = {
+          id: this.resource.id,
+          value: this.resource.tests,
+          field: "tests",
+          type: "evaluative"
+        };
+        this.editableInput(obj)
+        this.$forceUpdate();
         this.code = originalCode;
-      }, 1000);
+        console.log(1234)
+        }, 1000)
+
     },
     getColor(item) {
       if (item.output == "") return "white";
