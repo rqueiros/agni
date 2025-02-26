@@ -2,16 +2,8 @@
   <div id="editor" :class="getSmallTextClass">
     <div class="mx-2">
       <div v-if="isEvaluative" class="pt-2 pb-2" :class="getSubtitleClass">
-        <Editable
-          v-if="isAuthor"
-          :type="'evaluative'"
-          :value="resource.name"
-          :id="resource.id"
-          placeholder="Evaluative name"
-          :field="'name'"
-          @input="editableInput"
-          onclick="event.stopPropagation()"
-        />
+        <Editable v-if="isAuthor" :type="'evaluative'" :value="resource.name" :id="resource.id"
+          placeholder="Evaluative name" :field="'name'" @input="editableInput" onclick="event.stopPropagation()" />
         <span v-if="isViewer">
           {{ resource.name }}
         </span>
@@ -32,128 +24,62 @@
         <span v-if="isViewer">
           {{ resource.statement }}
         </span>
-        <vue-editor
-          v-if="isAuthor"
-          v-model="resource.statement"
-          :style="{ backgroundColor: $vuetify.theme.currentTheme.editable }"
-          style="border-radius: 8px;"
-          :editor-toolbar="customToolbar"
-          placeholder="Evaluative statement"
-        />
+        <vue-editor v-if="isAuthor" v-model="resource.statement"
+          :style="{ backgroundColor: $vuetify.theme.currentTheme.editable }" style="border-radius: 8px;"
+          :editor-toolbar="customToolbar" placeholder="Evaluative statement" />
       </div>
 
-      <div class="pb-2" v-if="isTeacher">
-        <vue-cascader-select 
-          class="black--text"
-          :options="options"
-          @select="selected => setType(resource.id, selected.value)"
-          :value="resource.type != null ? resource.type : ''"
-          v-if="isAuthor"
-          style="width: fit-content"
-          :style="valid ? 'border: 2px solid red; border-radius: 6px' : ''"
-        />
-        <div v-if="isViewer">Type: {{ resource.type }}</div>
+      <div class="pb-2 flex" v-if="isTeacher">
+        <vue-cascader-select class="black--text" :options="options"
+          @select="selected => setType(resource.id, selected.value)" :value="resource.type != null ? resource.type : ''"
+          v-if="isAuthor" style="width: fit-content"
+          :style="valid ? 'border: 2px solid red; border-radius: 6px' : ''" />
+        <v-select v-if="isAuthor" v-model="languages" :items="languageOptions" multiple
+          persistent-hint outlined dense item-title="name"></v-select>
+        <div v-if="isViewer" class="w-full">Type: {{ resource.type }}</div>
       </div>
+
+      <v-select v-if="isStudent" v-model="language" :items="languageOptions"
+      persistent-hint outlined dense></v-select>
     </div>
 
     <div class="py-2">
-      <v-card
-        v-if="isTeacher"
-        outlined
-        class="d-flex align-center justify-center"
-        height="32px"
-      >
+      <v-card v-if="isTeacher" outlined class="d-flex align-center justify-center" height="32px">
         Solution
       </v-card>
-      <AceEditor
-        ref="myEditor"
-        v-model="code"
-        lang="javascript"
-        theme="ambiance"
-        width="100%"
-        height="20rem"
-        :options="editorOp"
-        :commands="com"
-        @init="editorInit"
-        @onchange="editorChange"
-      />
+      <AceEditor ref="myEditor" v-model="code" lang="javascript" theme="ambiance" width="100%" height="20rem"
+        :options="editorOp" :commands="com" @init="editorInit" @onchange="editorChange" />
     </div>
 
     <div class="py-2" v-if="isTeacher">
-      <v-btn
-        width="100%"
-        v-if="isAuthor && !showSkeleton && !hasSkeleton"
-        @click="showSkeleton = true"
-        height="36px"
-        color="button"
-      >
+      <v-btn width="100%" v-if="isAuthor && !showSkeleton && !hasSkeleton" @click="showSkeleton = true" height="36px"
+        color="button">
         <v-icon>mdi-plus</v-icon>Skeleton
       </v-btn>
       <div v-if="showSkeleton || hasSkeleton">
-        <v-card
-          height="32px"
-          outlined
-          class="d-flex align-center justify-center"
-        >
+        <v-card height="32px" outlined class="d-flex align-center justify-center">
           Skeleton
-          <v-btn
-            v-if="isAuthor"
-            icon
-            @click="deleteSkeleton"
-            :x-small="getButtonSmallSize == 'x-small'"
-            :small="getButtonSmallSize == 'small'"
-            style="position:absolute; top:auto; right: 8px;"
-          >
+          <v-btn v-if="isAuthor" icon @click="deleteSkeleton" :x-small="getButtonSmallSize == 'x-small'"
+            :small="getButtonSmallSize == 'small'" style="position:absolute; top:auto; right: 8px;">
             <v-icon :size="getIconSmallSize">mdi-delete</v-icon>
           </v-btn>
         </v-card>
-        <AceEditor
-          ref="skeleton"
-          v-model="code1"
-          @init="editorInit"
-          @onchange="editorChange"
-          lang="javascript"
-          theme="ambiance"
-          width="100%"
-          height="10rem"
-          :options="editorOp"
-          :commands="com"
-        />
+        <AceEditor ref="skeleton" v-model="code1" @init="editorInit" @onchange="editorChange" lang="javascript"
+          theme="ambiance" width="100%" height="10rem" :options="editorOp" :commands="com" />
       </div>
     </div>
 
     <div class="pt-2 pb-4" v-if="isTeacher">
-      <v-card
-        flat
-        outlined
-        class="d-flex align-center"
-        style="border-left: 0; border-right: 0;"
-      >
-        <v-btn
-          width="100%"
-          v-if="isAuthor && !contextLen"
-          @click="addContextByEvaluativeID(resource.id)"
-          color="button"
-        >
+      <v-card flat outlined class="d-flex align-center" style="border-left: 0; border-right: 0;">
+        <v-btn width="100%" v-if="isAuthor && !contextLen" @click="addContextByEvaluativeID(resource.id)"
+          color="button">
           <v-icon>mdi-plus</v-icon>Context
         </v-btn>
         <v-layout column>
           <v-app-bar flat color="white" class="pa-0" rounded height="32">
-            <v-tabs
-              style="width:calc(100% - 40px)"
-              center-active
-              v-model="tab"
-              color="error"
-              grow
-              show-arrows
-              hide-slider
-            >
-              <v-tab
-                v-for="(item, i) in resource.contexts"
-                :key="i"
-                style="width:100px"
-                :class="getSmallTextClass"
-              >
+            <v-tabs style="width:calc(100% - 40px)" center-active v-model="tab" color="error" grow show-arrows
+              hide-slider>
+              <v-tab v-for="(item, i) in resource.contexts" :key="i" style="width:100px" :class="getSmallTextClass">
                 <!--Student & Viewer-->
                 <span v-if="isStudent || isViewer">
                   {{ item.name }}
@@ -161,23 +87,11 @@
 
                 <!--Author-->
                 <span v-if="isAuthor" class="d-flex align-center">
-                  <Editable
-                    :type="'context'"
-                    :value="item.name"
-                    :id="item.id"
-                    placeholder="Context name"
-                    :field="'name'"
-                    @input="editableInput"
-                    onclick="event.stopPropagation()"
-                  />
-                  <v-btn
-                    v-if="isAuthor"
-                    icon
-                    :x-small="getButtonSmallSize == 'x-small'"
-                    :small="getButtonSmallSize == 'small'"
-                    onclick="event.stopPropagation()"
-                    @click="deleteCont(item.id)"
-                  >
+                  <Editable :type="'context'" :value="item.name" :id="item.id" placeholder="Context name"
+                    :field="'name'" @input="editableInput" onclick="event.stopPropagation()" />
+                  <v-btn v-if="isAuthor" icon :x-small="getButtonSmallSize == 'x-small'"
+                    :small="getButtonSmallSize == 'small'" onclick="event.stopPropagation()"
+                    @click="deleteCont(item.id)">
                     <v-icon :size="getIconSmallSize">
                       mdi-delete
                     </v-icon>
@@ -187,35 +101,17 @@
             </v-tabs>
 
             <!--Author-->
-            <v-btn
-              v-if="contextLen"
-              min-width="0"
-              width="32px"
-              height="28px"
-              class="ma-1"
-              @click="addContextByEvaluativeID(resource.id)"
-              :small="getButtonMediumSize == 'small'"
-              :medium="getButtonMediumSize == 'medium'"
-              color="button"
-            >
+            <v-btn v-if="contextLen" min-width="0" width="32px" height="28px" class="ma-1"
+              @click="addContextByEvaluativeID(resource.id)" :small="getButtonMediumSize == 'small'"
+              :medium="getButtonMediumSize == 'medium'" color="button">
               <v-icon> mdi-plus </v-icon>
             </v-btn>
           </v-app-bar>
 
           <v-tabs-items v-model="tab">
             <v-tab-item v-for="(item, i) in resource.contexts" :key="i">
-              <AceEditor
-                ref="context"
-                v-model="code2"
-                @init="editorInit"
-                @onchange="editorChange"
-                v-if="contextLen"
-                theme="ambiance"
-                width="100%"
-                height="10rem"
-                :options="editorOp"
-                :commands="com"
-              />
+              <AceEditor ref="context" v-model="code2" @init="editorInit" @onchange="editorChange" v-if="contextLen"
+                theme="ambiance" width="100%" height="10rem" :options="editorOp" :commands="com" />
             </v-tab-item>
           </v-tabs-items>
         </v-layout>
@@ -237,26 +133,14 @@
       >
         BACK TO SHEET<v-icon right dark> mdi-autorenew </v-icon>
       </v-btn>-->
-      <v-btn
-        color="success"
-        class="mb-2"
-        @click="dataSumit"
-        :disabled="statusSaveButton"
-        :small="getButtonMediumSize == 'small'"
-        :medium="getButtonMediumSize == 'medium'"
-      >
+      <v-btn color="success" class="mb-2" @click="dataSumit" :disabled="statusSaveButton"
+        :small="getButtonMediumSize == 'small'" :medium="getButtonMediumSize == 'medium'">
         SAVE
         <pre>(Ctrl+S)</pre>
         <v-icon right dark> mdi-content-save </v-icon>
       </v-btn>
-      <v-btn
-        color="primary"
-        dark
-        class="mb-2"
-        @click="getTeachersCode"
-        :small="getButtonMediumSize == 'small'"
-        :medium="getButtonMediumSize == 'medium'"
-      >
+      <v-btn color="primary" dark class="mb-2" @click="getTeachersCode" :small="getButtonMediumSize == 'small'"
+        :medium="getButtonMediumSize == 'medium'">
         TEACHER'S CODE<v-icon right dark> mdi-account-switch </v-icon>
       </v-btn>
     </v-card-actions>
@@ -264,6 +148,28 @@
 </template>
 
 <script>
+//import PythonTranspiler from '/osiris/bundle.js';
+//import PythonTranspiler from '@/assets/osiris/bundle.js';
+//import PythonTranspiler from './osiris/src/dist/bundle.js';
+
+/*
+const script = document.createElement('script');
+script.src = '/osiris/bundle.js';
+script.onload = () => {
+  console.log("Bundle loaded:", window.PythonTranspiler); // Debugging
+  if (window.PythonTranspiler) {
+    const pythonTranspiler = new window.PythonTranspiler("python", true);
+  } else {
+    console.error("PythonTranspiler is undefined.");
+  }
+};
+document.body.appendChild(script);*/
+
+
+
+
+
+
 /* global JSHINT */
 import { bus } from "@/main.js";
 
@@ -281,6 +187,9 @@ Vue.use(VueCascaderSelect);
 import { VueEditor } from "vue2-editor";
 
 // TODO: implement a previous/next navigation in the editor component
+
+
+
 
 export default {
   name: "Editor",
@@ -330,11 +239,15 @@ export default {
       hasSkeleton: false,
       contextDeleted: false,
 
+      languages: [],
+      language : "",
+
       options: [
         { label: "blank", value: "blank" },
         { label: "skeleton", value: "skeleton" },
         { label: "buggy", value: "buggy" }
       ],
+      languageOptions: [ "JavaScript", "Python"],
       editorOp: {
         enableBasicAutocompletion: true,
         enableLiveAutocompletion: true,
@@ -386,6 +299,15 @@ export default {
         type: "evaluative"
       };
       this.editableInput(obj2);
+    },
+    "languages" (value) {
+      const obj = {
+        id: this.resource.id,
+        value: value,
+        field: "languages",
+        type: "evaluative"
+      };
+      this.editableInput(obj);
     }
   },
 
@@ -396,7 +318,20 @@ export default {
   },
 
   created() {
+    //const abc = require('@/assets/osiris/bundle.js').default || require('@/assets/osiris/bundle.js');
+
+    //console.log(abc)
+    //const transpiler = new abc("python", true)
+
     if (this.isStudent) {
+      if (!this.resource.languages || this.resource.languages.length == 0){
+        this.languageOptions = ["JavaScript"]
+        this.language = "JavaScript"
+      } else if (this.resource.languages) {
+        this.languageOptions = this.resource.languages
+        this.language = this.languageOptions[0]
+      }
+
       if (
         this.getStatusByResourceID(this.resource.id).answer[0].code == "" &&
         this.resource.skeleton
@@ -412,6 +347,9 @@ export default {
     } else if (this.isTeacher) {
       this.code = this.resource.solution;
       this.code1 = this.resource.skeleton;
+      if(this.resource.languages){
+        this.languages = this.resource.languages;
+      }
       if (this.resource.contexts.length > 0) {
         this.code2 = this.resource.contexts[this.tab].text;
       }
@@ -452,7 +390,7 @@ export default {
     contextLen() {
       return this.resource.contexts.length > 0;
     },
-    valid(){
+    valid() {
       return this.resource.type == null && this.getValidated
     },
   },
@@ -549,18 +487,17 @@ export default {
         this.saveContext(this.resource.contexts[this.tab].id, this.code2);
       }
     },
-    async dataSumit2(status){
-//let originalCode = this.code;
+    async dataSumit2(status) {
+      //let originalCode = this.code;
       //let originalCode1 = this.code1;
 
       const errors = [];
       const logs = [];
       this.statusSaveButton = true;
       //this.setProgress({ id: this.resource.id, code: this.code });
-      console.log("here")
 
       if (this.isStudent) {
-        
+
         this.setProgress({
           id: this.resource.id,
           data: {
@@ -648,7 +585,7 @@ export default {
       const jshintEerrors = JSHINT.data().errors;
       if (jshintEerrors) {
         for (const error of jshintEerrors) {
-          if (!(error.evidence.startsWith("function") && error.reason.endsWith("is defined but never used."))){
+          if (!(error.evidence.startsWith("function") && error.reason.endsWith("is defined but never used."))) {
             errors.push({
               type: error.code.startsWith("E") ? "error" : "info",
               row: error.line - 1,
@@ -669,10 +606,9 @@ export default {
       const logs = [];
       this.statusSaveButton = true;
       //this.setProgress({ id: this.resource.id, code: this.code });
-      console.log("here")
 
       if (this.isStudent) {
-        
+
         this.setProgress({
           id: this.resource.id,
           data: {
@@ -759,7 +695,7 @@ export default {
       const jshintEerrors = JSHINT.data().errors;
       if (jshintEerrors) {
         for (const error of jshintEerrors) {
-          if (!(error.evidence.startsWith("function") && error.reason.endsWith("is defined but never used."))){
+          if (!(error.evidence.startsWith("function") && error.reason.endsWith("is defined but never used."))) {
             errors.push({
               type: error.code.startsWith("E") ? "error" : "info",
               row: error.line - 1,
@@ -819,7 +755,7 @@ export default {
       editorRef.findAll(keyword, searchOptions);
       return editorRef.getSelection().getAllRanges().length;
     },
-    editorInit: function(_editor) {
+    editorInit: function (_editor) {
       if (this.isViewer) {
         _editor.setReadOnly(true);
       }
@@ -844,7 +780,7 @@ export default {
       });
  */
 
-      
+
       if (this.saveHandler == "") {
         this.saveHandler = setInterval(this.dataSumit, 1000);
       }
@@ -858,7 +794,7 @@ export default {
     },
     gotoLine(line) {
       this.$refs.myEditor.editor.resize(true);
-      this.$refs.myEditor.editor.scrollToLine(line, true, true, function() {});
+      this.$refs.myEditor.editor.scrollToLine(line, true, true, function () { });
       this.$refs.myEditor.editor.gotoLine(line, 0, true);
     },
     infiniteLoopDetector(id) {
@@ -878,7 +814,7 @@ export default {
         );
       }
       // this is not a strong regex, but enough to use at the time
-      return codeStr.replace(/for *\(.*\{|while *\(.*\{|do *\{/g, function(
+      return codeStr.replace(/for *\(.*\{|while *\(.*\{|do *\{/g, function (
         loopHead
       ) {
         var id = parseInt(Math.random() * Number.MAX_SAFE_INTEGER);
@@ -894,34 +830,40 @@ export default {
 .vcs {
   position: initial;
 }
+
 /*
 #editor >>> .vcs__picker input{
   border: 2px solid red
 }*/
-#editor >>> .vcs__select-menu {
+#editor>>>.vcs__select-menu {
   z-index: 10;
   width: 13em;
   left: auto;
   top: auto;
 }
-#editor >>> .vcs__select-menu__not-main {
+
+#editor>>>.vcs__select-menu__not-main {
   left: calc(100% - 1px) !important;
   top: -1px !important;
 }
-#editor >>> .vcs__picker input {
+
+#editor>>>.vcs__picker input {
   height: 2em;
   padding: 0 20px 0 5px;
 }
-#editor >>> .vcs__arrow-container {
+
+#editor>>>.vcs__arrow-container {
   padding-left: 6px;
-  left : 0px;
-  display:flex;
+  left: 0px;
+  display: flex;
   justify-content: end;
 }
-#editor >>> .vcs__arrow {
+
+#editor>>>.vcs__arrow {
   padding: 2px;
 }
-#editor >>> .vcs__cross {
+
+#editor>>>.vcs__cross {
   display: none;
 }
 
@@ -930,35 +872,42 @@ export default {
 .theme--light.v-tabs .v-tab--active::before {
   opacity: 0.12;
 }
-#editor >>> .v-toolbar__content,
+
+#editor>>>.v-toolbar__content,
 .v-toolbar__extension {
   padding: 0;
 }
-#editor >>> .v-toolbar__content > .v-tabs:first-child,
-.v-toolbar__extension > .v-tabs:first-child {
+
+#editor>>>.v-toolbar__content>.v-tabs:first-child,
+.v-toolbar__extension>.v-tabs:first-child {
   margin: 0;
 }
-#editor >>> .v-slide-group__next,
+
+#editor>>>.v-slide-group__next,
 .v-slide-group__prev {
   min-width: 24px;
 }
 
 /* Text editor */
-#editor >>> .ql-toolbar.ql-snow {
+#editor>>>.ql-toolbar.ql-snow {
   border: none;
   border-bottom: 1px solid #ccc;
 }
-#editor >>> .ql-container.ql-snow {
+
+#editor>>>.ql-container.ql-snow {
   border: none;
 }
-#editor >>> .ql-editor {
+
+#editor>>>.ql-editor {
   font-size: 0.75rem;
   min-height: 100px;
 }
-#editor >>> .quillWrapper .ql-snow.ql-toolbar .ql-formats {
+
+#editor>>>.quillWrapper .ql-snow.ql-toolbar .ql-formats {
   margin-bottom: 2px;
 }
-#editor >>> .quillWrapper .ql-snow.ql-toolbar {
+
+#editor>>>.quillWrapper .ql-snow.ql-toolbar {
   padding-top: 4px;
   padding-bottom: 4px;
 }

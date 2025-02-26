@@ -699,7 +699,6 @@ const main = {
       this.commit("main/setChanged", true);
     },
     addEvaluative2(state, exercise) {
-      console.log(exercise)
       const evaluatives = state.getters.getEvaluativesState
       let n = state.getters.getMinimumID(evaluatives)
       let evaluative = {...jsonData.evaluative}

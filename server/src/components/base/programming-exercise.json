@@ -39,6 +39,9 @@
       "repeatable": true,
       "component": "base.test",
       "required": true
+    },
+    "languages": {
+      "type": "richtext"
     }
   }
 }

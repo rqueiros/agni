@@ -721,7 +721,6 @@ export default {
       });
     }, */
     run() {
-      console.log(1)
       // Save the code
 
         this.nTestsSuccess = 0;
@@ -994,12 +993,10 @@ export default {
             ...test,
             output: typeof(res)=="object" ? JSON.stringify(res) : String(res),
           });
-          console.log(test)
           //res == test.expOutput
           // ? (trs[index + 1].style.backgroundColor = "green")
           //: (trs[index + 1].style.backgroundColor = "red");
         });
-        console.log(this.resource)
         const obj = {
           id: this.resource.id,
           value: this.resource.tests,
@@ -1009,7 +1006,6 @@ export default {
         this.editableInput(obj)
         this.$forceUpdate();
         this.code = originalCode;
-        console.log(1234)
         }, 1000)
 
     },

@@ -188,8 +188,8 @@ const convert = {
         if ("type" in evaluative) {
           newEvaluative.content[0].type = evaluative.type;
         }
-        if ("language" in evaluative) {
-          newEvaluative.content[0].language = evaluative.language;
+        if ("languages" in evaluative) {
+          newEvaluative.content[0].languages = JSON.stringify(evaluative.languages);
         }
         if ("statement" in evaluative) {
           newEvaluative.content[0].statement = evaluative.statement;
@@ -494,6 +494,12 @@ const convert = {
               test.output= "";
             });
             evaluative[key] = newTests;
+          } else if (key == "languages") {
+            if (resp.attributes.content[0][key]) {
+              evaluative[key] = JSON.parse(resp.attributes.content[0][key])
+            } else {
+              evaluative[key] = []
+            }
           } else if (key != "id") {
             evaluative[key] = resp.attributes.content[0][key];
           }
