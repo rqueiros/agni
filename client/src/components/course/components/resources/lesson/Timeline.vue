@@ -39,44 +39,27 @@
       </v-subheader>-->
 
       <v-timeline
-        class="pt-2 pb-0 mb-3 mr-2 overflow-hidden"
+        class="py-2 mb-3 overflow-hidden"
         align-top
         dense
         v-if="
-          ('milestones' in resource && resource.milestones.length > 0) ||
-            isTeacher
+          (resource.milestones && resource.milestones.length > 0) || isTeacher
         "
         :class="getSmallTextClass"
       >
         <v-timeline-item
           v-for="(milestone, i) in resource.milestones"
-          :small="getButtonMediumSize == 'small'"
-          class="milestone mb-3 pa-0"
+          small
+          class="pointer py-1"
           @click.native="goto(parseInt(milestone.frame))"
           :icon="getIcon(milestone)"
           :color="getColor(milestone)"
           :key="i"
         >
-          <!--Student + Viewer-->
-          <v-row
-            v-if="isStudent || isViewer"
-            no-gutters
-            :style="isMD ? 'height: 24px;' : 'height: 38px;'"
-            class="d-flex align-center"
-          >
-            <v-col>
-              <span
-                v-html="convert(milestone.frame) + ' - ' + milestone.label"
-              ></span>
-            </v-col>
-          </v-row>
-          <!--Author-->
-          <v-row
-            v-if="isAuthor"
-            no-gutters
-            :style="isMD ? 'height: 24px;' : 'height: 38px;'"
-            class="d-flex align-center"
-          >
+          <div v-if="isStudent || isViewer">
+            {{ convert(milestone.frame) }} - {{ milestone.label }}
+          </div>
+          <v-row v-if="isAuthor" no-gutters class="d-flex align-center">
             <v-col cols="2" class="pr-1">
               <Editable
                 type="milestone"
@@ -136,8 +119,6 @@ import { mapGetters, mapActions } from "vuex";
 import Editable from "../../../../gerneral/Editable.vue";
 
 export default {
-  name: "Timeline",
-
   components: {
     Editable
   },
@@ -154,8 +135,6 @@ export default {
   },
 
   data: () => ({
-    valid: true,
-
     selected: 0,
     duration: 0
   }),
@@ -228,20 +207,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.milestone:hover {
-  cursor: pointer;
-}
-
-/* Timeline styles */
-#timeline >>> .v-timeline--dense .v-timeline-item__body {
-  max-width: calc(100% - 5rem) !important;
-}
-#timeline >>> .v-timeline-item__divider {
-  min-width: 5rem !important;
-}
-.v-application--is-ltr .v-timeline--dense:not(.v-timeline--reverse)::before {
-  left: calc(2.5rem - 1px) !important;
-}
-</style>

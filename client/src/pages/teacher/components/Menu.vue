@@ -3,7 +3,7 @@
     <v-navigation-drawer
       app
       permanent
-      :width="$vuetify.breakpoint.lgAndUp ? '180' : '70'"
+      :width="$vuetify.breakpoint.lgAndUp ? '140' : '70'"
       style="height: 100%;"
       color="teacherMenu"
       id="navDrawer"
@@ -12,12 +12,15 @@
       <v-list nav minimum-height="10" dense>
         <v-list-item-group color="primary" v-model="selectedMenu">
           <v-list-item
-            class="menu_links pt-2"
+            class="pointer pt-2"
             title="Account"
             value="account"
             @click="setPage('account,Account')"
           >
-            <v-sheet color="teacherMenu">
+            <v-sheet
+              class="d-flex flex-column align-center"
+              color="teacherMenu"
+            >
               <v-avatar
                 color="primary"
                 class="profile pa-2"
@@ -35,14 +38,14 @@
                 </v-icon>
                 <v-img v-else :src="imageData" contain></v-img>
               </v-avatar>
-              <div class="mt-1" v-if="$vuetify.breakpoint.lgAndUp">
+              <div class="my-1 text-center" v-if="$vuetify.breakpoint.lgAndUp">
                 {{ getUsername }}
               </div>
             </v-sheet>
           </v-list-item>
           <v-divider></v-divider>
           <v-list-item
-            class="menu_links mt-2"
+            class="pointer mt-2"
             title="Home"
             value="home"
             @click="setPage('home,Home')"
@@ -55,7 +58,7 @@
             <span v-if="$vuetify.breakpoint.lgAndUp">Home</span>
           </v-list-item>
           <v-list-item
-            class="menu_links"
+            class="pointer"
             title="Student"
             value="student"
             @click="setPage('student,DashboardStudent')"
@@ -68,7 +71,7 @@
             <span v-if="$vuetify.breakpoint.lgAndUp">Student</span>
           </v-list-item>
           <v-list-item
-            class="menu_links"
+            class="pointer"
             title="Content"
             value="content"
             @click="setPage('content,Content')"
@@ -81,7 +84,7 @@
             <span v-if="$vuetify.breakpoint.lgAndUp">Content</span>
           </v-list-item>
           <v-list-item
-            class="menu_links"
+            class="pointer"
             title="Settings"
             value="settings"
             @click="setPage('settings,Settings')"
@@ -145,7 +148,7 @@ import YesNoDialog from "../../../components/gerneral/YesNoDialog.vue";
 export default {
   name: "TeacherMenu",
 
-  components: {YesNoDialog},
+  components: { YesNoDialog },
 
   data: () => ({
     resource: "home,Home",
@@ -157,12 +160,12 @@ export default {
       question: "",
       buttons: [],
       resource: null
-    },
+    }
   }),
 
   created() {
-    if(!this.getUser.email.includes("evaluator")){
-      console.log(1111)
+    if (!this.getUser.email.includes("evaluator")) {
+      console.log(1111);
       bus.$emit("changePage", this.resource);
     }
     //bus.$emit("changePage", this.resource);
@@ -173,19 +176,19 @@ export default {
     });
     bus.$on("yesNoDialogResult", async payload => {
       this.yesNoDialog.open = false;
-      if (payload == "save" && this.yesNoDialog.question!="") {
+      if (payload == "save" && this.yesNoDialog.question != "") {
         const saveSuccess = await this.save();
-        if (saveSuccess){
-          this.resource = this.yesNoDialog.resource
+        if (saveSuccess) {
+          this.resource = this.yesNoDialog.resource;
           bus.$emit("changePage", this.yesNoDialog.resource);
-          this.deleteStructure()
+          this.deleteStructure();
         }
-      } else if (payload == "dontSave" && this.yesNoDialog.question!="") {
-        this.resource = this.yesNoDialog.resource
+      } else if (payload == "dontSave" && this.yesNoDialog.question != "") {
+        this.resource = this.yesNoDialog.resource;
         bus.$emit("changePage", this.yesNoDialog.resource);
-        this.deleteStructure()
+        this.deleteStructure();
       } else if (payload == "cancel") {
-        this.selectedMenu = this.resource.split(",")[0]
+        this.selectedMenu = this.resource.split(",")[0];
       }
     });
   },
@@ -221,34 +224,40 @@ export default {
     ...mapMutations("request", ["logout"]),
     ...mapActions("request", ["saveCollectionType"]),
     async save() {
-      let collectionType
-      if (this.getCoursesState.length >0){
-        collectionType = "courses"
-      } else if (this.getEvaluativesState.length>0){
-        collectionType = "evaluatives"
-      } else if (this.getExpositivesState.length>0){
-        collectionType = "expositives"
-      } else if (this.getQuestionsState.length>0) {
-        collectionType = "questions"
+      let collectionType;
+      if (this.getCoursesState.length > 0) {
+        collectionType = "courses";
+      } else if (this.getEvaluativesState.length > 0) {
+        collectionType = "evaluatives";
+      } else if (this.getExpositivesState.length > 0) {
+        collectionType = "expositives";
+      } else if (this.getQuestionsState.length > 0) {
+        collectionType = "questions";
       } else {
-        collectionType = "occurrences"
+        collectionType = "occurrences";
       }
       try {
         await this.saveCollectionType(collectionType);
-        bus.$emit("successSnackbar", this.getMesssage([collectionType, "save", "success"]))
+        bus.$emit(
+          "successSnackbar",
+          this.getMesssage([collectionType, "save", "success"])
+        );
         return true;
       } catch (error) {
         console.log(error);
         if (error == "Missing Evaluative Type or Test Type") {
-          bus.$emit("errorSnackbar", error)
+          bus.$emit("errorSnackbar", error);
         } else {
-          bus.$emit("errorSnackbar", this.getMesssage([collectionType, "save", "error"]))
+          bus.$emit(
+            "errorSnackbar",
+            this.getMesssage([collectionType, "save", "error"])
+          );
         }
         return false;
       }
     },
     setPage(resource) {
-      if (this.changed){
+      if (this.changed) {
         this.yesNoDialog = {
           open: true,
           question: "Do you want to save your changes before exiting?",
@@ -298,10 +307,6 @@ export default {
 </script>
 
 <style scoped>
-.menu_links:hover {
-  cursor: pointer;
-}
-
 #navDrawer >>> .v-navigation-drawer__content {
   display: flex;
   flex-direction: column;

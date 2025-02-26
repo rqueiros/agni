@@ -77,7 +77,6 @@
           </v-icon>
         </template>
 
-        <!--Author-->
         <template v-slot:footer v-if="isAuthor">
           <v-menu offset-y>
             <template v-slot:activator="{ on, attrs }">
@@ -108,23 +107,21 @@
         </template>
 
         <template v-slot:item.name="{ item }">
-          <!--Student & Viewer-->
           <span v-if="isStudent || isViewer">
             {{ item.name }}
           </span>
-          <!--Author-->
-          <span v-if="isAuthor" :class="getSmallTextClass">
-            <Editable
-              type="evaluative"
-              :value="item.name"
-              :id="item.id"
-              field="name"
-              @input="editableInput"
-              placeholder="Exercise name"
-              onclick="event.stopPropagation()"
-              :required="true"
-            />
-          </span>
+          <Editable
+            v-if="isAuthor"
+            :class="getSmallTextClass"
+            type="evaluative"
+            :value="item.name"
+            :id="item.id"
+            field="name"
+            @input="editableInput"
+            placeholder="Exercise name"
+            onclick="event.stopPropagation()"
+            :required="true"
+          />
         </template>
 
         <template v-slot:item.grade="{ item }">
@@ -139,7 +136,6 @@
         </template>
 
         <template v-slot:item.action="{ item }">
-          <!--Student-->
           <v-btn
             v-if="isStudent"
             icon
@@ -149,7 +145,6 @@
           >
             <v-icon :size="getIconSmallSize">mdi-clipboard-play</v-icon>
           </v-btn>
-          <!--Author-->
           <v-btn
             v-if="isAuthor"
             :x-small="getButtonSmallSize == 'x-small'"
@@ -208,28 +203,44 @@ export default {
   data() {
     return {
       valid: true,
-      selected:[],
+      selected: [],
 
       dialog: false,
       externalDialog: false,
       headers: {
         student: [
-          { text: "#", align: "start", sortable: true, value: "number" },
-          { text: "Name", value: "name" },
-          { text: "Type", value: "type" },
-          { text: "Solving status (%)", value: "grade" },
-          { text: "Actions", value: "action" }
+          {
+            text: "#",
+            align: "start",
+            sortable: true,
+            value: "number",
+            cellClass: "pointer"
+          },
+          { text: "Name", value: "name", cellClass: "pointer" },
+          { text: "Type", value: "type", cellClass: "pointer" },
+          { text: "Solving status (%)", value: "grade", cellClass: "pointer" }
         ],
         author: [
-          { text: "#", align: "start", sortable: true, value: "number" },
-          { text: "Type", value: "type" },
-          { text: "Name", value: "name" },
-          { text: "", value: "action" }
+          {
+            text: "#",
+            align: "start",
+            sortable: true,
+            value: "number",
+            cellClass: "pointer"
+          },
+          { text: "Type", value: "type", cellClass: "pointer" },
+          { text: "Name", value: "name", cellClass: "pointer" }
         ],
         viewer: [
-          { text: "#", align: "start", sortable: true, value: "number" },
-          { text: "Type", value: "type" },
-          { text: "Name", value: "name" }
+          {
+            text: "#",
+            align: "start",
+            sortable: true,
+            value: "number",
+            cellClass: "pointer"
+          },
+          { text: "Type", value: "type", cellClass: "pointer" },
+          { text: "Name", value: "name", cellClass: "pointer" }
         ]
       },
       addEvaluativeMenu: [
@@ -243,29 +254,30 @@ export default {
 
   created() {
     this.loadResource;
-    if (this.getValidated){
-      const notValid = this.resource.evaluatives.filter(e => !e.valid)
-      this.selected = this.loadResource.filter(e => notValid.map(ev => ev.id).includes(e.id))
+    if (this.getValidated) {
+      const notValid = this.resource.evaluatives.filter(e => !e.valid);
+      this.selected = this.loadResource.filter(e =>
+        notValid.map(ev => ev.id).includes(e.id)
+      );
     }
     bus.$on("addExternalExercises", payload => {
       this.addExternalExercises(payload);
     });
   },
 
-  watch:{
-    "getValids"(){
-      if (this.getValidated){
-        const notValid = this.resource.evaluatives.filter(e => !e.valid)
-        this.selected = this.loadResource.filter(e => notValid.map(ev => ev.id).includes(e.id))
+  watch: {
+    getValids() {
+      if (this.getValidated) {
+        const notValid = this.resource.evaluatives.filter(e => !e.valid);
+        this.selected = this.loadResource.filter(e =>
+          notValid.map(ev => ev.id).includes(e.id)
+        );
       }
     }
   },
 
   computed: {
-    ...mapGetters("main", [
-      "getStatusByResourceID",
-      "getValidated"
-    ]),
+    ...mapGetters("main", ["getStatusByResourceID", "getValidated"]),
     ...mapGetters("request", [
       "getRole",
       "isStudent",
@@ -282,9 +294,9 @@ export default {
       "getButtonMediumSize",
       "getButtonSmallSize"
     ]),
-    getValids(){
-      return this.resource.evaluatives.map(e => e.valid)
-    }, 
+    getValids() {
+      return this.resource.evaluatives.map(e => e.valid);
+    },
     loadResource() {
       let ev = [];
       if (
@@ -334,7 +346,7 @@ export default {
       "addQuizByLessonID",
       "addProgExByLessonID",
       "addEvaluativeByLessonID2",
-      "deleteEvaluativeByID",
+      "deleteEvaluativeByID"
     ]),
     ...mapActions("request", ["addExistingEvaluatives"]),
     addEvaluative(type) {
@@ -359,7 +371,7 @@ export default {
       this.externalDialog = false;
       exercises.forEach(e => {
         this.addEvaluativeByLessonID2([this.resource.id, e]);
-      })
+      });
     },
     getColor(status) {
       status = +status;
@@ -376,19 +388,19 @@ export default {
   cursor: pointer;
 }
 
-#evaluatives>>> .v-data-table__selected{
+#evaluatives >>> .v-data-table__selected {
   background-color: transparent;
 }
-#evaluatives>>> .v-data-table__selected td:first-child {
+#evaluatives >>> .v-data-table__selected td:first-child {
   border-top: 2px solid red;
   border-bottom: 2px solid red;
   border-left: 2px solid red;
 }
-#evaluatives>>> .v-data-table__selected td:not(:first-child):not(:last-child) {
+#evaluatives >>> .v-data-table__selected td:not(:first-child):not(:last-child) {
   border-top: 2px solid red;
   border-bottom: 2px solid red;
 }
-#evaluatives>>> .v-data-table__selected td:last-child {
+#evaluatives >>> .v-data-table__selected td:last-child {
   border-top: 2px solid red;
   border-bottom: 2px solid red;
   border-right: 2px solid red;

@@ -2,7 +2,6 @@
   <div>
     <v-toolbar
       absolute
-      right
       height="40px"
       width="100vw"
       :color="isStudent ? 'grey lighten-2' : ''"
@@ -32,6 +31,6 @@ export default {
   computed: {
     ...mapGetters("request", ["isStudent"]),
     ...mapGetters("style", ["isSMsmaller"])
-  },
+  }
 };
 </script>

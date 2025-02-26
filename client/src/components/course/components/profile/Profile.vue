@@ -129,15 +129,15 @@ export default {
   props: {
     resource: {
       type: Number,
-      default: () => null
+      default: () => null,
     },
     type: {
       type: String,
-      default: () => null
-    }
+      default: () => null,
+    },
   },
   components: {
-    Gamification
+    Gamification,
   },
   created() {
     if (this.isStudent) {
@@ -149,7 +149,7 @@ export default {
         lessons = this.getLessonsByModuleID(this.resource);
       }*/
       this.sheets = [];
-      lessons.forEach(lesson => {
+      lessons.forEach((lesson) => {
         const id =
           this.getModuleByLessonID(lesson.id).internalId +
           ":" +
@@ -158,7 +158,7 @@ export default {
         const name = lesson.name;
         let status = this.getCompletationStatusByLessonID(lesson.id);
         if (status) {
-          status = status.toFixed(2)
+          status = status.toFixed(2);
           this.sheets.push({ id, rid, name, status });
         }
       });
@@ -171,13 +171,12 @@ export default {
           text: "#",
           align: "start",
           sortable: true,
-          value: "id"
+          value: "id",
         },
         { text: "Name", value: "name" },
         { text: "Solving status (%)", value: "status" },
-        { text: "Actions", value: "action" }
       ],
-      sheets: []
+      sheets: [],
     };
   },
   methods: {
@@ -192,7 +191,7 @@ export default {
     },
     play2(value) {
       bus.$emit("changeIt", [value.rid, "lesson"]);
-    }
+    },
   },
   computed: {
     ...mapGetters("main", [
@@ -200,26 +199,21 @@ export default {
       "getCompletationStatusByLessonID",
       "getModuleByLessonID",
       "getLessonsByModuleID",
-      "getLessons"
+      "getLessons",
     ]),
-    ...mapGetters("request", [
-      "getRole",
-      "isStudent",
-      "isTeacher",
-    ]),
+    ...mapGetters("request", ["getRole", "isStudent", "isTeacher"]),
     ...mapGetters("style", [
       "getTitleClass",
       "getSmallTextClass",
       "getAvatarMediumSize",
       "getIconBigSize",
-      "isSMsmaller"
-    ])
-  }
+      "isSMsmaller",
+    ]),
+  },
 };
 </script>
 
 <style scoped>
-
 .p-gamification {
   display: block;
 }

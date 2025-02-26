@@ -11,9 +11,9 @@
         <Menu />
 
         <div
-          :class="
-            $vuetify.breakpoint.lgAndUp ? 'barMarginBig' : 'barMarginSmall'
-          "
+          :style="{
+            'margin-left': $vuetify.breakpoint.lgAndUp ? '140px' : '70px'
+          }"
         >
           <v-card
             color="appbar"
@@ -120,8 +120,7 @@ export default {
     bus.$on("snackbarChange", payload => {
       this.snackbar.open = payload;
     });
-  },
-
+  }
 };
 </script>
 
@@ -137,12 +136,5 @@ export default {
 .v-navigation-drawer,
 .v-navigation-drawer--fixed {
   position: none !important;
-}
-
-.barMarginBig {
-  margin-left: 180px;
-}
-.barMarginSmall {
-  margin-left: 70px;
 }
 </style>

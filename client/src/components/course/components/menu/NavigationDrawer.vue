@@ -2,33 +2,40 @@
   <v-navigation-drawer
     :hide-overlay="isTeacher"
     v-model="drawer"
-    :width="isSMsmaller ? '50%' : '25%'"
     :absolute="isSMsmaller"
     :permanent="!isSMsmaller"
     class="rounded-r-0 rounded"
     :drawer="drawer"
     :height="isSMsmaller ? '100%' : ''"
+    :style="'min-width: ' + (isSMsmaller ? '300px' : '25%')"
   >
-    <v-sheet
-      color="studentMenuAccout"
-      class="px-4 py-3"
-      :class="getSmallTextClass"
-    >
-      <!--Student-->
-      <div v-if="isStudent" class="pointer">
-        <v-avatar
-          color="red"
-          :size="getAvatarSmallSize"
-          @click="selectResource(-1)"
-        >
-          <v-icon dark :size="getIconSmallSize">
-            mdi-card-account-details
-          </v-icon>
-        </v-avatar>
-        <div class="mt-1">{{ getUsername }}</div>
+    <v-sheet color="studentMenuAccout" class="px-4" :class="getSmallTextClass">
+      <div v-if="isStudent" class="d-flex align-center">
+        <div class="mr-3 py-3">
+          <div class="mb-2">
+            <v-btn icon small @click="logoutAction">
+              <v-icon>
+                mdi-logout
+              </v-icon>
+            </v-btn>
+          </div>
+          <v-btn icon small @click="toggleTheme">
+            <v-icon>
+              mdi-white-balance-sunny
+            </v-icon>
+          </v-btn>
+        </div>
+        <v-divider vertical />
+        <div class="ml-4 py-3 flex-grow-1">
+          <v-avatar color="red" :size="getAvatarSmallSize">
+            <v-icon dark :size="getIconSmallSize">
+              mdi-card-account-details
+            </v-icon>
+          </v-avatar>
+          <div class="mt-1">{{ getUsername }}</div>
+        </div>
       </div>
-      <!--Teacher-->
-      <div v-if="isTeacher">Account</div>
+      <div v-if="isTeacher" class="py-3">Account</div>
     </v-sheet>
 
     <v-divider />
@@ -51,11 +58,9 @@
       :open.sync="open"
     >
       <template v-slot:label="{ item }">
-        <!--Student + Viewer-->
         <span v-if="isStudent || isViewer">
           {{ item.name }}
         </span>
-        <!--Author-->
         <div v-if="isAuthor">
           <div v-if="item.type == 'add'" class="pa-1">
             <v-btn
@@ -87,7 +92,6 @@
         </div>
       </template>
 
-      <!--Student + Viewer-->
       <template v-if="isStudent || isViewer" v-slot:prepend="{ item, open }">
         <v-icon v-if="item.contentType == 'course'" :size="getIconSmallSize">
           mdi-cloud-braces
@@ -103,9 +107,7 @@
         {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
       </template>
 
-      <!--Teacher-->
       <template v-if="isTeacher" v-slot:append="{ item }">
-        <!--Author-->
         <div v-if="isAuthor" class="d-flex align-center py-1">
           <span class="d-flex flex-column">
             <v-btn
@@ -159,7 +161,6 @@
           </v-btn>
         </div>
 
-        <!--Viewer-->
         <v-btn
           v-if="isViewer"
           icon
@@ -174,24 +175,6 @@
         </v-btn>
       </template>
     </v-treeview>
-
-    <v-sheet
-      color="boxes"
-      v-if="isStudent"
-      class="pa-3 d-flex justify-center"
-      style="width:24.9%; z-index: 100; position:fixed; bottom:0"
-    >
-      <v-btn icon class="mr-3" large @click="logoutAction">
-        <v-icon>
-          mdi-logout
-        </v-icon>
-      </v-btn>
-      <v-btn icon class="ml-3" large @click="toggleTheme">
-        <v-icon>
-          mdi-white-balance-sunny
-        </v-icon>
-      </v-btn>
-    </v-sheet>
 
     <DialogCourse
       :dialogItem="dialogCourseItem"
@@ -215,42 +198,38 @@ import DialogCourse from "./DialogCourse.vue";
 import DialogModuleLesson from "./DialogModuleLesson.vue";
 
 export default {
-  name: "CourseMenu",
-
   components: {
     Editable,
     DialogCourse,
-    DialogModuleLesson
+    DialogModuleLesson,
   },
 
   props: {
     drawer: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
 
   data: () => ({
-    valid: true,
-    drawer: false,
     items: [],
     active: [],
     open: [],
     dialogCourse: false,
     dialogModuleLesson: false,
     dialogCourseItem: {},
-    dialogModuleLessonItem: {}
+    dialogModuleLessonItem: {},
   }),
 
   created() {
     this.setCourse();
-    bus.$on("dialogCourseChange", payload => {
+    bus.$on("dialogCourseChange", (payload) => {
       this.dialogCourse = payload;
     });
-    bus.$on("dialogModuleLessonChange", payload => {
+    bus.$on("dialogModuleLessonChange", (payload) => {
       this.dialogModuleLesson = payload;
     });
-    bus.$on("openCourse", payload => {
+    bus.$on("openCourse", (payload) => {
       this.open = [this.items[0], this.items[0].children[0]];
       this.active =
         payload == "no"
@@ -262,21 +241,21 @@ export default {
   watch: {
     courses() {
       this.setCourse();
-    }
+    },
   },
 
   computed: {
-    ...mapState("main", { courses: state => state.courses }),
+    ...mapState("main", { courses: (state) => state.courses }),
     ...mapGetters("main", [
       "getCoursesState",
-      "getCompletationStatusBySheetID"
+      "getCompletationStatusBySheetID",
     ]),
     ...mapGetters("request", [
       "isStudent",
       "isTeacher",
       "isAuthor",
       "isViewer",
-      "getUsername"
+      "getUsername",
     ]),
     ...mapGetters("style", [
       "getIconSmallSize",
@@ -285,8 +264,8 @@ export default {
       "getButtonMediumSize",
       "getAvatarSmallSize",
       "isSMsmaller",
-      "getIcon"
-    ])
+      "getIcon",
+    ]),
   },
 
   methods: {
@@ -298,9 +277,10 @@ export default {
       "addConditionByLMID",
       "moveLesson",
       "moveModule",
-      "editableInput"
+      "editableInput",
     ]),
     ...mapMutations("request", ["logout"]),
+
     toggleTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
     },
@@ -313,6 +293,7 @@ export default {
     setCourse() {
       this.items = this.getCoursesState;
     },
+
     getCompletationStatus(item) {
       if (item.file == "sheet") {
         return this.getCompletationStatusBySheetID(item.id) == 100
@@ -320,17 +301,19 @@ export default {
           : "";
       }
     },
+
     selectResource(item) {
       let id = item == -1 ? item : item.length > 0 ? item[0].id : 0;
       let type =
         item == -1 ? "-1" : item.length > 0 ? item[0].contentType : "0";
       this.$emit("onResourceClicked", id, type);
     },
+
     openUpdate(item) {
       let possibleActiveIds = item
-        .filter(i => i.contentType == "module")
-        .flatMap(m => m.children)
-        .map(l => l.id);
+        .filter((i) => i.contentType == "module")
+        .flatMap((m) => m.children)
+        .map((l) => l.id);
       if (
         this.active.length > 0 &&
         !possibleActiveIds.includes(this.active[0].id)
@@ -347,6 +330,7 @@ export default {
         this.addModuleByCourseID(parentId);
       }
     },
+
     deleteButton(type, id) {
       if (type == "lesson") {
         if (this.active.length > 0 && this.active[0].id == id) {
@@ -355,24 +339,25 @@ export default {
         this.deleteLessonByModuleID(id);
       } else if (type == "module") {
         let lessonIds = this.items[0].children
-          .find(m => m.id == id)
-          .children.map(l => l.id);
+          .find((m) => m.id == id)
+          .children.map((l) => l.id);
         if (this.active.length > 0 && lessonIds.includes(this.active[0].id)) {
           this.selectResource([]);
         }
         this.deleteModuleByID(id);
       }
     },
+
     moveButton(type, id, direction) {
       if (type == "lesson") {
         this.moveLesson([id, direction]);
         let possibleActiveIds = this.open
-          .filter(o => o.contentType == "module")
-          .flatMap(m => m.children)
-          .map(l => l.id);
+          .filter((o) => o.contentType == "module")
+          .flatMap((m) => m.children)
+          .map((l) => l.id);
         if (!possibleActiveIds.includes(id)) {
-          let parent = this.items[0].children.find(m =>
-            m.children.map(l => l.id).includes(id)
+          let parent = this.items[0].children.find((m) =>
+            m.children.map((l) => l.id).includes(id)
           );
           this.open.push(parent);
         }
@@ -380,6 +365,7 @@ export default {
         this.moveModule([id, direction]);
       }
     },
+    
     async openDialog(item) {
       if (item.contentType != "course") {
         if (item.condition == null) {
@@ -391,7 +377,7 @@ export default {
         this.dialogCourse = true;
         this.dialogCourseItem = item;
       }
-    }
-  }
+    },
+  },
 };
 </script>

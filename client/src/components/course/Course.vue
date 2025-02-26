@@ -1,8 +1,11 @@
 <template>
   <v-sheet class="rounded" color="boxes" height="100%">
     <div id="course" ref="course" class="d-flex h-full">
-      <CourseToolbar @toggleDrawer="toggleDrawer" />
-      <CourseMenu @onResourceClicked="setResource" :drawer.sync="drawer" />
+      <Toolbar @toggleDrawer="toggleDrawer" />
+      <NavigationDrawer
+        @onResourceClicked="setResource"
+        :drawer.sync="drawer"
+      />
       <Resource v-if="resource" :resource="resource" class="flex-grow-1" />
       <div v-else class="flex-grow-1">
         <Profile :resource="isResource" :type="type" />
@@ -15,31 +18,29 @@
 import { bus } from "@/main.js";
 import { mapGetters, mapMutations, mapState } from "vuex";
 
-import CourseMenu from "./components/menu/CourseMenu.vue";
+import NavigationDrawer from "./components/menu/NavigationDrawer.vue";
 import Resource from "./components/resources/Resource.vue";
 import Profile from "./components/profile/Profile.vue";
-import CourseToolbar from "./components/menu/CourseToolbar.vue";
+import Toolbar from "./components/menu/Toolbar.vue";
 
 export default {
-  name: "Course",
-
   components: {
-    CourseMenu,
+    NavigationDrawer,
     Resource,
     Profile,
-    CourseToolbar
+    Toolbar,
   },
 
   data: () => ({
     resource: null,
     isResource: 0,
     type: "",
-    drawer: false
+    drawer: false,
   }),
 
   created() {
     this.updateParentDivWidth = this.updateParentDivWidth.bind(this);
-    bus.$on("changeIt", payload => {
+    bus.$on("changeIt", (payload) => {
       this.setResource(payload[0], payload[1]);
     });
   },
@@ -65,7 +66,7 @@ export default {
         id = 0;
       }
       this.setResource(id, type);
-    }
+    },
   },
 
   mounted() {
@@ -83,8 +84,8 @@ export default {
   },
 
   computed: {
-    ...mapState("main", { courses: state => state.courses }),
-    ...mapGetters("main", ["getResourceByID"])
+    ...mapState("main", { courses: (state) => state.courses }),
+    ...mapGetters("main", ["getResourceByID"]),
   },
 
   methods: {
@@ -106,8 +107,8 @@ export default {
     },
     toggleDrawer() {
       this.drawer = !this.drawer;
-    }
-  }
+    },
+  },
 };
 </script>
 

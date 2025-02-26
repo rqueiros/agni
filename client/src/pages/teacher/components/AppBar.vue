@@ -1,6 +1,13 @@
 <template>
   <div id="header" class="d-flex justify-center">
-    <v-app-bar rounded height="auto" color="appbar" class="py-2 px-0" flat style="max-width: 1200px;">
+    <v-app-bar
+      rounded
+      height="auto"
+      color="appbar"
+      class="py-2 px-0"
+      flat
+      style="max-width: 1200px;"
+    >
       <v-row no-gutters>
         <v-col cols="4" md="4" class="d-flex align-center">
           <v-tooltip bottom v-if="isCollectionType">
@@ -209,7 +216,7 @@
                   <span>Clone</span>
                 </v-tooltip>
               </template>
-              <CopyCourseMenu :course="getCourse"/>
+              <CopyCourseMenu :course="getCourse" />
             </v-menu>
             <v-tooltip bottom v-else>
               <template
@@ -323,7 +330,10 @@
       :dialogID="dialogID"
     />
 
-    <DeleteDialog :dialog="deleteDialog.open" :collectionType="collectionType"/>
+    <DeleteDialog
+      :dialog="deleteDialog.open"
+      :collectionType="collectionType"
+    />
   </div>
 </template>
 
@@ -349,7 +359,7 @@ export default {
   components: {
     YesNoDialog,
     DeleteDialog,
-    CopyCourseMenu,
+    CopyCourseMenu
   },
 
   data() {
@@ -422,12 +432,12 @@ export default {
         }
       },
 
-      deleteDialog:{
+      deleteDialog: {
         open: false,
-        item: null,
+        item: null
       },
 
-      dialogID : "1",
+      dialogID: "1",
       yesNoDialog1: {
         open: false,
         question: "",
@@ -440,7 +450,7 @@ export default {
         copy: false,
         delete: false,
         search: false
-      },
+      }
     };
   },
 
@@ -453,12 +463,12 @@ export default {
     });
     bus.$on("yesNoDialogResult1", async payload => {
       this.yesNoDialog1.open = false;
-      if (payload == "save" && this.yesNoDialog1.question!="") {
+      if (payload == "save" && this.yesNoDialog1.question != "") {
         const saveSuccess = await this.save();
-        if (saveSuccess){
+        if (saveSuccess) {
           this.exitContentType();
         }
-      } else if (payload == "dontSave" && this.yesNoDialog1.question!="") {
+      } else if (payload == "dontSave" && this.yesNoDialog1.question != "") {
         this.exitContentType();
       } // else if (payload == "cancel") {}
     });
@@ -466,7 +476,7 @@ export default {
       this.deleteDialog.open = false;
       if (this.deleteDialog.item && payload == "ok") {
         this.loading.delete = true;
-        await this.delete()
+        await this.delete();
         this.deleteDialog.item = null;
         this.loading.delete = false;
       } // else if (payload == "cancel") {}
@@ -482,33 +492,27 @@ export default {
       }
     },
     async "searchData.input"(newValue) {
-      if (this.searchData.input){
+      if (this.searchData.input) {
         if (this.loading.search) return;
         this.loading.search = true;
-        await this.search(newValue)
+        await this.search(newValue);
         this.loading.search = false;
       }
-    },
+    }
   },
 
   computed: {
     ...mapState("main", { changed: state => state.changed }),
-    ...mapGetters("style", [
-      "getIcon",
-      "getMesssage"
-    ]),
+    ...mapGetters("style", ["getIcon", "getMesssage"]),
     ...mapGetters("main", [
       "getPublishedAt",
       "getCourse",
       "getExpositive",
       "getEvaluative",
       "getQuestion",
-      "getOccurrence",
+      "getOccurrence"
     ]),
-    ...mapGetters("request", [
-      "isAuthor",
-      "getAccountEditable"
-    ]),
+    ...mapGetters("request", ["isAuthor", "getAccountEditable"]),
     component() {
       return this.resource.split(",")[1].toLowerCase();
     },
@@ -529,10 +533,10 @@ export default {
       return this.resource.split(",")[1].toLowerCase() + "s";
     },
     isDraft() {
-      if (this.isCollectionType){
-        return this.getPublishedAt(this.collectionType) == null
+      if (this.isCollectionType) {
+        return this.getPublishedAt(this.collectionType) == null;
       } else {
-        return false
+        return false;
       }
     },
     isNew() {
@@ -554,7 +558,7 @@ export default {
         let Description = entry.label + entry.label2;
         return Object.assign({}, entry, { Description });
       });
-    },
+    }
   },
 
   methods: {
@@ -565,17 +569,11 @@ export default {
       "saveCollectionType",
       "publishCollectionType",
       "copyCollectionType",
-      "updateUser",
+      "updateUser"
     ]),
-    ...mapActions("main", [
-      "createNewCollectionType",
-    ]),
-    ...mapMutations("main", [
-      "deleteStructure",
-    ]),
-    ...mapMutations("request", [
-      "setAccountEditable"
-    ]),
+    ...mapActions("main", ["createNewCollectionType"]),
+    ...mapMutations("main", ["deleteStructure"]),
+    ...mapMutations("request", ["setAccountEditable"]),
     async saveAccount() {
       this.setAccountEditable(false);
       this.updateUser();
@@ -595,10 +593,16 @@ export default {
       try {
         this.loading.copy = true;
         await this.copyCollectionType([id, this.collectionType]);
-        bus.$emit("successSnackbar", this.getMesssage([this.component, "copy", "success"]))
+        bus.$emit(
+          "successSnackbar",
+          this.getMesssage([this.component, "copy", "success"])
+        );
       } catch (error) {
         console.log(error);
-        bus.$emit("errorSnackbar", this.getMesssage([this.component, "copy", "error"]))
+        bus.$emit(
+          "errorSnackbar",
+          this.getMesssage([this.component, "copy", "error"])
+        );
       }
       this.loading.copy = false;
     },
@@ -606,11 +610,17 @@ export default {
       try {
         this.loading.publish = true;
         let pub = await this.publishCollectionType(this.collectionType);
-        bus.$emit("successSnackbar", this.getMesssage([this.component, pub, "success"]))
+        bus.$emit(
+          "successSnackbar",
+          this.getMesssage([this.component, pub, "success"])
+        );
       } catch (error) {
         console.log(error);
         const pub = this.isDraft ? "publishing" : "unpublishing";
-        bus.$emit("errorSnackbar", this.getMesssage([this.component, pub, "error"]))
+        bus.$emit(
+          "errorSnackbar",
+          this.getMesssage([this.component, pub, "error"])
+        );
       }
       this.loading.publish = false;
     },
@@ -618,15 +628,21 @@ export default {
       try {
         this.loading.save = true;
         await this.saveCollectionType(this.collectionType);
-        bus.$emit("successSnackbar", this.getMesssage([this.component, "save", "success"]))
+        bus.$emit(
+          "successSnackbar",
+          this.getMesssage([this.component, "save", "success"])
+        );
         this.loading.save = false;
         return true;
       } catch (error) {
         console.log(error);
         if (error == "Missing Evaluative Type or Test Type") {
-          bus.$emit("errorSnackbar", error)
+          bus.$emit("errorSnackbar", error);
         } else {
-          bus.$emit("errorSnackbar", this.getMesssage([this.component, "save", "error"]))
+          bus.$emit(
+            "errorSnackbar",
+            this.getMesssage([this.component, "save", "error"])
+          );
         }
         this.loading.save = false;
         return false;
@@ -638,17 +654,23 @@ export default {
           this.deleteDialog.item.id,
           this.collectionType
         ]);
-        bus.$emit("successSnackbar", this.getMesssage([this.component, "delete", "success"]))
-        this.exitContentType()
+        bus.$emit(
+          "successSnackbar",
+          this.getMesssage([this.component, "delete", "success"])
+        );
+        this.exitContentType();
       } catch (error) {
-        bus.$emit("errorSnackbar", this.getMesssage([this.component, "delete", "error"]))
+        bus.$emit(
+          "errorSnackbar",
+          this.getMesssage([this.component, "delete", "error"])
+        );
       }
     },
     async exit() {
       if (!this.changed) {
-        this.exitContentType()
+        this.exitContentType();
       } else {
-        this.help = true
+        this.help = true;
         this.yesNoDialog1 = {
           open: true,
           question: "Do you want to save your changes before exiting?",
@@ -670,10 +692,10 @@ export default {
         };
         this.searchData.entries = await this.fetchContents(params);
       } catch (error) {
-        bus.$emit("errorSnackbar", this.getMesssage(["", "search", "error"]))
+        bus.$emit("errorSnackbar", this.getMesssage(["", "search", "error"]));
       }
     },
-    async exitContentType(){
+    async exitContentType() {
       let contentCollType = localStorage.getItem("menuItem") || "";
       if (this.collectionType == "occurrences") {
         if (contentCollType == "student") {
@@ -691,8 +713,8 @@ export default {
       this.deleteStructure();
     },
     addCollectionType(item) {
-      this.createNewCollectionType(item.toLowerCase())
-      if (item == "Occurrence"){
+      this.createNewCollectionType(item.toLowerCase());
+      if (item == "Occurrence") {
         bus.$emit("changePage", "student,Occurrence");
       } else {
         bus.$emit("changePage", `content,${item}`);
@@ -701,11 +723,16 @@ export default {
     async openCollectionType(item) {
       try {
         await this.fetchPrepareCollectionType([item.id, item.collectionType]);
-        let name = item.collectionType.charAt(0).toUpperCase() + item.collectionType.slice(1, -1);
+        let name =
+          item.collectionType.charAt(0).toUpperCase() +
+          item.collectionType.slice(1, -1);
         bus.$emit("changePage", `content,${name}`);
       } catch (error) {
         console.log(error);
-        bus.$emit("errorSnackbar",this.getMesssage([this.component, "get", "error"]))
+        bus.$emit(
+          "errorSnackbar",
+          this.getMesssage([this.component, "get", "error"])
+        );
       }
     },
     remove() {
@@ -721,7 +748,7 @@ export default {
       } else if (this.collectionType == "occurrences") {
         this.deleteDialog.item = this.getOccurrence;
       }
-    },
+    }
   }
 };
 </script>

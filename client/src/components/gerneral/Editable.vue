@@ -122,9 +122,10 @@ export default {
 
 #edita >>> .v-input__slot {
   min-height: 0px !important;
+  padding: 0 6px !important;
 }
 
 #edita >>> .v-text-field input {
-  padding: 3px 0 3px;
+  padding: 2px 0 !important;
 }
 </style>
