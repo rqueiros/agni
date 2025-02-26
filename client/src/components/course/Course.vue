@@ -1,13 +1,14 @@
 <template>
-  <div id="course" ref="course">
-    <v-sheet class="rounded" color="boxes">
-      <CourseMenu @onResourceClicked="setResource" />
-      <Resource v-if="resource" :resource="resource" ref="resource" />
-      <div v-else>
+  <v-sheet class="rounded" color="boxes" height="100%">
+    <div id="course" ref="course" class="d-flex h-full">
+      <CourseToolbar @toggleDrawer="toggleDrawer" />
+      <CourseMenu @onResourceClicked="setResource" :drawer.sync="drawer" />
+      <Resource v-if="resource" :resource="resource" class="flex-grow-1" />
+      <div v-else class="flex-grow-1">
         <Profile :resource="isResource" :type="type" />
       </div>
-    </v-sheet>
-  </div>
+    </div>
+  </v-sheet>
 </template>
 
 <script>
@@ -17,6 +18,7 @@ import { mapGetters, mapMutations, mapState } from "vuex";
 import CourseMenu from "./components/menu/CourseMenu.vue";
 import Resource from "./components/resources/Resource.vue";
 import Profile from "./components/profile/Profile.vue";
+import CourseToolbar from "./components/menu/CourseToolbar.vue";
 
 export default {
   name: "Course",
@@ -24,13 +26,15 @@ export default {
   components: {
     CourseMenu,
     Resource,
-    Profile
+    Profile,
+    CourseToolbar
   },
 
   data: () => ({
     resource: null,
     isResource: 0,
-    type: ""
+    type: "",
+    drawer: false
   }),
 
   created() {
@@ -99,6 +103,9 @@ export default {
       this.updateParentDivWidthTimeout = setTimeout(() => {
         this.setScreenSize(this.$refs.course.offsetWidth);
       }, 200);
+    },
+    toggleDrawer() {
+      this.drawer = !this.drawer;
     }
   }
 };
@@ -108,14 +115,4 @@ export default {
 .v-dialog {
   overflow-y: visible !important;
 }
-
-/*
-
-.iconButton{
-  height: 20px !important;
-  width: 20px !important;
-  margin-bottom:1px;
-  margin-top:1px;
-}*/
-
 </style>

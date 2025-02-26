@@ -1,166 +1,123 @@
 <template>
-  <div id="courseMenu">
-    <!-- Toolbar for small screen -->
-    <v-toolbar
-      absolute
-      right
-      height="40px"
-      width="100vw"
-      :color="isStudent ? 'grey lighten-2' : ''"
-      elevation="1"
-      :class="isSMsmaller ? 'd-block' : 'd-none'"
-      rounded="t"
+  <v-navigation-drawer
+    :hide-overlay="isTeacher"
+    v-model="drawer"
+    :width="isSMsmaller ? '50%' : '25%'"
+    :absolute="isSMsmaller"
+    :permanent="!isSMsmaller"
+    class="rounded-r-0 rounded"
+    :drawer="drawer"
+    :height="isSMsmaller ? '100%' : ''"
+  >
+    <v-sheet
+      color="studentMenuAccout"
+      class="px-4 py-3"
+      :class="getSmallTextClass"
     >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" small class="ml-n1" />
-      <v-spacer></v-spacer>
-      <div v-if="isStudent" class="mr-2">
-        <v-icon class="mr-2">mdi-school</v-icon>
-        learnJS v0.7.7
+      <!--Student-->
+      <div v-if="isStudent" class="pointer">
+        <v-avatar
+          color="red"
+          :size="getAvatarSmallSize"
+          @click="selectResource(-1)"
+        >
+          <v-icon dark :size="getIconSmallSize">
+            mdi-card-account-details
+          </v-icon>
+        </v-avatar>
+        <div class="mt-1">{{ getUsername }}</div>
       </div>
-    </v-toolbar>
+      <!--Teacher-->
+      <div v-if="isTeacher">Account</div>
+    </v-sheet>
 
-    <v-navigation-drawer
-      :hide-overlay="isTeacher"
-      app
-      v-model="drawer"
-      :width="isSMsmaller ? '50%' : '25%'"
-      :permanent="!isSMsmaller"
-      :style="{ backgroundColor: $vuetify.theme.currentTheme.boxes }"
+    <v-divider />
+
+    <v-treeview
+      dense
+      open-on-click
+      return-object
+      hoverable
+      activatable
+      id="menuTreeView"
+      color="error"
+      item-disabled="locked"
+      :items="items"
+      :item-key="'idMenu'"
+      :class="getSmallTextClass"
+      @update:active="selectResource"
+      @update:open="openUpdate"
+      :active.sync="active"
+      :open.sync="open"
     >
-      <v-sheet
-        color="studentMenuAccout"
-        class="px-4 py-3"
-        :class="getSmallTextClass"
-      >
-        <!--Student-->
-        <div v-if="isStudent" class="m-profile">
-          <v-avatar
-            color="red"
-            :size="getAvatarSmallSize"
-            @click="selectResource(-1)"
-          >
-            <v-icon dark :size="getIconSmallSize">
-              mdi-card-account-details
-            </v-icon>
-          </v-avatar>
-          <div class="mt-1">{{ getUsername }}</div>
-        </div>
-        <!--Teacher-->
-        <div v-if="isTeacher">Account</div>
-      </v-sheet>
-
-      <v-divider />
-
-      <v-treeview
-        dense
-        open-on-click
-        return-object
-        hoverable
-        activatable
-        id="menuTreeView"
-        color="error"
-        item-disabled="locked"
-        :items="items"
-        :item-key="'idMenu'"
-        :class="getSmallTextClass"
-        @update:active="selectResource"
-        @update:open="openUpdate"
-        :active.sync="active"
-        :open.sync="open"
-      >
-        <template v-slot:label="{ item }">
-          <!--Student + Viewer-->
-          <span v-if="isStudent || isViewer">
-            {{ item.name }}
-          </span>
-          <!--Author-->
-          <div v-if="isAuthor">
-            <div v-if="item.type == 'add'" class="pa-1">
-              <v-btn
-                @click="addButton(item.contentType, item.parentId)"
-                :small="getButtonMediumSize == 'small'"
-                :medium="getButtonMediumSize == 'medium'"
-                color="button"
-              >
-                <v-icon :label="item">mdi-plus</v-icon>
-                {{ item.name }}
-              </v-btn>
-            </div>
-            <span v-else>
-              <Editable
-                :type="item.contentType"
-                :value="item.name"
-                :id="item.id"
-                field="name"
-                :placeholder="
-                  item.contentType.charAt(0).toUpperCase() +
-                    item.contentType.slice(1) +
-                    ' name'
-                "
-                @input="editableInput"
-                onclick="event.stopPropagation()"
-                :required="true"
-              />
-            </span>
-          </div>
-        </template>
-
+      <template v-slot:label="{ item }">
         <!--Student + Viewer-->
-        <template v-if="isStudent || isViewer" v-slot:prepend="{ item, open }">
-          <v-icon v-if="item.contentType == 'course'" :size="getIconSmallSize">
-            mdi-cloud-braces
-          </v-icon>
-          <v-icon
-            v-else-if="item.contentType == 'module'"
-            color="red"
-            :size="getIconSmallSize"
-          >
-            {{ open ? "mdi-folder-open" : "mdi-folder" }}
-          </v-icon>
-          <v-icon v-else class="mr-1"> </v-icon>
-          {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
-        </template>
-
-        <!--Teacher-->
-        <template v-if="isTeacher" v-slot:append="{ item }">
-          <!--Author-->
-          <div v-if="isAuthor" class="d-flex align-center py-1">
-            <span class="d-flex flex-column">
-              <v-btn
-                v-if="item.contentType != 'course' && item.type != 'add'"
-                icon
-                :x-small="getButtonSmallSize == 'x-small'"
-                :small="getButtonSmallSize == 'small'"
-                @click="moveButton(item.contentType, item.id, 'up')"
-                onclick="event.stopPropagation()"
-              >
-                <v-icon :size="getIconSmallSize">
-                  mdi-arrow-up
-                </v-icon>
-              </v-btn>
-              <v-btn
-                v-if="item.contentType != 'course' && item.type != 'add'"
-                icon
-                :x-small="getButtonSmallSize == 'x-small'"
-                :small="getButtonSmallSize == 'small'"
-                @click="moveButton(item.contentType, item.id, 'down')"
-                onclick="event.stopPropagation()"
-              >
-                <v-icon :size="getIconSmallSize">
-                  mdi-arrow-down
-                </v-icon>
-              </v-btn>
-            </span>
+        <span v-if="isStudent || isViewer">
+          {{ item.name }}
+        </span>
+        <!--Author-->
+        <div v-if="isAuthor">
+          <div v-if="item.type == 'add'" class="pa-1">
             <v-btn
-              v-if="item.type != 'add'"
+              @click="addButton(item.contentType, item.parentId)"
+              :small="getButtonMediumSize == 'small'"
+              :medium="getButtonMediumSize == 'medium'"
+              color="button"
+            >
+              <v-icon :label="item">mdi-plus</v-icon>
+              {{ item.name }}
+            </v-btn>
+          </div>
+          <span v-else>
+            <Editable
+              :type="item.contentType"
+              :value="item.name"
+              :id="item.id"
+              field="name"
+              :placeholder="
+                item.contentType.charAt(0).toUpperCase() +
+                  item.contentType.slice(1) +
+                  ' name'
+              "
+              @input="editableInput"
+              onclick="event.stopPropagation()"
+              :required="true"
+            />
+          </span>
+        </div>
+      </template>
+
+      <!--Student + Viewer-->
+      <template v-if="isStudent || isViewer" v-slot:prepend="{ item, open }">
+        <v-icon v-if="item.contentType == 'course'" :size="getIconSmallSize">
+          mdi-cloud-braces
+        </v-icon>
+        <v-icon
+          v-else-if="item.contentType == 'module'"
+          color="red"
+          :size="getIconSmallSize"
+        >
+          {{ open ? "mdi-folder-open" : "mdi-folder" }}
+        </v-icon>
+        <v-icon v-else class="mr-1"> </v-icon>
+        {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
+      </template>
+
+      <!--Teacher-->
+      <template v-if="isTeacher" v-slot:append="{ item }">
+        <!--Author-->
+        <div v-if="isAuthor" class="d-flex align-center py-1">
+          <span class="d-flex flex-column">
+            <v-btn
+              v-if="item.contentType != 'course' && item.type != 'add'"
               icon
               :x-small="getButtonSmallSize == 'x-small'"
               :small="getButtonSmallSize == 'small'"
-              @click="openDialog(item)"
+              @click="moveButton(item.contentType, item.id, 'up')"
               onclick="event.stopPropagation()"
             >
               <v-icon :size="getIconSmallSize">
-                {{ getIcon("edit") }}
+                mdi-arrow-up
               </v-icon>
             </v-btn>
             <v-btn
@@ -168,31 +125,55 @@
               icon
               :x-small="getButtonSmallSize == 'x-small'"
               :small="getButtonSmallSize == 'small'"
-              @click="deleteButton(item.contentType, item.id)"
+              @click="moveButton(item.contentType, item.id, 'down')"
               onclick="event.stopPropagation()"
             >
               <v-icon :size="getIconSmallSize">
-                {{ getIcon("delete") }}
+                mdi-arrow-down
               </v-icon>
             </v-btn>
-          </div>
-
-          <!--Viewer-->
+          </span>
           <v-btn
-            v-if="isViewer"
+            v-if="item.type != 'add'"
             icon
             :x-small="getButtonSmallSize == 'x-small'"
             :small="getButtonSmallSize == 'small'"
             @click="openDialog(item)"
             onclick="event.stopPropagation()"
           >
-            <v-icon color="gray" :size="getIconSmallSize">
-              mdi-information-outline
+            <v-icon :size="getIconSmallSize">
+              {{ getIcon("edit") }}
             </v-icon>
           </v-btn>
-        </template>
-      </v-treeview>
-    </v-navigation-drawer>
+          <v-btn
+            v-if="item.contentType != 'course' && item.type != 'add'"
+            icon
+            :x-small="getButtonSmallSize == 'x-small'"
+            :small="getButtonSmallSize == 'small'"
+            @click="deleteButton(item.contentType, item.id)"
+            onclick="event.stopPropagation()"
+          >
+            <v-icon :size="getIconSmallSize">
+              {{ getIcon("delete") }}
+            </v-icon>
+          </v-btn>
+        </div>
+
+        <!--Viewer-->
+        <v-btn
+          v-if="isViewer"
+          icon
+          :x-small="getButtonSmallSize == 'x-small'"
+          :small="getButtonSmallSize == 'small'"
+          @click="openDialog(item)"
+          onclick="event.stopPropagation()"
+        >
+          <v-icon color="gray" :size="getIconSmallSize">
+            mdi-information-outline
+          </v-icon>
+        </v-btn>
+      </template>
+    </v-treeview>
 
     <v-sheet
       color="boxes"
@@ -222,7 +203,7 @@
       :dialog="dialogModuleLesson"
       v-if="isTeacher"
     />
-  </div>
+  </v-navigation-drawer>
 </template>
 
 <script>
@@ -242,14 +223,19 @@ export default {
     DialogModuleLesson
   },
 
+  props: {
+    drawer: {
+      type: Boolean,
+      default: false
+    }
+  },
+
   data: () => ({
     valid: true,
-
     drawer: false,
     items: [],
     active: [],
     open: [],
-
     dialogCourse: false,
     dialogModuleLesson: false,
     dialogCourseItem: {},
@@ -265,12 +251,11 @@ export default {
       this.dialogModuleLesson = payload;
     });
     bus.$on("openCourse", payload => {
-      this.open = [this.items[0], this.items[0].children[0]]
-      if (payload == "no"){
-        this.active = [this.items[0].children[0].children[0]]
-      } else {
-        this.active = [this.items[0].children[0].children[1]]
-      }
+      this.open = [this.items[0], this.items[0].children[0]];
+      this.active =
+        payload == "no"
+          ? [this.items[0].children[0].children[0]]
+          : [this.items[0].children[0].children[1]];
     });
   },
 
@@ -284,14 +269,14 @@ export default {
     ...mapState("main", { courses: state => state.courses }),
     ...mapGetters("main", [
       "getCoursesState",
-      "getCompletationStatusBySheetID",
+      "getCompletationStatusBySheetID"
     ]),
     ...mapGetters("request", [
       "isStudent",
       "isTeacher",
       "isAuthor",
       "isViewer",
-      "getUsername",
+      "getUsername"
     ]),
     ...mapGetters("style", [
       "getIconSmallSize",
@@ -306,18 +291,16 @@ export default {
 
   methods: {
     ...mapActions("main", [
-      "addLessonByModuleID", 
+      "addLessonByModuleID",
       "deleteLessonByModuleID",
       "addModuleByCourseID",
       "deleteModuleByID",
       "addConditionByLMID",
       "moveLesson",
       "moveModule",
-      "editableInput",
+      "editableInput"
     ]),
-    ...mapMutations("request", [
-      "logout", 
-    ]),
+    ...mapMutations("request", ["logout"]),
     toggleTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
     },
@@ -327,33 +310,20 @@ export default {
       this.$router.push({ name: "Login" });
     },
 
-    //--------------------------Student-----------------------------------------
     setCourse() {
       this.items = this.getCoursesState;
     },
     getCompletationStatus(item) {
-      //TODO reimplemet it
       if (item.file == "sheet") {
-        if (this.getCompletationStatusBySheetID(item.id) == 100)
-          return "mdi-book-check";
-        else return "";
+        return this.getCompletationStatusBySheetID(item.id) == 100
+          ? "mdi-book-check"
+          : "";
       }
     },
     selectResource(item) {
-      let id;
-      let type;
-      if (item == -1) {
-        id = item;
-        type = "-1";
-      } else {
-        if (item.length > 0) {
-          id = item[0].id;
-          type = item[0].contentType;
-        } else {
-          id = 0;
-          type = "0";
-        }
-      }
+      let id = item == -1 ? item : item.length > 0 ? item[0].id : 0;
+      let type =
+        item == -1 ? "-1" : item.length > 0 ? item[0].contentType : "0";
       this.$emit("onResourceClicked", id, type);
     },
     openUpdate(item) {
@@ -370,7 +340,6 @@ export default {
       }
     },
 
-    //--------------------------Teacher-----------------------------------------
     addButton(type, parentId) {
       if (type == "lesson") {
         this.addLessonByModuleID(parentId);
@@ -426,47 +395,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.m-profile:hover {
-  cursor: pointer;
-}
-
-/* Disable Transition of Nav Bar */
-#courseMenu >>> .v-treeview-node__children {
-  transition: none !important;
-}
-#courseMenu >>> .v-navigation-drawer {
-  transition-duration: 0s;
-  transform: none !important;
-
-  position: absolute;
-  top: 0 !important;
-  max-height: 100% !important;
-  height: 100% !important;
-  border-radius: 4px 0 0 4px;
-}
-#courseMenu >>> .v-card {
-  transition-property: none !important;
-}
-#courseMenu >>> .v-treeview-node__root::before {
-  transition: none !important;
-}
-
-/* Treeview before-icons and spaces */
-#menuTreeView >>> .v-icon.v-icon {
-  font-size: 1.5em;
-}
-#menuTreeView >>> .v-treeview-node__toggle {
-  width: 1em;
-}
-#menuTreeView >>> .v-treeview-node__level {
-  width: 1.5em;
-}
-#menuTreeView >>> .v-treeview-node__prepend {
-  min-width: 0px;
-}
-#menuTreeView >>> .v-treeview-node__append {
-  min-width: 0px;
-}
-</style>

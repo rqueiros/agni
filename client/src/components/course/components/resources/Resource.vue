@@ -43,7 +43,5 @@ export default {
 </script>
 
 <style scoped>
-.resource {
-  padding: 0 0 0 25% !important;
-}
+
 </style>

@@ -3,4 +3,11 @@
 </template>
 <script></script>
 
-<style scoped></style>
+<style>
+.pointer:hover {
+  cursor: pointer;
+}
+.h-full {
+  min-height: 100%;
+}
+</style>
