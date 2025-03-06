@@ -51,7 +51,7 @@ export default new Vuetify({
         gptSubtitle: colors.grey
       }
     }
-  },
+  },/*
   breakpoint: {
     thresholds: {
       xs: 480,
@@ -60,5 +60,5 @@ export default new Vuetify({
       lg: 1280,
     },
     scrollBarWidth: 24
-  }
+  }*/
 });

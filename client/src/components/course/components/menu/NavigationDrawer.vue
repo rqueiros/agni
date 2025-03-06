@@ -2,14 +2,14 @@
   <v-navigation-drawer
     :hide-overlay="isTeacher"
     v-model="drawer"
-    :absolute="isSMsmaller"
-    :permanent="!isSMsmaller"
+    :absolute="$vuetify.breakpoint.smAndDown"
+    :permanent="!$vuetify.breakpoint.smAndDown"
     class="rounded-r-0 rounded"
     :drawer="drawer"
-    :height="isSMsmaller ? '100%' : ''"
-    :style="'min-width: ' + (isSMsmaller ? '300px' : '25%')"
+    :height="$vuetify.breakpoint.smAndDown ? '100%' : ''"
+    :style="'min-width: ' + ($vuetify.breakpoint.smAndDown ? '300px' : '25%')"
   >
-    <v-sheet color="studentMenuAccout" class="px-4" :class="getSmallTextClass">
+    <v-sheet color="studentMenuAccout" class="px-3 body-2">
       <div v-if="isStudent" class="d-flex align-center">
         <div class="mr-3 py-3">
           <div class="mb-2">
@@ -26,13 +26,13 @@
           </v-btn>
         </div>
         <v-divider vertical />
-        <div class="ml-4 py-3 flex-grow-1">
-          <v-avatar color="red" :size="getAvatarSmallSize">
-            <v-icon dark :size="getIconSmallSize">
+        <div class="ml-4 py-3 flex-grow-1 pointer" @click="selectResource([])">
+          <v-avatar color="red" size="45">
+            <v-icon dark>
               mdi-card-account-details
             </v-icon>
           </v-avatar>
-          <div class="mt-1">{{ getUsername }}</div>
+          <div class="mt-2">{{ getUsername }}</div>
         </div>
       </div>
       <div v-if="isTeacher" class="py-3">Account</div>
@@ -46,27 +46,25 @@
       return-object
       hoverable
       activatable
-      id="menuTreeView"
       color="error"
       item-disabled="locked"
       :items="items"
       :item-key="'idMenu'"
-      :class="getSmallTextClass"
       @update:active="selectResource"
       @update:open="openUpdate"
       :active.sync="active"
       :open.sync="open"
     >
       <template v-slot:label="{ item }">
-        <span v-if="isStudent || isViewer">
+        <span v-if="isStudent || isViewer" class="body-2">
+          {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
           {{ item.name }}
         </span>
-        <div v-if="isAuthor">
+        <div v-if="isAuthor" class="caption">
           <div v-if="item.type == 'add'" class="pa-1">
             <v-btn
               @click="addButton(item.contentType, item.parentId)"
-              :small="getButtonMediumSize == 'small'"
-              :medium="getButtonMediumSize == 'medium'"
+              small
               color="button"
             >
               <v-icon :label="item">mdi-plus</v-icon>
@@ -79,11 +77,7 @@
               :value="item.name"
               :id="item.id"
               field="name"
-              :placeholder="
-                item.contentType.charAt(0).toUpperCase() +
-                  item.contentType.slice(1) +
-                  ' name'
-              "
+              :placeholder="editablePlaceholder(item)"
               @input="editableInput"
               onclick="event.stopPropagation()"
               :required="true"
@@ -92,19 +86,27 @@
         </div>
       </template>
 
-      <template v-if="isStudent || isViewer" v-slot:prepend="{ item, open }">
-        <v-icon v-if="item.contentType == 'course'" :size="getIconSmallSize">
-          mdi-cloud-braces
-        </v-icon>
-        <v-icon
-          v-else-if="item.contentType == 'module'"
-          color="red"
-          :size="getIconSmallSize"
-        >
-          {{ open ? "mdi-folder-open" : "mdi-folder" }}
-        </v-icon>
-        <v-icon v-else class="mr-1"> </v-icon>
-        {{ item.contentType != "course" ? `${item.internalId}. ` : `` }}
+      <template v-slot:prepend="{ item, open }" v-if="isStudent || isViewer">
+        <div class="mr-1">
+          <v-icon v-if="item.contentType == 'course'" color="black">
+            mdi-cloud-braces
+          </v-icon>
+          <v-icon v-else-if="item.contentType == 'module'" color="red">
+            {{ open ? "mdi-folder-open" : "mdi-folder" }}
+          </v-icon>
+          <v-icon
+            v-else-if="item.contentType == 'lesson'"
+            :color="
+              getCompletationStatusByLessonID(item.id) == 100 ? 'green' : ''
+            "
+          >
+            {{
+              getCompletationStatusByLessonID(item.id) == 100
+                ? "mdi-book-check"
+                : "mdi-book"
+            }}
+          </v-icon>
+        </div>
       </template>
 
       <template v-if="isTeacher" v-slot:append="{ item }">
@@ -113,24 +115,22 @@
             <v-btn
               v-if="item.contentType != 'course' && item.type != 'add'"
               icon
-              :x-small="getButtonSmallSize == 'x-small'"
-              :small="getButtonSmallSize == 'small'"
+              x-small
               @click="moveButton(item.contentType, item.id, 'up')"
               onclick="event.stopPropagation()"
             >
-              <v-icon :size="getIconSmallSize">
+              <v-icon>
                 mdi-arrow-up
               </v-icon>
             </v-btn>
             <v-btn
               v-if="item.contentType != 'course' && item.type != 'add'"
               icon
-              :x-small="getButtonSmallSize == 'x-small'"
-              :small="getButtonSmallSize == 'small'"
+              x-small
               @click="moveButton(item.contentType, item.id, 'down')"
               onclick="event.stopPropagation()"
             >
-              <v-icon :size="getIconSmallSize">
+              <v-icon>
                 mdi-arrow-down
               </v-icon>
             </v-btn>
@@ -138,24 +138,22 @@
           <v-btn
             v-if="item.type != 'add'"
             icon
-            :x-small="getButtonSmallSize == 'x-small'"
-            :small="getButtonSmallSize == 'small'"
+            x-small
             @click="openDialog(item)"
             onclick="event.stopPropagation()"
           >
-            <v-icon :size="getIconSmallSize">
+            <v-icon>
               {{ getIcon("edit") }}
             </v-icon>
           </v-btn>
           <v-btn
             v-if="item.contentType != 'course' && item.type != 'add'"
             icon
-            :x-small="getButtonSmallSize == 'x-small'"
-            :small="getButtonSmallSize == 'small'"
+            x-small
             @click="deleteButton(item.contentType, item.id)"
             onclick="event.stopPropagation()"
           >
-            <v-icon :size="getIconSmallSize">
+            <v-icon>
               {{ getIcon("delete") }}
             </v-icon>
           </v-btn>
@@ -164,12 +162,11 @@
         <v-btn
           v-if="isViewer"
           icon
-          :x-small="getButtonSmallSize == 'x-small'"
-          :small="getButtonSmallSize == 'small'"
+          x-small
           @click="openDialog(item)"
           onclick="event.stopPropagation()"
         >
-          <v-icon color="gray" :size="getIconSmallSize">
+          <v-icon color="gray">
             mdi-information-outline
           </v-icon>
         </v-btn>
@@ -248,7 +245,7 @@ export default {
     ...mapState("main", { courses: (state) => state.courses }),
     ...mapGetters("main", [
       "getCoursesState",
-      "getCompletationStatusBySheetID",
+      "getCompletationStatusByLessonID",
     ]),
     ...mapGetters("request", [
       "isStudent",
@@ -257,15 +254,7 @@ export default {
       "isViewer",
       "getUsername",
     ]),
-    ...mapGetters("style", [
-      "getIconSmallSize",
-      "getButtonSmallSize",
-      "getSmallTextClass",
-      "getButtonMediumSize",
-      "getAvatarSmallSize",
-      "isSMsmaller",
-      "getIcon",
-    ]),
+    ...mapGetters("style", ["getIcon"]),
   },
 
   methods: {
@@ -295,17 +284,15 @@ export default {
     },
 
     getCompletationStatus(item) {
-      if (item.file == "sheet") {
-        return this.getCompletationStatusBySheetID(item.id) == 100
-          ? "mdi-book-check"
-          : "";
-      }
+      return this.getCompletationStatusByLessonID(item.id) == 100
+        ? "mdi-book-check"
+        : "mdi-book";
     },
 
     selectResource(item) {
-      let id = item == -1 ? item : item.length > 0 ? item[0].id : 0;
-      let type =
-        item == -1 ? "-1" : item.length > 0 ? item[0].contentType : "0";
+      if (item.length == 0) this.active = [];
+      let id = item.length > 0 ? item[0].id : 0;
+      let type = item.length > 0 ? item[0].contentType : "0";
       this.$emit("onResourceClicked", id, type);
     },
 
@@ -365,7 +352,7 @@ export default {
         this.moveModule([id, direction]);
       }
     },
-    
+
     async openDialog(item) {
       if (item.contentType != "course") {
         if (item.condition == null) {
@@ -377,6 +364,11 @@ export default {
         this.dialogCourse = true;
         this.dialogCourseItem = item;
       }
+    },
+
+    editablePlaceholder(item) {
+      let type = item.contentType;
+      return type.charAt(0).toUpperCase() + type.slice(1) + " name";
     },
   },
 };

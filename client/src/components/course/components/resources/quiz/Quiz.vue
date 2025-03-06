@@ -4,13 +4,19 @@
       <v-row class="mb-1 mt-0">
         <v-col class="py-0" :cols="isSMsmaller ? 12 : 7">
           <v-card
+            color="studentboxes"
             :outlined="!isEvaluative"
+            class="bg-studentBoxes"
             :class="isEvaluative || isQuestion ? 'shadow' : ''"
-            :style="{
-              backgroundColor: $vuetify.theme.currentTheme.studentboxes
-            }"
           >
-            <Header :resource="resource" v-if="!isEvaluative && !isQuestion" />
+            <CardHeader
+              v-if="!isEvaluative && !isQuestion"
+              :icon="getIcon(resource.type)"
+              color="red"
+              evaluative
+              :resource="resource"
+              :editable="isAuthor"
+            />
 
             <Quizzer
               :resource="resource"
@@ -24,8 +30,7 @@
               v-model="rating"
               background-color="orange lighten-3"
               color="orange"
-            ></v-rating>-->
-
+            ></v-rating>
             <v-expansion-panels v-if="isStudent">
               <v-expansion-panel>
                 <v-expansion-panel-header disable-icon-rotate>
@@ -41,7 +46,7 @@
                   >
                 </v-expansion-panel-content>
               </v-expansion-panel>
-            </v-expansion-panels>
+            </v-expansion-panels>-->
           </v-card>
         </v-col>
         <v-col
@@ -73,54 +78,55 @@
 import { bus } from "@/main.js";
 import { mapGetters } from "vuex";
 
-import Header from "../Header.vue";
 import Quizzer from "./Quizzer.vue";
 import Img from "./Img.vue";
+import CardHeader from "../../CardHeader.vue";
 
 export default {
-  name: "Quiz",
-
   components: {
-    Header,
     Quizzer,
-    Img
+    Img,
+    CardHeader,
   },
 
   props: {
     resource: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
     isEvaluative: {
       type: Boolean,
-      default: () => false
+      default: () => false,
     },
     isQuestion: {
       type: Boolean,
-      default: () => false
-    }
+      default: () => false,
+    },
   },
 
   data() {
     return {
-      index: 0
+      index: 0,
     };
   },
 
   created() {
-    bus.$on("setIndex", payload => {
+    bus.$on("setIndex", (payload) => {
       this.index = payload;
     });
   },
 
   computed: {
-    ...mapGetters("request", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
-    ...mapGetters("style", ["isSMsmaller"]),
+    ...mapGetters("request", [
+      "isStudent",
+      "isTeacher",
+      "isViewer",
+      "isAuthor",
+    ]),
+    ...mapGetters("style", ["isSMsmaller", "getIcon"]),
     getQuestion() {
       return this.resource.questions[this.index];
-    }
-  }
+    },
+  },
 };
 </script>
-
-<style scoped></style>

@@ -159,22 +159,21 @@ export default {
       open: false,
       question: "",
       buttons: [],
-      resource: null
-    }
+      resource: null,
+    },
   }),
 
   created() {
     if (!this.getUser.email.includes("evaluator")) {
-      console.log(1111);
       bus.$emit("changePage", this.resource);
     }
     //bus.$emit("changePage", this.resource);
     this.loadImage();
 
-    bus.$on("yesNoDialog", payload => {
+    bus.$on("yesNoDialog", (payload) => {
       this.yesNoDialog.open = payload;
     });
-    bus.$on("yesNoDialogResult", async payload => {
+    bus.$on("yesNoDialogResult", async (payload) => {
       this.yesNoDialog.open = false;
       if (payload == "save" && this.yesNoDialog.question != "") {
         const saveSuccess = await this.save();
@@ -203,20 +202,20 @@ export default {
           this.selectedMenu = oldValue;
         });
       }
-    }
+    },
   },
 
   computed: {
-    ...mapState("main", { changed: state => state.changed }),
-    ...mapState("request", { user: state => state.user }),
+    ...mapState("main", { changed: (state) => state.changed }),
+    ...mapState("request", { user: (state) => state.user }),
     ...mapGetters("request", ["getUsername", "getUser", "getDomain"]),
     ...mapGetters("style", ["getIcon", "getMesssage"]),
     ...mapGetters("main", [
       "getCoursesState",
       "getExpositivesState",
       "getEvaluativesState",
-      "getQuestionsState"
-    ])
+      "getQuestionsState",
+    ]),
   },
 
   methods: {
@@ -263,9 +262,9 @@ export default {
           question: "Do you want to save your changes before exiting?",
           buttons: [
             { name: "DON`T SAVE", msg: "dontSave" },
-            { name: "SAVE", msg: "save" }
+            { name: "SAVE", msg: "save" },
           ],
-          resource: resource
+          resource: resource,
         };
       } else {
         localStorage.setItem("contentCollType", "");
@@ -301,8 +300,8 @@ export default {
     },
     toggleTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
-    }
-  }
+    },
+  },
 };
 </script>
 

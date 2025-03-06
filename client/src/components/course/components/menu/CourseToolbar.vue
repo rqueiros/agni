@@ -2,11 +2,12 @@
   <div>
     <v-toolbar
       absolute
+      right
       height="40px"
       width="100vw"
       :color="isStudent ? 'grey lighten-2' : ''"
       elevation="1"
-      class="d-block d-md-none"
+      :class="isSMsmaller ? 'd-block' : 'd-none'"
       rounded="t"
     >
       <v-app-bar-nav-icon
@@ -17,7 +18,7 @@
       <v-spacer />
       <div v-if="isStudent" class="mr-2">
         <v-icon class="mr-2">mdi-school</v-icon>
-        Agni v1.0
+        learnJS v0.7.7
       </div>
     </v-toolbar>
   </div>
@@ -27,8 +28,10 @@
 import { mapGetters } from "vuex";
 
 export default {
+  name: "CourseToolbar",
   computed: {
     ...mapGetters("request", ["isStudent"]),
+    ...mapGetters("style", ["isSMsmaller"])
   }
 };
 </script>

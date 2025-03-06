@@ -10,4 +10,7 @@
 .h-full {
   min-height: 100%;
 }
+.w-full {
+  width: 100%;
+}
 </style>

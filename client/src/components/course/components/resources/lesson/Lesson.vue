@@ -6,23 +6,43 @@
           <v-card
             outlined
             :style="{
-              backgroundColor: $vuetify.theme.currentTheme.studentboxes
+              backgroundColor: $vuetify.theme.currentTheme.studentboxes,
             }"
           >
-            <Header :resource="resource" />
+            <CardHeader
+              :icon="getIcon(resource.contentType)"
+              color="red"
+              lesson
+              :resource="resource"
+              :editable="isAuthor"
+            />
 
-            <v-spacer class="mb-1"></v-spacer>
+            <v-card-text>
+              <div
+                v-if="resource.description && (isStudent || isViewer)"
+                v-html="resource.description"
+              ></div>
+              <Editable
+                v-if="isAuthor"
+                class="caption"
+                type="lesson"
+                placeholder="Lesson description"
+                :value="resource.description"
+                :id="resource.id"
+                field="description"
+                @input="editableInput"
+                :required="true"
+              />
+            </v-card-text>
 
             <v-divider v-if="resource.expositives.length > 0" />
             <Expositives :resource="resource" ref="expositives" />
 
-            <v-spacer class="mb-6"></v-spacer>
+            <v-spacer class="mb-2"></v-spacer>
 
-            <v-divider v-if="resource.evaluatives.length > 0" />
             <Evaluatives :resource="resource" />
 
-            <v-spacer v-if="isStudent" class="mb-6"></v-spacer>
-
+            <!--
             <v-expansion-panels v-if="isStudent">
               <v-expansion-panel>
                 <v-expansion-panel-header disable-icon-rotate>
@@ -37,7 +57,7 @@
                   </code>
                 </v-expansion-panel-content>
               </v-expansion-panel>
-            </v-expansion-panels>
+            </v-expansion-panels>-->
           </v-card>
         </v-col>
         <v-col
@@ -64,52 +84,60 @@
 </template>
 
 <script>
-import Header from "../Header.vue";
 import Expositives from "./Expositives.vue";
 import Evaluatives from "./Evaluatives.vue";
 import Timeline from "./Timeline.vue";
+import CardHeader from "../../CardHeader.vue";
+import Editable from "../../../../gerneral/Editable.vue";
 
 import { bus } from "@/main.js";
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "Lesson",
 
   components: {
-    Header,
     Expositives,
     Evaluatives,
-    Timeline
+    Timeline,
+    CardHeader,
+    Editable,
   },
 
   props: {
     resource: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
 
   data() {
     return {
-      index: 0
+      index: 0,
     };
   },
 
   created() {
-    bus.$on("setIndex", payload => {
+    bus.$on("setIndex", (payload) => {
       this.index = payload;
     });
   },
 
   computed: {
-    ...mapGetters("request", ["isStudent", "isTeacher", "isAuthor", "isViewer"]),
-    ...mapGetters("style", ["isSMsmaller"])
+    ...mapGetters("request", [
+      "isStudent",
+      "isTeacher",
+      "isAuthor",
+      "isViewer",
+    ]),
+    ...mapGetters("style", ["isSMsmaller", "getIcon"]),
   },
   methods: {
+    ...mapActions("main", ["editableInput"]),
     setMilestone(index) {
       this.$refs.expositives.setMilestone(index);
-    }
-  }
+    },
+  },
 };
 </script>
 

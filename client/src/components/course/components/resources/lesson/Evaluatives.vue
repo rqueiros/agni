@@ -1,7 +1,7 @@
 <template>
   <div id="evaluatives" v-if="evaluativesNotNull || isAuthor">
     <v-card
-      style="border-left: 0; border-right: 0;"
+      flat
       :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     >
       <!--Author-->
@@ -49,15 +49,7 @@
         style="background-color: transparent;"
         v-model="selected"
       >
-        <template v-slot:top>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-subtitle :class="getSubtitleClass">
-                Exercises:
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
+
 
         <template v-slot:item.id="{ item }">
           <span :class="getSmallTextClass">
@@ -125,13 +117,10 @@
         </template>
 
         <template v-slot:item.grade="{ item }">
-          <v-chip
-            :color="getColor(item.grade)"
-            dark
-            :small="getButtonMediumSize == 'small'"
-            :medium="getButtonMediumSize == 'medium'"
-          >
-            {{ item.grade }}%
+          <v-chip :color="getColor(item.grade)" dark class="pointer">
+            <div style="width: 32px" class="text-center">
+              {{ item.grade }}%
+            </div>
           </v-chip>
         </template>
 
@@ -163,7 +152,7 @@
       v-if="isAuthor"
       :dialog="dialog"
       :type="'evaluatives'"
-      :already="resource.evaluatives.map(e => e.id)"
+      :already="resource.evaluatives.map((e) => e.id)"
       @addExistingevaluatives="addExistingEval"
       @closeSelectDialog="dialog = false"
     />
@@ -190,14 +179,14 @@ export default {
   components: {
     Editable,
     SelectDialog,
-    ExternalDialog
+    ExternalDialog,
   },
 
   props: {
     resource: {
       type: Object,
-      default: () => {}
-    }
+      default: () => {},
+    },
   },
 
   data() {
@@ -214,11 +203,11 @@ export default {
             align: "start",
             sortable: true,
             value: "number",
-            cellClass: "pointer"
+            cellClass: "pointer",
           },
-          { text: "Name", value: "name", cellClass: "pointer" },
+          { text: "Exercise", value: "name", cellClass: "pointer" },
           { text: "Type", value: "type", cellClass: "pointer" },
-          { text: "Solving status (%)", value: "grade", cellClass: "pointer" }
+          { text: "Solved", value: "grade", cellClass: "pointer" },
         ],
         author: [
           {
@@ -226,10 +215,10 @@ export default {
             align: "start",
             sortable: true,
             value: "number",
-            cellClass: "pointer"
+            cellClass: "pointer",
           },
           { text: "Type", value: "type", cellClass: "pointer" },
-          { text: "Name", value: "name", cellClass: "pointer" }
+          { text: "Exercise", value: "name", cellClass: "pointer" },
         ],
         viewer: [
           {
@@ -237,30 +226,30 @@ export default {
             align: "start",
             sortable: true,
             value: "number",
-            cellClass: "pointer"
+            cellClass: "pointer",
           },
           { text: "Type", value: "type", cellClass: "pointer" },
-          { text: "Name", value: "name", cellClass: "pointer" }
-        ]
+          { text: "Exercise", value: "name", cellClass: "pointer" },
+        ],
       },
       addEvaluativeMenu: [
         { title: "NEW QUIZ", value: "quiz" },
         { title: "NEW PROG. EX.", value: "prog" },
         { title: "SELECT", value: "select" },
-        { title: "EXTERNAL", value: "external" }
-      ]
+        { title: "EXTERNAL", value: "external" },
+      ],
     };
   },
 
   created() {
     this.loadResource;
     if (this.getValidated) {
-      const notValid = this.resource.evaluatives.filter(e => !e.valid);
-      this.selected = this.loadResource.filter(e =>
-        notValid.map(ev => ev.id).includes(e.id)
+      const notValid = this.resource.evaluatives.filter((e) => !e.valid);
+      this.selected = this.loadResource.filter((e) =>
+        notValid.map((ev) => ev.id).includes(e.id)
       );
     }
-    bus.$on("addExternalExercises", payload => {
+    bus.$on("addExternalExercises", (payload) => {
       this.addExternalExercises(payload);
     });
   },
@@ -268,12 +257,12 @@ export default {
   watch: {
     getValids() {
       if (this.getValidated) {
-        const notValid = this.resource.evaluatives.filter(e => !e.valid);
-        this.selected = this.loadResource.filter(e =>
-          notValid.map(ev => ev.id).includes(e.id)
+        const notValid = this.resource.evaluatives.filter((e) => !e.valid);
+        this.selected = this.loadResource.filter((e) =>
+          notValid.map((ev) => ev.id).includes(e.id)
         );
       }
-    }
+    },
   },
 
   computed: {
@@ -283,7 +272,7 @@ export default {
       "isStudent",
       "isTeacher",
       "isAuthor",
-      "isViewer"
+      "isViewer",
     ]),
     ...mapGetters("style", [
       "getSubtitleClass",
@@ -292,10 +281,10 @@ export default {
       "getSmallTextClass",
       "getIcon",
       "getButtonMediumSize",
-      "getButtonSmallSize"
+      "getButtonSmallSize",
     ]),
     getValids() {
-      return this.resource.evaluatives.map(e => e.valid);
+      return this.resource.evaluatives.map((e) => e.valid);
     },
     loadResource() {
       let ev = [];
@@ -306,7 +295,7 @@ export default {
         ev = [];
       } else if (this.isStudent) {
         let i = 1;
-        this.resource.evaluatives.forEach(evaluative => {
+        this.resource.evaluatives.forEach((evaluative) => {
           let grade = Number(
             this.getStatusByResourceID(evaluative.id).grade.toFixed(1)
           );
@@ -316,19 +305,19 @@ export default {
             name: evaluative.name,
             type: evaluative.type,
             grade: grade,
-            action: ""
+            action: "",
           });
           i++;
         });
       } else {
         let i = 1;
-        this.resource.evaluatives.forEach(evaluative => {
+        this.resource.evaluatives.forEach((evaluative) => {
           ev.push({
             number: i,
             id: evaluative.id,
             name: evaluative.name,
             type: evaluative.type,
-            contentType: evaluative.contentType
+            contentType: evaluative.contentType,
           });
           i++;
         });
@@ -337,7 +326,7 @@ export default {
     },
     evaluativesNotNull() {
       return this.resource.evaluatives.length > 0;
-    }
+    },
   },
 
   methods: {
@@ -346,7 +335,7 @@ export default {
       "addQuizByLessonID",
       "addProgExByLessonID",
       "addEvaluativeByLessonID2",
-      "deleteEvaluativeByID"
+      "deleteEvaluativeByID",
     ]),
     ...mapActions("request", ["addExistingEvaluatives"]),
     addEvaluative(type) {
@@ -369,7 +358,7 @@ export default {
     },
     addExternalExercises(exercises) {
       this.externalDialog = false;
-      exercises.forEach(e => {
+      exercises.forEach((e) => {
         this.addEvaluativeByLessonID2([this.resource.id, e]);
       });
     },
@@ -378,8 +367,8 @@ export default {
       if (status == 0) return "red";
       else if (status < 100) return "orange";
       else return "green";
-    }
-  }
+    },
+  },
 };
 </script>
 

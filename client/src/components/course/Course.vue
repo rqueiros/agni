@@ -8,7 +8,7 @@
       />
       <Resource v-if="resource" :resource="resource" class="flex-grow-1" />
       <div v-else class="flex-grow-1">
-        <Profile :resource="isResource" :type="type" />
+        <Overview :resource="isResource" :type="type" />
       </div>
     </div>
   </v-sheet>
@@ -20,14 +20,14 @@ import { mapGetters, mapMutations, mapState } from "vuex";
 
 import NavigationDrawer from "./components/menu/NavigationDrawer.vue";
 import Resource from "./components/resources/Resource.vue";
-import Profile from "./components/profile/Profile.vue";
 import Toolbar from "./components/menu/Toolbar.vue";
+import Overview from "./components/overview/Overview.vue"
 
 export default {
   components: {
     NavigationDrawer,
     Resource,
-    Profile,
+    Overview,
     Toolbar,
   },
 
@@ -70,7 +70,7 @@ export default {
   },
 
   mounted() {
-    this.setScreenSize(this.$refs.course.offsetWidth);
+    //this.setScreenSize(this.$refs.course.offsetWidth);
     window.addEventListener("resize", this.updateParentDivWidth);
   },
 
@@ -102,7 +102,7 @@ export default {
     updateParentDivWidth() {
       clearTimeout(this.updateParentDivWidthTimeout);
       this.updateParentDivWidthTimeout = setTimeout(() => {
-        this.setScreenSize(this.$refs.course.offsetWidth);
+        //this.setScreenSize(this.$refs.course.offsetWidth);
       }, 200);
     },
     toggleDrawer() {

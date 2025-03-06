@@ -5,21 +5,13 @@
       :class="isEvaluative ? 'shadow' : ''"
       :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     >
-      <v-list-item class="px-2">
-        <v-list-item-content class="align-self-start">
-          <v-list-item-title :class="getTitleClass">
-            TESTS
-          </v-list-item-title>
-          <v-list-item-subtitle v-if="isStudent" :class="getSmallTextClass"
-            >Run the teacher tests and create your owns!</v-list-item-subtitle
-          >
-        </v-list-item-content>
-        <v-list-item-avatar tile :size="getAvatarMediumSize" color="blue">
-          <v-icon color="white" :size="getIconBigSize">
-            mdi-robot-confused
-          </v-icon>
-        </v-list-item-avatar>
-      </v-list-item>
+    <CardHeader
+      title="TESTS"
+      :subtitle="isStudent ? 'Run the teacher tests and create your owns!' : ''"
+      icon="mdi-robot-confused"
+      color="blue"
+    />
+
 
       <v-data-table
         :headers="
@@ -478,6 +470,7 @@ import { EventBus } from "@/event-bus.js";
 
 import Editable from "../../../../gerneral/Editable.vue";
 import VueCascaderSelect from "vue-cascader-select";
+import CardHeader from "../../CardHeader.vue";
 
 Vue.use(VueCascaderSelect);
 
@@ -486,7 +479,8 @@ export default {
 
   components: {
     Editable,
-    VueCascaderSelect
+    VueCascaderSelect,
+    CardHeader
   },
 
   props: {

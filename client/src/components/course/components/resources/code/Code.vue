@@ -10,7 +10,14 @@
               backgroundColor: $vuetify.theme.currentTheme.studentboxes
             }"
           >
-            <Header :resource="resource" v-if="!isEvaluative" />
+            <CardHeader
+              v-if="!isEvaluative"
+              :icon="getIcon(resource.type)"
+              color="red"
+              evaluative
+              :resource="resource"
+              :editable="isAuthor"
+            />
 
             <Editor
               :resource="resource"
@@ -152,17 +159,17 @@
 
 <script>
 import { mapGetters } from "vuex";
-import Header from "../Header.vue";
 import Editor from "./Editor.vue";
 import Tests from "./Tests.vue";
+import CardHeader from "../../CardHeader.vue";
 
 export default {
   name: "Code",
 
   components: {
-    Header,
     Editor,
-    Tests
+    Tests,
+    CardHeader
   },
 
   props: {
@@ -209,7 +216,7 @@ export default {
 
   computed: {
     ...mapGetters("request", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
-    ...mapGetters("style", ["isSMsmaller"])
+    ...mapGetters("style", ["isSMsmaller", "getIcon"])
   }
 };
 </script>

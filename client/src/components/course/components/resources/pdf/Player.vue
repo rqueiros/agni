@@ -11,6 +11,16 @@
         icon="mdi-close"
       >
       </v-badge>
+      <v-badge
+        tile
+        class="badge"
+        v-if="isStudent"
+        overlap
+        color="button"
+        @click.native="printAll"
+        icon="mdi-printer"
+      >
+      </v-badge>
       <pdf
         style="width: 100%;"
         ref="pdfComponent"
@@ -39,24 +49,6 @@
         color="error"
       />
     </div>
-    <v-card-actions
-      v-if="isStudent"
-      :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'"
-    >
-      <v-btn color="success" class="mb-2" @click="print">
-        PRINT
-        <v-icon right dark> mdi-printer </v-icon>
-      </v-btn>
-      <v-btn color="error" class="mb-2" @click="printAll">
-        PRINT ALL<v-icon right dark> mdi-printer-settings </v-icon>
-      </v-btn>
-
-      <!-- <v-btn color="primary" dark class="mb-2" @click="copyText">
-        GET LINKS<v-icon right dark>
-          mdi-content-copy
-        </v-icon>
-      </v-btn> -->
-    </v-card-actions>
   </div>
 </template>
 
@@ -67,8 +59,6 @@ import "sweetalert2/src/sweetalert2.scss";
 import { mapGetters, mapActions } from "vuex";
 
 export default {
-  name: "Player",
-
   components: {
     pdf
   },
@@ -112,7 +102,6 @@ export default {
       "isTeacher",
       "isViewer"
     ]),
-    ...mapGetters("style", ["isMDsmaller", "isMD"])
   },
 
   methods: {
@@ -123,9 +112,6 @@ export default {
     },
     currentPage(page) {
       this.page = page;
-    },
-    print() {
-      this.$refs.pdfComponent.print(100, [this.currentPage]);
     },
     printAll() {
       const pages = [];
@@ -200,12 +186,5 @@ export default {
 }
 #player >>> .v-badge__badge .v-icon {
   font-size: 16px;
-}
-
-#player >>> .theme--dark.v-pagination .v-pagination__item {
-  background-color: #484747;
-}
-#player >>> .theme--dark.v-pagination .v-pagination__navigation {
-  background-color: #484747 !important;
 }
 </style>

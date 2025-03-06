@@ -1,93 +1,74 @@
 <template>
-  <div
-    id="img"
-    v-if="
-      ('image' in question &&
-        question.image != null &&
-        (question.image.data != null || 'name' in question.image)) ||
-        isAuthor
-    "
+  <v-card
+    v-if="hasValidImage || isAuthor"
+    :outlined="!isEvaluative"
+    :class="isEvaluative || isQuestion ? 'shadow' : ''"
+    color="studentboxes"
   >
-    <v-card
-      :outlined="!isEvaluative"
-      :class="isEvaluative || isQuestion ? 'shadow' : ''"
-      :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
-    >
-      <v-list-item :class="!isMDsmaller ? 'px-4' : isMD ? 'px-2' : 'px-4'">
-        <v-list-item-content class="align-self-start">
-          <v-list-item-title :class="getTitleClass">
-            IMAGE
-          </v-list-item-title>
-        </v-list-item-content>
-        <v-list-item-avatar tile :size="getAvatarMediumSize" color="orange">
-          <v-icon color="white" :size="getIconBigSize">
-            mdi-image-area
-          </v-icon>
-        </v-list-item-avatar>
-      </v-list-item>
+    <CardHeader
+      title="IMAGE"
+      subtitle=""
+      icon="mdi-image-area"
+      color="orange"
+    />
 
-      <div
-        v-if="
-          question &&
-            'image' in question &&
-            question.image != null &&
-            (question.image.data != null || 'name' in question.image)
-        "
-        class="pa-2"
+    <div v-if="hasValidImage" class="pa-2">
+      <v-badge
+        tile
+        class="badge"
+        :class="isMD ? 'badgeTop1' : 'badgeTop2'"
+        overlap
+        color="#f5f5f5"
+        @click.native="deleteImage"
+        icon="mdi-close"
+        v-if="isAuthor"
       >
-        <v-badge
-          tile
-          class="badge"
-          :class="isMD ? 'badgeTop1' : 'badgeTop2'"
-          overlap
-          color="#f5f5f5"
-          @click.native="deleteImage"
-          icon="mdi-close"
-          v-if="isAuthor"
-        >
-        </v-badge>
-        <v-img :src="imageData" contain> </v-img>
-      </div>
+      </v-badge>
+      <v-img :src="imageData" contain> </v-img>
+    </div>
 
-      <div v-else class="pt-2">
-        <v-file-input
-          label="File input"
-          v-model="file"
-          hide-details
-          prepend-icon=""
-          outlined
-          height="150"
-        />
-      </div>
-    </v-card>
-  </div>
+    <div v-else class="pt-2">
+      <v-file-input
+        label="File input"
+        v-model="file"
+        hide-details
+        prepend-icon=""
+        outlined
+        height="150"
+      />
+    </div>
+  </v-card>
 </template>
 
 <script>
 import { mapGetters, mapActions } from "vuex";
 
+import CardHeader from "../../CardHeader.vue";
+
 export default {
-  name: "Img",
+  components: {
+    CardHeader,
+  },
 
   props: {
     question: {
       type: Object,
-      default: () => {}
+      default: () => {},
     },
     isEvaluative: {
       type: Boolean,
-      default: () => false
+      default: () => false,
     },
     isQuestion: {
       type: Boolean,
-      default: () => false
-    }
+      default: () => false,
+    },
   },
 
   data() {
     return {
       imageData: null,
-      file: null
+      file: null,
     };
   },
 
@@ -97,26 +78,27 @@ export default {
         id: this.question.id,
         value: newV,
         field: "image",
-        type: "question"
+        type: "question",
       };
       this.editableInput(obj);
       this.loadImage();
     },
     question() {
       this.loadImage();
-    }
+    },
   },
 
   computed: {
     ...mapGetters("request", ["getDomain", "isAuthor"]),
-    ...mapGetters("style", [
-      "getAvatarMediumSize",
-      "getSmallTextClass",
-      "getTitleClass",
-      "isMDsmaller",
-      "isMD",
-      "getIconBigSize"
-    ])
+    ...mapGetters("style", ["isMD"]),
+    hasValidImage() {
+      return (
+        this.question &&
+        "image" in this.question &&
+        this.question.image != null &&
+        (this.question.image.data != null || "name" in this.question.image)
+      );
+    },
   },
 
   created() {
@@ -148,13 +130,13 @@ export default {
         id: this.question.id,
         value: { data: null },
         field: "image",
-        type: "question"
+        type: "question",
       };
       this.file = null;
       this.editableInput(obj);
       this.loadImage();
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <div id="expositives" v-if="expositivesNotNull || isAuthor">
     <v-card
-      :flat="!expositivesNotNull && isAuthor"
+      flat
       class="d-flex rounded-0 align-center"
       style="border-left: 0; border-right: 0;"
       :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"

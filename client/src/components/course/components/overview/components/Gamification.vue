@@ -4,22 +4,12 @@
     :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     outlined
   >
-    <v-list-item>
-      <v-list-item-content>
-        <v-list-item-title :class="getTitleClass">
-          GAMIFICATION
-        </v-list-item-title>
-        <v-list-item-subtitle :class="getSmallTextClass"
-          >Leaderboards, badges and much more!</v-list-item-subtitle
-        >
-      </v-list-item-content>
-
-      <v-list-item-avatar tile :size="getAvatarMediumSize" color="green">
-        <v-icon color="white" :size="getIconBigSize">
-          mdi-gamepad-variant
-        </v-icon>
-      </v-list-item-avatar>
-    </v-list-item>
+    <CardHeader
+      title="GAMIFICATION"
+      subtitle="Leaderboards, badges and much more!"
+      icon="mdi-gamepad-variant"
+      color="green"
+    />
     <v-card-text class="resource_text" v-if="isStudent">
       <code>Gamification data will appear here in future versions</code>
     </v-card-text>
@@ -31,9 +21,15 @@
 
 <script>
 import { mapGetters } from "vuex";
+
+import CardHeader from "../../CardHeader.vue";
+
 export default {
   props: {
     resource: Object
+  },
+  components: {
+    CardHeader,
   },
   data: () => ({
     dialog: false,
@@ -65,19 +61,13 @@ export default {
 
   computed: {
     ...mapGetters("request", ["isStudent", "isTeacher"]),
-    ...mapGetters("style", [
-      "getTitleClass",
-      "getSmallTextClass",
-      "getAvatarMediumSize",
-      "getIconBigSize"
-    ]),
+    ...mapGetters(["getCode"]),
     formTitle() {
       return this.editedIndex === -1 ? "New Test" : "Edit Test";
     },
     tests() {
       return this.resource.tests;
     },
-    ...mapGetters(["getCode"])
   },
 
   watch: {
