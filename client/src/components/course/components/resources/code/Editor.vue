@@ -1,31 +1,50 @@
 <template>
   <div id="editor">
     <v-card-text>
-      <div class="pb-2 text-subtitle-1 font-weight-medium">
-        <Editable
-          v-if="isAuthor"
-          :type="'evaluative'"
-          :value="resource.name"
-          :id="resource.id"
-          placeholder="Evaluative name"
-          :field="'name'"
-          @input="editableInput"
-          onclick="event.stopPropagation()"
-        />
-        <span v-if="isViewer || isStudent">
-          {{ resource.name }}
-        </span>
+      <div
+        class="pb-2 text-subtitle-1 font-weight-medium d-flex justify-space-between align-center"
+      >
+        <div class="flex-grow-1">
+          <Editable
+            v-if="isAuthor"
+            :type="'evaluative'"
+            :value="resource.name"
+            :id="resource.id"
+            placeholder="Evaluative name"
+            :field="'name'"
+            @input="editableInput"
+            onclick="event.stopPropagation()"
+          />
+          <span v-if="isViewer || isStudent">
+            {{ resource.name }}
+          </span>
+        </div>
+        <div class="d-flex align-center" v-if="isStudent">
+          <v-btn
+            v-for="(lang, i) in languageOptions"
+            :key="i"
+            icon
+            :color="language === lang ? 'black' : 'grey lighten-2'"
+            @click="language = lang"
+          >
+            <v-icon v-if="lang === 'JavaScript'"
+              >mdi-language-javascript</v-icon
+            >
+            <v-icon v-else-if="lang === 'Python'">mdi-language-python</v-icon>
+            <v-icon v-else-if="lang === 'Rust'">mdi-language-rust</v-icon>
+          </v-btn>
+        </div>
       </div>
 
-      <div class="pb-2">
+      <div>
         <div
           v-if="resource.statement && (isStudent || isViewer)"
           v-html="resource.statement"
         ></div>
-        <div v-if="isAuthor">
+        <div v-if="isAuthor" class="pb-4">
           <vue-editor
             v-model="resource.statement"
-            style="border-radius: 8px;"
+            style="border-radius: 8px"
             :style="{ backgroundColor: $vuetify.theme.currentTheme.editable }"
             :editor-toolbar="customToolbar"
             placeholder="Evaluative statement"
@@ -34,6 +53,7 @@
       </div>
 
       <div class="flex">
+        <!-- Replaced with v-select
         <vue-cascader-select
           class="black--text"
           :options="options"
@@ -43,6 +63,21 @@
           style="width: fit-content"
           :style="valid ? 'border: 2px solid red; border-radius: 6px' : ''"
         />
+        -->
+        <v-select
+          v-if="isAuthor"
+          v-model="resource.type"
+          :items="options"
+          persistent-hint
+          outlined
+          dense
+          color="error"
+          item-color="error"
+          label="Type"
+          hide-details
+          class="mb-4"
+        ></v-select>
+
         <v-select
           v-if="isAuthor"
           v-model="languages"
@@ -52,19 +87,28 @@
           outlined
           dense
           item-title="name"
-        ></v-select>
-        <div v-if="isViewer" class="w-full">Type: {{ resource.type }}</div>
-
-        <v-select
-          v-if="isStudent"
           color="error"
           item-color="error"
+          label="Languages"
+          hide-details
+        ></v-select>
+
+        <div v-if="isViewer" class="w-full">{{ languageOptions }}</div>
+
+        <!--
+        <v-select
+          v-if="isStudent"
           v-model="language"
           :items="languageOptions"
           persistent-hint
           outlined
           dense
-        ></v-select>
+          hide-details
+          class="text-body-2"
+          label="Language"
+          color="error"
+          item-color="error"
+        ></v-select>-->
       </div>
     </v-card-text>
 
@@ -114,7 +158,7 @@
             @click="deleteSkeleton"
             :x-small="getButtonSmallSize == 'x-small'"
             :small="getButtonSmallSize == 'small'"
-            style="position:absolute; top:auto; right: 8px;"
+            style="position: absolute; top: auto; right: 8px"
           >
             <v-icon :size="getIconSmallSize">mdi-delete</v-icon>
           </v-btn>
@@ -139,7 +183,7 @@
         flat
         outlined
         class="d-flex align-center"
-        style="border-left: 0; border-right: 0;"
+        style="border-left: 0; border-right: 0"
       >
         <v-btn
           width="100%"
@@ -152,7 +196,7 @@
         <v-layout column>
           <v-app-bar flat color="white" class="pa-0" rounded height="32">
             <v-tabs
-              style="width:calc(100% - 40px)"
+              style="width: calc(100% - 40px)"
               center-active
               v-model="tab"
               color="error"
@@ -163,7 +207,7 @@
               <v-tab
                 v-for="(item, i) in resource.contexts"
                 :key="i"
-                style="width:100px"
+                style="width: 100px"
                 :class="getSmallTextClass"
               >
                 <!--Student & Viewer-->
@@ -189,9 +233,7 @@
                     onclick="event.stopPropagation()"
                     @click="deleteCont(item.id)"
                   >
-                    <v-icon :size="getIconSmallSize">
-                      mdi-delete
-                    </v-icon>
+                    <v-icon :size="getIconSmallSize"> mdi-delete </v-icon>
                   </v-btn>
                 </span>
               </v-tab>
@@ -238,20 +280,10 @@
     </span>
 
     <v-card-actions v-if="isStudent" class="d-flex flex-wrap">
-      <!--
-      <v-btn 
-        color="error" 
-        class="mb-2" 
-        @click="backToSheet" 
-        :small="getButtonMediumSize=='small'"
-        :medium="getButtonMediumSize=='medium'"
-      >
-        BACK TO SHEET<v-icon right dark> mdi-autorenew </v-icon>
-      </v-btn>-->
       <v-btn
         color="success"
         class="mb-2"
-        @click="dataSumit"
+        @click="submitAnswer"
         :disabled="statusSaveButton"
         :small="getButtonMediumSize == 'small'"
         :medium="getButtonMediumSize == 'medium'"
@@ -260,6 +292,7 @@
         <pre>(Ctrl+S)</pre>
         <v-icon right dark> mdi-content-save </v-icon>
       </v-btn>
+      <!--
       <v-btn
         color="primary"
         dark
@@ -269,46 +302,26 @@
         :medium="getButtonMediumSize == 'medium'"
       >
         TEACHER'S CODE<v-icon right dark> mdi-account-switch </v-icon>
-      </v-btn>
+      </v-btn>-->
     </v-card-actions>
   </div>
 </template>
 
 <script>
-//import PythonTranspiler from '/osiris/bundle.js';
-//import PythonTranspiler from '@/assets/osiris/bundle.js';
-//import PythonTranspiler from './osiris/src/dist/bundle.js';
-
-/*
-const script = document.createElement('script');
-script.src = '/osiris/bundle.js';
-script.onload = () => {
-  console.log("Bundle loaded:", window.PythonTranspiler); // Debugging
-  if (window.PythonTranspiler) {
-    const pythonTranspiler = new window.PythonTranspiler("python", true);
-  } else {
-    console.error("PythonTranspiler is undefined.");
-  }
-};
-document.body.appendChild(script);*/
-
 /* global JSHINT */
 import { bus } from "@/main.js";
-
 import { html2dom } from "@/assets/utils/html2dom.js";
 import Swal from "sweetalert2";
 import "sweetalert2/src/sweetalert2.scss";
 import AceEditor from "vuejs-ace-editor";
 import { mapActions, mapGetters } from "vuex";
-
 import Editable from "../../../../gerneral/Editable.vue";
-
-import Vue from "vue";
-import VueCascaderSelect from "vue-cascader-select";
-Vue.use(VueCascaderSelect);
+// import Vue from "vue";
+// import VueCascaderSelect from "vue-cascader-select";
+// Vue.use(VueCascaderSelect);
 import { VueEditor } from "vue2-editor";
 
-// TODO: implement a previous/next navigation in the editor component
+import Osiris from "osiris-educational-transpiler";
 
 export default {
   name: "Editor",
@@ -326,7 +339,6 @@ export default {
 
   components: {
     AceEditor,
-    VueCascaderSelect,
     Editable,
     VueEditor,
   },
@@ -361,12 +373,8 @@ export default {
       languages: [],
       language: "",
 
-      options: [
-        { label: "blank", value: "blank" },
-        { label: "skeleton", value: "skeleton" },
-        { label: "buggy", value: "buggy" },
-      ],
-      languageOptions: ["JavaScript", "Python"],
+      options: ["blank", "skeleton", "buggy"],
+      languageOptions: ["JavaScript", "Python", "Rust"],
       editorOp: {
         enableBasicAutocompletion: true,
         enableLiveAutocompletion: true,
@@ -383,7 +391,7 @@ export default {
         {
           name: "save",
           bindKey: { win: "Ctrl-s", mac: "Command-s" },
-          exec: this.dataSumit,
+          exec: this.submitAnswer,
           readOnly: true,
         },
       ],
@@ -397,6 +405,9 @@ export default {
       } else {
         this.hasSkeleton = false;
       }
+    },
+    language(newValue) {
+      this.$emit("language-change", newValue);
     },
     tab(newV, oldV) {
       if (newV != undefined && !this.contextDeleted) {
@@ -428,6 +439,17 @@ export default {
       };
       this.editableInput(obj);
     },
+    "resource.type": function (newValue) {
+      if (newValue !== null) {
+        const obj = {
+          id: this.resource.id,
+          value: newValue,
+          field: "type",
+          type: "evaluative",
+        };
+        this.editableInput(obj);
+      }
+    },
   },
 
   beforeDestroy() {
@@ -437,11 +459,6 @@ export default {
   },
 
   created() {
-    //const abc = require('@/assets/osiris/bundle.js').default || require('@/assets/osiris/bundle.js');
-
-    //console.log(abc)
-    //const transpiler = new abc("python", true)
-
     if (this.isStudent) {
       if (!this.resource.languages || this.resource.languages.length == 0) {
         this.languageOptions = ["JavaScript"];
@@ -498,12 +515,10 @@ export default {
     ]),
     ...mapGetters("style", [
       "getSmallTextClass",
-      "getIconBigSize",
       "getIconSmallSize",
       "isMD",
       "getButtonSmallSize",
       "getButtonMediumSize",
-      "getSubtitleClass",
       "getSmallTextClass",
     ]),
     contextLen() {
@@ -606,15 +621,8 @@ export default {
         this.saveContext(this.resource.contexts[this.tab].id, this.code2);
       }
     },
-    async dataSumit2(status) {
-      //let originalCode = this.code;
-      //let originalCode1 = this.code1;
-
-      const errors = [];
-      const logs = [];
+    async submitGrade(status) {
       this.statusSaveButton = true;
-      //this.setProgress({ id: this.resource.id, code: this.code });
-
       if (this.isStudent) {
         this.setProgress({
           id: this.resource.id,
@@ -631,7 +639,6 @@ export default {
         };
         this.editableInput(obj);
       } else if (this.isTeacher) {
-        //this.setTeacherProgress({ id: this.resource.id, code: this.code })
         const obj = {
           id: this.resource.id,
           value: this.code,
@@ -651,85 +658,10 @@ export default {
         }
       }
 
-      if (this.resource.html) {
-        this.code = `
-          ${html2dom.parse(this.resource.html)}\n
-          ${this.code.replaceAll("document", "docFragment")}
-          `;
-        //console.log(this.code);
-      }
-      // 1. Turn off window functions
-      window.prompt = (..._args) => {
-        console.log("windowPrompt", _args);
-      };
-      window.confirm = (..._args) => {
-        console.log("windowConfirm", _args);
-      };
-      window.alert = (..._args) => {
-        console.log("windowAlert", _args);
-      };
-
-      // 2. Replace console.log with stub implementation.
-      const originalLog = console.log;
-      console.log = (...args) => {
-        logs.push({ row: -1, type: "log", text: args });
-      };
-      const wrapperCode = this.infiniteLoopDetectorWrapper(this.code);
-      try {
-        eval(wrapperCode);
-      } catch (error) {
-        const message =
-          error.message === "infinite" ? "Infinite loop" : error.message;
-        errors.push({
-          type: "error",
-          row: 1,
-          column: 0,
-          text: message,
-        });
-      } finally {
-        // Restore original implementation after testing.
-        console.log = originalLog;
-      }
-
-      // 3. Detect JSHINT errors and warnings
-      const options = {
-        undef: true,
-        unused: true,
-        devel: true,
-        browser: true,
-        esversion: 7,
-      };
-      JSHINT(this.code, options);
-      const jshintEerrors = JSHINT.data().errors;
-      if (jshintEerrors) {
-        for (const error of jshintEerrors) {
-          if (
-            !(
-              error.evidence.startsWith("function") &&
-              error.reason.endsWith("is defined but never used.")
-            )
-          ) {
-            errors.push({
-              type: error.code.startsWith("E") ? "error" : "info",
-              row: error.line - 1,
-              column: 0,
-              text: error.reason,
-            });
-          }
-        }
-      }
-      this.$emit("onErrors", errors);
-      this.$emit("onLogs", logs);
+      this.checkCode();
     },
-    async dataSumit() {
-      //let originalCode = this.code;
-      //let originalCode1 = this.code1;
-
-      const errors = [];
-      const logs = [];
+    async submitAnswer() {
       this.statusSaveButton = true;
-      //this.setProgress({ id: this.resource.id, code: this.code });
-
       if (this.isStudent) {
         this.setProgress({
           id: this.resource.id,
@@ -745,7 +677,6 @@ export default {
         };
         this.editableInput(obj);
       } else if (this.isTeacher) {
-        //this.setTeacherProgress({ id: this.resource.id, code: this.code })
         const obj = {
           id: this.resource.id,
           value: this.code,
@@ -765,13 +696,19 @@ export default {
         }
       }
 
+      this.checkCode();
+    },
+    checkCode() {
+      const errors = [];
+      const logs = [];
+
       if (this.resource.html) {
         this.code = `
           ${html2dom.parse(this.resource.html)}\n
           ${this.code.replaceAll("document", "docFragment")}
           `;
-        //console.log(this.code);
       }
+
       // 1. Turn off window functions
       window.prompt = (..._args) => {
         console.log("windowPrompt", _args);
@@ -782,13 +719,47 @@ export default {
       window.alert = (..._args) => {
         console.log("windowAlert", _args);
       };
+      window.print = (..._args) => {
+        console.log(_args);
+      };
+
+      const codeToTest = (() => {
+        switch (this.language) {
+          case "JavaScript":
+            return this.code;
+          case "Python": {
+            const transpilerPython = new Osiris("python");
+            const transpiledCode = transpilerPython.passCode(this.code);
+            if (transpiledCode.success) {
+              return transpiledCode.code;
+            } else {
+              console.error("Transpilation Error:", transpiledCode.error);
+              return "";
+            }
+          }
+          case "Rust": {
+            const transpilerRust = new Osiris("rust");
+            const transpiledCode = transpilerRust.passCode(this.code);
+            if (transpiledCode.success) {
+              return transpiledCode.code;
+            } else {
+              console.error("Transpilation Error:", transpiledCode.error);
+              return "";
+            }
+          }
+          default:
+            return this.code;
+        }
+      })();
+      console.log(codeToTest);
 
       // 2. Replace console.log with stub implementation.
       const originalLog = console.log;
       console.log = (...args) => {
         logs.push({ row: -1, type: "log", text: args });
       };
-      const wrapperCode = this.infiniteLoopDetectorWrapper(this.code);
+
+      const wrapperCode = this.infiniteLoopDetectorWrapper(codeToTest);
       try {
         eval(wrapperCode);
       } catch (error) {
@@ -806,41 +777,40 @@ export default {
       }
 
       // 3. Detect JSHINT errors and warnings
-      const options = {
-        undef: true,
-        unused: true,
-        devel: true,
-        browser: true,
-        esversion: 7,
-      };
-      JSHINT(this.code, options);
-      const jshintEerrors = JSHINT.data().errors;
-      if (jshintEerrors) {
-        for (const error of jshintEerrors) {
-          if (
-            !(
-              error.evidence.startsWith("function") &&
-              error.reason.endsWith("is defined but never used.")
-            )
-          ) {
-            errors.push({
-              type: error.code.startsWith("E") ? "error" : "info",
-              row: error.line - 1,
-              column: 0,
-              text: error.reason,
-            });
+      if (this.language === "JavaScript") {
+        const options = {
+          undef: true,
+          unused: true,
+          devel: true,
+          browser: true,
+          esversion: 7,
+        };
+        JSHINT(codeToTest, options);
+        const jshintEerrors = JSHINT.data().errors;
+        if (jshintEerrors) {
+          for (const error of jshintEerrors) {
+            if (
+              !(
+                error.evidence.startsWith("function") &&
+                error.reason.endsWith("is defined but never used.")
+              )
+            ) {
+              errors.push({
+                type: error.code.startsWith("E") ? "error" : "info",
+                row: error.line - 1,
+                column: 0,
+                text: error.reason,
+              });
+            }
           }
         }
+        // Set the errors in the editor
+        //this.$refs.myEditor.editor.getSession().setAnnotations([...errors]);
+
+        // Emit errors for parent component to show errors
+        this.$emit("onErrors", errors);
       }
-
-      // Set the errors in the editor
-      //this.$refs.myEditor.editor.getSession().setAnnotations([...errors]);
-
-      // Emit errors for parent component to show errors
-      this.$emit("onErrors", errors);
       this.$emit("onLogs", logs);
-      //this.code = originalCode;
-      //this.code1 = originalCode1;
     },
     getLineNumberError(err) {
       const caller_line = err.stack.split("\n")[4];
@@ -882,7 +852,7 @@ export default {
       editorRef.findAll(keyword, searchOptions);
       return editorRef.getSelection().getAllRanges().length;
     },
-    editorInit: function(_editor) {
+    editorInit: function (_editor) {
       if (this.isViewer) {
         _editor.setReadOnly(true);
       }
@@ -908,10 +878,10 @@ export default {
  */
 
       if (this.saveHandler == "") {
-        this.saveHandler = setInterval(this.dataSumit, 1000);
+        this.saveHandler = setInterval(this.submitAnswer, 1000);
       }
       if (this.saveHandler == "" && this.isStudent) {
-        this.saveHandler = setInterval(this.dataSumit2, 100000);
+        this.saveHandler = setInterval(this.submitGrade, 100000);
       }
     },
     editorChange() {
@@ -920,7 +890,7 @@ export default {
     },
     gotoLine(line) {
       this.$refs.myEditor.editor.resize(true);
-      this.$refs.myEditor.editor.scrollToLine(line, true, true, function() {});
+      this.$refs.myEditor.editor.scrollToLine(line, true, true, function () {});
       this.$refs.myEditor.editor.gotoLine(line, 0, true);
     },
     infiniteLoopDetector(id) {
@@ -940,12 +910,13 @@ export default {
         );
       }
       // this is not a strong regex, but enough to use at the time
-      return codeStr.replace(/for *\(.*\{|while *\(.*\{|do *\{/g, function(
-        loopHead
-      ) {
-        var id = parseInt(Math.random() * Number.MAX_SAFE_INTEGER);
-        return `this.infiniteLoopDetector(${id});${loopHead}this.infiniteLoopDetector(${id});`;
-      });
+      return codeStr.replace(
+        /for *\(.*\{|while *\(.*\{|do *\{/g,
+        function (loopHead) {
+          var id = parseInt(Math.random() * Number.MAX_SAFE_INTEGER);
+          return `this.infiniteLoopDetector(${id});${loopHead}this.infiniteLoopDetector(${id});`;
+        }
+      );
     },
   },
 };

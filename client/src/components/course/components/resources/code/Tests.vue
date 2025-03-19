@@ -5,13 +5,14 @@
       :class="isEvaluative ? 'shadow' : ''"
       :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
     >
-    <CardHeader
-      title="TESTS"
-      :subtitle="isStudent ? 'Run the teacher tests and create your owns!' : ''"
-      icon="mdi-robot-confused"
-      color="blue"
-    />
-
+      <CardHeader
+        title="TESTS"
+        :subtitle="
+          isStudent ? 'Run the teacher tests and create your owns!' : ''
+        "
+        icon="mdi-robot-confused"
+        color="blue"
+      />
 
       <v-data-table
         :headers="
@@ -31,9 +32,7 @@
         :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }"
       >
         <template v-slot:top>
-          <div
-            class="py-1 d-flex px-2"
-          >
+          <div class="py-1 d-flex px-2">
             <v-btn
               @click="run"
               color="success"
@@ -66,7 +65,7 @@
                     v-bind="attrs"
                     v-on="on"
                     color="blue"
-                    style="color:white"
+                    style="color: white"
                     :small="getButtonMediumSize == 'small'"
                     :medium="getButtonMediumSize == 'medium'"
                   >
@@ -100,15 +99,9 @@
                           <template v-slot:default>
                             <thead>
                               <tr>
-                                <th class="text-left">
-                                  Code
-                                </th>
-                                <th class="text-left">
-                                  Input
-                                </th>
-                                <th class="text-left">
-                                  Expected
-                                </th>
+                                <th class="text-left">Code</th>
+                                <th class="text-left">Input</th>
+                                <th class="text-left">Expected</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -132,18 +125,10 @@
                           <template v-slot:default>
                             <thead>
                               <tr>
-                                <th class="text-left">
-                                  Subtype
-                                </th>
-                                <th class="text-left">
-                                  Code
-                                </th>
-                                <th class="text-left">
-                                  Input
-                                </th>
-                                <th class="text-left">
-                                  Expected
-                                </th>
+                                <th class="text-left">Subtype</th>
+                                <th class="text-left">Code</th>
+                                <th class="text-left">Input</th>
+                                <th class="text-left">Expected</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -186,15 +171,9 @@
                           <template v-slot:default>
                             <thead>
                               <tr>
-                                <th class="text-left">
-                                  Code
-                                </th>
-                                <th class="text-left">
-                                  Input
-                                </th>
-                                <th class="text-left">
-                                  Expected
-                                </th>
+                                <th class="text-left">Code</th>
+                                <th class="text-left">Input</th>
+                                <th class="text-left">Expected</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -223,18 +202,10 @@
                           <template v-slot:default>
                             <thead>
                               <tr>
-                                <th class="text-left">
-                                  Subtype
-                                </th>
-                                <th class="text-left">
-                                  Code
-                                </th>
-                                <th class="text-left">
-                                  Input
-                                </th>
-                                <th class="text-left">
-                                  Expected
-                                </th>
+                                <th class="text-left">Subtype</th>
+                                <th class="text-left">Code</th>
+                                <th class="text-left">Input</th>
+                                <th class="text-left">Expected</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -294,7 +265,7 @@
         </template>
 
         <template v-slot:header.input="{}">
-          <span>Input</span><br>
+          <span>Input</span><br />
           <span>Expected</span>
         </template>
 
@@ -312,7 +283,7 @@
                 placeholder="Input"
                 @input="editableInput"
                 :required="true"
-                style="margin-top:2px; margin-bottom:2px"
+                style="margin-top: 2px; margin-bottom: 2px"
               ></Editable>
               <Editable
                 :type="'test'"
@@ -322,7 +293,7 @@
                 placeholder="Expected"
                 @input="editableInput"
                 :required="true"
-                style="margin-bottom:2px"
+                style="margin-bottom: 2px"
               ></Editable>
             </span>
             <span v-if="isViewer">
@@ -358,7 +329,7 @@
             <span v-if="isAuthor" class="black--text">
               <vue-cascader-select
                 :options="options"
-                @select="selected => setTypes(item.id, selected.value)"
+                @select="(selected) => setTypes(item.id, selected.value)"
                 :value="
                   'subtype' in item &&
                   item.subtype != '' &&
@@ -368,7 +339,11 @@
                     ? item.type
                     : ''
                 "
-                :style="validate(item) ? 'border: 2px solid red; border-radius: 6px' : ''"
+                :style="
+                  validate(item)
+                    ? 'border: 2px solid red; border-radius: 6px'
+                    : ''
+                "
               />
             </span>
             <span v-if="isViewer">
@@ -387,9 +362,7 @@
             :x-small="getButtonSmallSize == 'x-small'"
             :small="getButtonSmallSize == 'small'"
           >
-            <v-icon :size="getIconSmallSize">
-              mdi-eye
-            </v-icon>
+            <v-icon :size="getIconSmallSize"> mdi-eye </v-icon>
           </v-btn>
           <v-btn
             icon
@@ -399,9 +372,7 @@
             @click="changeTestVisibility(item.id, true)"
             :disabled="isViewer"
           >
-            <v-icon :size="getIconSmallSize">
-              mdi-eye-off
-            </v-icon>
+            <v-icon :size="getIconSmallSize"> mdi-eye-off </v-icon>
           </v-btn>
         </template>
 
@@ -412,9 +383,7 @@
             :x-small="getButtonSmallSize == 'x-small'"
             :small="getButtonSmallSize == 'small'"
           >
-            <v-icon :size="getIconSmallSize">
-              mdi-delete
-            </v-icon>
+            <v-icon :size="getIconSmallSize"> mdi-delete </v-icon>
           </v-btn>
         </template>
 
@@ -472,6 +441,8 @@ import Editable from "../../../../gerneral/Editable.vue";
 import VueCascaderSelect from "vue-cascader-select";
 import CardHeader from "../../CardHeader.vue";
 
+import Osiris from "osiris-educational-transpiler";
+
 Vue.use(VueCascaderSelect);
 
 export default {
@@ -480,7 +451,7 @@ export default {
   components: {
     Editable,
     VueCascaderSelect,
-    CardHeader
+    CardHeader,
   },
 
   props: {
@@ -489,8 +460,12 @@ export default {
     logs: Array,
     isEvaluative: {
       type: Boolean,
-      default: () => false
-    }
+      default: () => false,
+    },
+    selectedLanguage: {
+      type: String,
+      default: "JavaScript",
+    },
   },
 
   data: () => ({
@@ -504,38 +479,38 @@ export default {
         { text: "Input", value: "input", align: "start", sortable: true },
         { text: "Type", value: "type" },
         { text: "Output", value: "output" },
-        { text: "Expected", value: "expected" }
+        { text: "Expected", value: "expected" },
       ],
       student2: [
         { text: "Input", value: "input", align: "center", sortable: true },
         { text: "Output", value: "output" },
-        { text: "Expected", value: "expected" }
+        { text: "Expected", value: "expected" },
       ],
       author: [
         { text: "Output", value: "output", align: "center" },
         { text: "Input Expected", value: "input", align: "center" },
         { text: "Type", value: "type", align: "center" },
         { text: "", value: "show", align: "center" },
-        { text: "", value: "actions" }
+        { text: "", value: "actions" },
       ],
       viewer: [
         { text: "Output", value: "output", align: "center" },
         { text: "Input \n Expected", value: "input", align: "center" },
         { text: "Type", value: "type", align: "center" },
-        { text: "Show", value: "show", align: "center" }
-      ]
+        { text: "Show", value: "show", align: "center" },
+      ],
     },
 
     editedIndex: -1,
     editedItem: {
       input: "",
       output: "",
-      expected: ""
+      expected: "",
     },
     defaultItem: {
       input: "",
       output: "",
-      expected: ""
+      expected: "",
     },
     code: "",
     nTestsSuccess: 0,
@@ -547,8 +522,8 @@ export default {
         disabled: true,
         options: [
           { label: "Expression", value: "expression" },
-          { label: "Error", value: "error" }
-        ]
+          { label: "Error", value: "error" },
+        ],
       },
       {
         label: "Metric",
@@ -556,36 +531,33 @@ export default {
         disabled: true,
         options: [
           { label: "Occurrences", value: "occurrences" },
-          { label: "Lines", value: "lines" }
-        ]
+          { label: "Lines", value: "lines" },
+        ],
       },
       {
         label: "Log",
-        value: "log"
+        value: "log",
       },
       {
         label: "Function",
-        value: "function"
-      }
-    ]
+        value: "function",
+      },
+    ],
   }),
 
-  created(){
-    if (this.isTeacher){
-      this.run()
+  created() {
+    if (this.isTeacher) {
+      this.run();
     }
   },
 
   computed: {
-    ...mapGetters("main", [
-      "getStatusByResourceID",
-      "getValidated"
-    ]),
+    ...mapGetters("main", ["getStatusByResourceID", "getValidated"]),
     ...mapGetters("request", [
       "isStudent",
       "isTeacher",
       "isViewer",
-      "isAuthor"
+      "isAuthor",
     ]),
     ...mapGetters("style", [
       "getTitleClass",
@@ -596,18 +568,17 @@ export default {
       "isMD",
       "getIconSmallSize",
       "getButtonMediumSize",
-      "getButtonSmallSize"
+      "getButtonSmallSize",
     ]),
     formTitle() {
       return this.editedIndex === -1 ? "New Test" : "Edit Test";
     },
     getErrors() {
-      return this.errors.some(error => error.type == "error");
+      return this.errors.some((error) => error.type == "error");
     },
     /* tests2() {
       return this.resource.tests.filter((test) => test.type == "metric");
     }, */
-
   },
 
   watch: {
@@ -616,7 +587,7 @@ export default {
     },
     dialogDelete(val) {
       val || this.closeDelete();
-    }
+    },
   },
 
   mounted() {
@@ -631,24 +602,24 @@ export default {
     ...mapActions("main", [
       "addTestByEvaluativeID",
       "deleteTestByID",
-      "editableInput"
+      "editableInput",
     ]),
-    validate(test){
-      return test.type == null && this.getValidated
+    validate(test) {
+      return test.type == null && this.getValidated;
     },
     changeTestVisibility(id, value) {
       const obj = {
         id: id,
         value: value,
         field: "show",
-        type: "test"
+        type: "test",
       };
       this.editableInput(obj);
     },
     setTypes(id, value) {
       const obj = {
         id: id,
-        type: "test"
+        type: "test",
       };
       if (value == "log") {
         obj.value = value;
@@ -701,313 +672,253 @@ export default {
         "info"
       );
     },
-    /* run2() {
-      this.code = this.getProgressFromResourceId(this.resource.id).code;
-        
-      QUnit.testDone(( details ) => {console.log(details);});
-      QUnit.start()
-      function square() {
-        return x * x;
-      }
-      QUnit.test("square()", (assert) => {
-        assert.equal(this.code, 4, "square(2)");
-                
-      });
-    }, */
     run() {
-      // Save the code
+      this.code = this.isStudent 
+        ? this.getStatusByResourceID(this.resource.id).answer[0].code
+        : this.resource.solution;
 
-        this.nTestsSuccess = 0;
-        if (this.isStudent) {
-          this.code = this.getStatusByResourceID(
-            this.resource.id
-          ).answer[0].code;
-        } else if (this.isTeacher) {
-          this.code = this.resource.solution;
-        }
-
-        const originalCode = this.code;
-
-        if (this.resource.html) {
-          this.code = `          
+      if (this.resource.html) {
+        this.code = `          
           ${html2dom.parse(this.resource.html)}\n          
           ${this.code.replaceAll("document", "docFragment")}
           `;
-        }
+      }
+      this.runTests();
+    
+      const status = (this.nTestsSuccess / this.resource.tests.length) * 100;
+      this.$emit("onSaveCode", status);
+    },
 
-        // Expressions
-        this.resource.tests.forEach((test) => {
-          let res;
-          //console.log("2. run test->" + test.type);
-          if (test.type == "log") {
-            res = this.logs.map(log => log.text).join("");
-            //console.log("3. result->" + res);
-          } else if (test.type == "expression") {
-            try {
-              if (test.subtype) {
-                eval(`${this.code}\n${test.input}`);
-                res = "no error";
-              } else {
-                res = eval(`${this.code}\n${test.input}`);
-                res = typeof res === "undefined" ? `No assigned value` : res;
-              }
-            } catch (error) {
-              if (test.subtype) {
-                res = "error";
-              } else {
-                res = error.message;
-              }
-            }
-          } else if (test.type == "metric") {
-            if (test.subtype == "lines") {
-              let count = 0;
-              const lines = this.code.split("\n");
-              lines.forEach(line => {
-                if (line.startsWith("//") || line == "") {
-                  count++;
-                }
-              });
-              res = eval(`${lines.length - count} ${test.expected}`);
-            } else if (test.subtype == "occurrences") {
-              const keyword = test.input.split(":")[1];
-              const nOccurrences = (
-                this.code.match(new RegExp(keyword, "g")) || []
-              ).length;
-              res = nOccurrences;
-            } else if (test.subtype == "keyword") {
-              res = this.code.includes(test.input.split(":")[1]);
-            } else {
-              res = true;
-            }
-          } else {
-            let fct = eval(`(${this.code})`);
-            let arr = []
-            if (test.input.startsWith('[') && test.input.endsWith(']')) {
-              try {
-                arr = [JSON.parse(test.input.replace(/'/g, '"'))];
-              } catch (e) {
-                console.error("String is not a valid JSON array:", e);
-                arr = null
-              }
-            } else {
-              //arr = test.input.split(" ");
-              //arr = arr.map(x => JSON.parse(x))
-              //console.log(arr)
-              const regex = /"([^"]+)"|(\b\d+\.?\d*|\.\d+\b)|(\b\w+\b)/g;
-              let matches;
-              while ((matches = regex.exec(test.input)) !== null) {
-                if (matches[1]) {
-                  // This is a matched quoted word, push it without the quotes
-                  arr.push(matches[1]);
-                } else if (matches[2]) {
-                  // This is a matched number, parse it and push
-                  arr.push(parseFloat(matches[2]));
-                } else if (matches[3]) {
-                  // This is a matched unquoted word
-                  arr.push(matches[3]);
-                }
-              }
-            }
-            if (test.input == "") {
-              res = fct.call(null);
-            } else {
-              res = fct.call(null, ...arr);
-            }
-          }
-          if (Array.isArray(res)){
-            try {
-              let expectedArray = JSON.parse(test.expected.replace(/'/g, '"'));
-              if (expectedArray.length === res.length && expectedArray.every((element, index) => element === res[index])){
-                test.correct=true
-                this.nTestsSuccess++
-              } else {
-                test.correct = false
-              }
-            } catch(err){
-              test.correct = false
-              console.log(err)
-            }
-          } else if (String(res) == test.expected.replace(/"/g, '') || res === true) {
-            test.correct=true
-            this.nTestsSuccess++;
-          } else {
-            test.correct = false
-          }
+    runTests() {
+      this.nTestsSuccess = 0;
+      
+      // First pass: Calculate success rate
+      this.resource.tests.forEach((test) => {
+        const result = this.executeTest(test);
+        const isCorrect = this.checkTestResult(test, result);
+        test.correct = isCorrect;
+        if (isCorrect) this.nTestsSuccess++;
+      });
 
-          /*
-          Vue.set(this.resource.tests, index, {
-            ...test,
-            output: typeof(res)=="object" ? JSON.stringify(res) : String(res),
-          });*/
-          //res == test.expOutput
-          // ? (trs[index + 1].style.backgroundColor = "green")
-          //: (trs[index + 1].style.backgroundColor = "red");
+      // Second pass: Update UI with results
+      this.resource.tests.forEach((test, index) => {
+        const result = this.executeTest(test);
+        Vue.set(this.resource.tests, index, {
+          ...test,
+          output: typeof result === "object" ? JSON.stringify(result) : String(result),
         });
+      });
 
-        //Update progress
+      // Update tests in store
+      const obj = {
+        id: this.resource.id,
+        value: this.resource.tests,
+        field: "tests",
+        type: "evaluative",
+      };
+      this.editableInput(obj);
+      this.$forceUpdate();
+    },
 
+    executeTest(test) {
+      switch(test.type) {
+        case 'log': {
+          const logText = this.logs.map(log => log.text).join("");
+          return logText || "No logs found";
+        }
         
-        const status = (this.nTestsSuccess / this.resource.tests.length) * 100;
+        case 'expression':
+          return this.executeExpressionTest(test);
+        
+        case 'metric':
+          return this.executeMetricTest(test);
+        
+        case 'function':
+          return this.executeFunctionTest(test);
+        
+        default:
+          return "Unknown test type";
+      }
+    },
 
-        /*
-        if (this.isStudent) {
-          this.setProgress({
-            id: this.resource.id,
-            data: {
-              grade: status
-            }
-          });
-        }*/
-
-        this.code = originalCode;
-
-        this.$emit("onSaveCode", status);
-
-
-        setTimeout(async () => {
-          this.nTestsSuccess = 0;
-        if (this.isStudent) {
-          this.code = this.getStatusByResourceID(
-            this.resource.id
-          ).answer[0].code;
-        } else if (this.isTeacher) {
-          this.code = this.resource.solution;
-        }
-
-        const originalCode = this.code;
-
-        if (this.resource.html) {
-          this.code = `          
-          ${html2dom.parse(this.resource.html)}\n          
-          ${this.code.replaceAll("document", "docFragment")}
-          `;
-        }
-
-        // Expressions
-        this.resource.tests.forEach((test, index) => {
-          let res;
-          //console.log("2. run test->" + test.type);
-          if (test.type == "log") {
-            res = this.logs.map(log => log.text).join("");
-            //console.log("3. result->" + res);
-          } else if (test.type == "expression") {
-            try {
-              if (test.subtype) {
-                eval(`${this.code}\n${test.input}`);
-                res = "no error";
-              } else {
-                res = eval(`${this.code}\n${test.input}`);
-                res = typeof res === "undefined" ? `No assigned value` : res;
-              }
-            } catch (error) {
-              if (test.subtype) {
-                res = "error";
-              } else {
-                res = error.message;
-              }
-            }
-          } else if (test.type == "metric") {
-            if (test.subtype == "lines") {
-              let count = 0;
-              const lines = this.code.split("\n");
-              lines.forEach(line => {
-                if (line.startsWith("//") || line == "") {
-                  count++;
-                }
-              });
-              res = eval(`${lines.length - count} ${test.expected}`);
-            } else if (test.subtype == "occurrences") {
-              const keyword = test.input.split(":")[1];
-              const nOccurrences = (
-                this.code.match(new RegExp(keyword, "g")) || []
-              ).length;
-              res = nOccurrences;
-            } else if (test.subtype == "keyword") {
-              res = this.code.includes(test.input.split(":")[1]);
+    executeExpressionTest(test) {
+      const codeToTest = (() => {
+        switch (this.language) {
+          case "JavaScript":
+            return this.code;
+          case "Python": {
+            const transpilerPython = new Osiris("python");
+            const transpiledCode = transpilerPython.passCode(this.code);
+            if (transpiledCode.success) {
+              return transpiledCode.code;
             } else {
-              res = true;
-            }
-          } else {
-            let fct = eval(`(${this.code})`);
-            let arr = []
-            if (test.input.startsWith('[') && test.input.endsWith(']')) {
-              try {
-                arr = [JSON.parse(test.input.replace(/'/g, '"'))];
-              } catch (e) {
-                console.error("String is not a valid JSON array:", e);
-                arr = null
-              }
-            } else {
-              //arr = test.input.split(" ");
-              //arr = arr.map(x => JSON.parse(x))
-              //console.log(arr)
-              const regex = /"([^"]+)"|(\b\d+\.?\d*|\.\d+\b)|(\b\w+\b)/g;
-              let matches;
-              while ((matches = regex.exec(test.input)) !== null) {
-                if (matches[1]) {
-                  // This is a matched quoted word, push it without the quotes
-                  arr.push(matches[1]);
-                } else if (matches[2]) {
-                  // This is a matched number, parse it and push
-                  arr.push(parseFloat(matches[2]));
-                } else if (matches[3]) {
-                  // This is a matched unquoted word
-                  arr.push(matches[3]);
-                }
-              }
-            }
-            if (test.input == "") {
-              res = fct.call(null);
-            } else {
-              res = fct.call(null, ...arr);
+              console.error("Transpilation Error:", transpiledCode.error);
+              return "";
             }
           }
-          if (Array.isArray(res)){
-            try {
-              let expectedArray = JSON.parse(test.expected.replace(/'/g, '"'));
-              if (expectedArray.length === res.length && expectedArray.every((element, index) => element === res[index])){
-                test.correct=true
-                this.nTestsSuccess++
-              } else {
-                test.correct = false
-              }
-            } catch(err){
-              test.correct = false
-              console.log(err)
+          case "Rust": {
+            const transpilerRust = new Osiris("rust");
+            const transpiledCode = transpilerRust.passCode(this.code);
+            if (transpiledCode.success) {
+              return transpiledCode.code;
+            } else {
+              console.error("Transpilation Error:", transpiledCode.error);
+              return "";
             }
-          } else if (String(res) == test.expected.replace(/"/g, '') || res === true) {
-            test.correct=true
-            this.nTestsSuccess++;
-          } else {
-            test.correct = false
           }
+          default:
+            return this.code;
+        }
+      })();
 
+      try {
+        if (test.subtype) {
+          eval(`${codeToTest}\n${test.input}`);
+          return "no error";
+        }
+        const result = eval(`${codeToTest}\n${test.input}`);
+        return typeof result === "undefined" ? "No assigned value" : result;
+      } catch (error) {
+        return test.subtype ? "error" : error.message;
+      }
+    },
 
-          Vue.set(this.resource.tests, index, {
-            ...test,
-            output: typeof(res)=="object" ? JSON.stringify(res) : String(res),
-          });
-          //res == test.expOutput
-          // ? (trs[index + 1].style.backgroundColor = "green")
-          //: (trs[index + 1].style.backgroundColor = "red");
-        });
-        const obj = {
-          id: this.resource.id,
-          value: this.resource.tests,
-          field: "tests",
-          type: "evaluative"
-        };
-        this.editableInput(obj)
-        this.$forceUpdate();
-        this.code = originalCode;
-        }, 1000)
+    executeMetricTest(test) {
+      const codeToTest = (() => {
+        switch (this.language) {
+          case "JavaScript":
+            return this.code;
+          case "Python": {
+            const transpilerPython = new Osiris("python");
+            const transpiledCode = transpilerPython.passCode(this.code);
+            if (transpiledCode.success) {
+              return transpiledCode.code;
+            } else {
+              console.error("Transpilation Error:", transpiledCode.error);
+              return "";
+            }
+          }
+          case "Rust": {
+            const transpilerRust = new Osiris("rust");
+            const transpiledCode = transpilerRust.passCode(this.code);
+            if (transpiledCode.success) {
+              return transpiledCode.code;
+            } else {
+              console.error("Transpilation Error:", transpiledCode.error);
+              return "";
+            }
+          }
+          default:
+            return this.code;
+        }
+      })();
 
+      switch(test.subtype) {
+        case 'lines': {
+          const lines = codeToTest.split("\n");
+          const count = lines.filter(line => line.startsWith("//") || line === "").length;
+          return eval(`${lines.length - count} ${test.expected}`);
+        }
+        
+        case 'occurrences': {
+          const keyword = test.input.split(":")[1];
+          return (codeToTest.match(new RegExp(keyword, "g")) || []).length;
+        }
+        
+        case 'keyword': {
+          return codeToTest.includes(test.input.split(":")[1]);
+        }
+        
+        default:
+          return true;
+      }
+    },
+
+    executeFunctionTest(test) {
+      const codeToTest = (() => {
+        switch (this.language) {
+          case "JavaScript":
+            return this.code;
+          case "Python": {
+            const transpilerPython = new Osiris("python");
+            const transpiledCode = transpilerPython.passCode(this.code);
+            if (transpiledCode.success) {
+              return transpiledCode.code;
+            } else {
+              console.error("Transpilation Error:", transpiledCode.error);
+              return "";
+            }
+          }
+          case "Rust": {
+            const transpilerRust = new Osiris("rust");
+            const transpiledCode = transpilerRust.passCode(this.code);
+            if (transpiledCode.success) {
+              return transpiledCode.code;
+            } else {
+              console.error("Transpilation Error:", transpiledCode.error);
+              return "";
+            }
+          }
+          default:
+            return this.code;
+        }
+      })();
+
+      const fct = eval(`(${codeToTest})`);
+      const args = this.parseFunctionArguments(test.input);
+      
+      return test.input === "" 
+        ? fct.call(null)
+        : fct.call(null, ...args);
+    },
+
+    parseFunctionArguments(input) {
+      if (input.startsWith("[") && input.endsWith("]")) {
+        try {
+          return [JSON.parse(input.replace(/'/g, '"'))];
+        } catch (e) {
+          console.error("String is not a valid JSON array:", e);
+          return null;
+        }
+      }
+
+      const args = [];
+      const regex = /"([^"]+)"|(\b\d+\.?\d*|\.\d+\b)|(\b\w+\b)/g;
+      let matches;
+      
+      while ((matches = regex.exec(input)) !== null) {
+        if (matches[1]) {
+          args.push(matches[1]);
+        } else if (matches[2]) {
+          args.push(parseFloat(matches[2]));
+        } else if (matches[3]) {
+          args.push(matches[3]);
+        }
+      }
+      
+      return args;
+    },
+
+    checkTestResult(test, result) {
+      if (Array.isArray(result)) {
+        try {
+          const expectedArray = JSON.parse(test.expected.replace(/'/g, '"'));
+          return expectedArray.length === result.length &&
+                 expectedArray.every((element, index) => element === result[index]);
+        } catch (err) {
+          console.error("Error comparing arrays:", err);
+          return false;
+        }
+      }
+
+      return String(result) === test.expected.replace(/"/g, "") || result === true;
     },
     getColor(item) {
       if (item.output == "") return "white";
       else if (
         item.output == item.expected ||
-        (item.type == "metric" && item.output == "true") || item.correct
+        (item.type == "metric" && item.output == "true") ||
+        item.correct
       ) {
         return "green";
       } else return "red";
@@ -1042,8 +953,8 @@ export default {
         this.resource.tests.push(this.editedItem);
       }
       this.close();
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -1077,8 +988,8 @@ export default {
 }
 #tests >>> .vcs__arrow-container {
   padding-left: 6px;
-  left : 0px;
-  display:flex;
+  left: 0px;
+  display: flex;
   justify-content: end;
 }
 #tests >>> .vcs__arrow {

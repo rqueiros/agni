@@ -24,6 +24,7 @@
               :isEvaluative="isEvaluative"
               @onErrors="setErrors"
               @onLogs="setLogs"
+              @language-change="handleLanguageChange"
               ref="editor"
             />
 
@@ -138,6 +139,7 @@
             :resource="resource"
             :errors="errors"
             :logs="logs"
+            :selectedLanguage="selectedLanguage"
             @onSaveCode="saveCode"
           />
         </v-col>
@@ -149,6 +151,7 @@
             :resource="resource"
             :errors="errors"
             :logs="logs"
+            :selectedLanguage="selectedLanguage"
             @onSaveCode="saveCode"
           />
         </v-col>
@@ -193,7 +196,8 @@ export default {
       errors: [],
       logs: [],
       rating: 0,
-      line: 0
+      line: 0,
+      selectedLanguage: "JavaScript"
     };
   },
 
@@ -207,10 +211,13 @@ export default {
       this.logs = logs;
     },
     saveCode(status) {
-      this.$refs.editor.dataSumit2(status);
+      this.$refs.editor.submitGrade(status);
     },
     handleClick(value) {
       this.$refs.editor.gotoLine(value.row);
+    },
+    handleLanguageChange(language) {
+      this.selectedLanguage = language;
     }
   },
 

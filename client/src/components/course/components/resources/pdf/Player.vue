@@ -58,6 +58,7 @@ import pdf from "vue-pdf";
 import "sweetalert2/src/sweetalert2.scss";
 import { mapGetters, mapActions } from "vuex";
 
+
 export default {
   components: {
     pdf
