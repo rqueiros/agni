@@ -66,10 +66,8 @@ export default {
         const rid = lesson.id;
         const name = lesson.name;
         let status = this.getCompletationStatusByLessonID(lesson.id);
-        if (status) {
-          status = status.toFixed(2);
-          this.sheets.push({ id, rid, name, status });
-        }
+        status = status ? status.toFixed(2) : 0;
+        this.sheets.push({ id, rid, name, status });
       });
     }
   },

@@ -105,7 +105,7 @@ const request = {
         }
       );
       if ("grade" in payload.data) {
-        await this.dispatch("request/fetchCourse");
+        //await this.dispatch("request/fetchCourse");
       }
     },
     async fetchCourse(state) {

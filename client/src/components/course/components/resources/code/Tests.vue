@@ -560,12 +560,7 @@ export default {
       "isAuthor",
     ]),
     ...mapGetters("style", [
-      "getTitleClass",
       "getSmallTextClass",
-      "getAvatarMediumSize",
-      "getIconBigSize",
-      "isMDsmaller",
-      "isMD",
       "getIconSmallSize",
       "getButtonMediumSize",
       "getButtonSmallSize",
@@ -576,9 +571,6 @@ export default {
     getErrors() {
       return this.errors.some((error) => error.type == "error");
     },
-    /* tests2() {
-      return this.resource.tests.filter((test) => test.type == "metric");
-    }, */
   },
 
   watch: {
@@ -673,84 +665,21 @@ export default {
       );
     },
     run() {
-      this.code = this.isStudent 
+      this.code = this.isStudent
         ? this.getStatusByResourceID(this.resource.id).answer[0].code
         : this.resource.solution;
 
-      if (this.resource.html) {
-        this.code = `          
-          ${html2dom.parse(this.resource.html)}\n          
-          ${this.code.replaceAll("document", "docFragment")}
-          `;
-      }
-      this.runTests();
-    
-      const status = (this.nTestsSuccess / this.resource.tests.length) * 100;
-      this.$emit("onSaveCode", status);
-    },
-
-    runTests() {
-      this.nTestsSuccess = 0;
-      
-      // First pass: Calculate success rate
-      this.resource.tests.forEach((test) => {
-        const result = this.executeTest(test);
-        const isCorrect = this.checkTestResult(test, result);
-        test.correct = isCorrect;
-        if (isCorrect) this.nTestsSuccess++;
-      });
-
-      // Second pass: Update UI with results
-      this.resource.tests.forEach((test, index) => {
-        const result = this.executeTest(test);
-        Vue.set(this.resource.tests, index, {
-          ...test,
-          output: typeof result === "object" ? JSON.stringify(result) : String(result),
-        });
-      });
-
-      // Update tests in store
-      const obj = {
-        id: this.resource.id,
-        value: this.resource.tests,
-        field: "tests",
-        type: "evaluative",
-      };
-      this.editableInput(obj);
-      this.$forceUpdate();
-    },
-
-    executeTest(test) {
-      switch(test.type) {
-        case 'log': {
-          const logText = this.logs.map(log => log.text).join("");
-          return logText || "No logs found";
-        }
-        
-        case 'expression':
-          return this.executeExpressionTest(test);
-        
-        case 'metric':
-          return this.executeMetricTest(test);
-        
-        case 'function':
-          return this.executeFunctionTest(test);
-        
-        default:
-          return "Unknown test type";
-      }
-    },
-
-    executeExpressionTest(test) {
       const codeToTest = (() => {
-        switch (this.language) {
+        switch (this.selectedLanguage) {
           case "JavaScript":
             return this.code;
           case "Python": {
             const transpilerPython = new Osiris("python");
             const transpiledCode = transpilerPython.passCode(this.code);
             if (transpiledCode.success) {
-              return transpiledCode.code;
+              const separator = "function map(fn, ...iterables) {";
+              const extracted = transpiledCode.code.split(separator)[0].trim();
+              return extracted;
             } else {
               console.error("Transpilation Error:", transpiledCode.error);
               return "";
@@ -770,7 +699,68 @@ export default {
             return this.code;
         }
       })();
+      if (this.resource.html) {
+        this.code = `          
+          ${html2dom.parse(this.resource.html)}\n          
+          ${this.code.replaceAll("document", "docFragment")}
+          `;
+      }
+      this.runTests(codeToTest);
 
+      const status = (this.nTestsSuccess / this.resource.tests.length) * 100;
+      this.$emit("onSaveCode", status);
+    },
+
+    runTests(codeToTest) {
+      this.nTestsSuccess = 0;
+      const updatedTests = [];
+      this.resource.tests.forEach((test) => {
+        const result = this.executeTest(test, codeToTest);
+        const isCorrect = this.checkTestResult(test, result);
+        const updatedTest = {
+          ...test,
+          correct: isCorrect,
+          output:
+            typeof result === "object"
+              ? JSON.stringify(result)
+              : String(result),
+        };
+        updatedTests.push(updatedTest);
+        if (isCorrect) this.nTestsSuccess++;
+      });
+      const obj = {
+        id: this.resource.id,
+        value: updatedTests,
+        field: "tests",
+        type: "evaluative",
+      };
+      this.editableInput(obj);
+      this.$set(this.resource, "tests", updatedTests);
+      this.$forceUpdate();
+    },
+
+    executeTest(test, codeToTest) {
+      switch (test.type) {
+        case "log": {
+          const logText = this.logs.map((log) => log.text).join("");
+          return logText || "No logs found";
+        }
+
+        case "expression":
+          return this.executeExpressionTest(test, codeToTest);
+
+        case "metric":
+          return this.executeMetricTest(test, codeToTest);
+
+        case "function":
+          return this.executeFunctionTest(test, codeToTest);
+
+        default:
+          return "Unknown test type";
+      }
+    },
+
+    executeExpressionTest(test, codeToTest) {
       try {
         if (test.subtype) {
           eval(`${codeToTest}\n${test.input}`);
@@ -779,97 +769,43 @@ export default {
         const result = eval(`${codeToTest}\n${test.input}`);
         return typeof result === "undefined" ? "No assigned value" : result;
       } catch (error) {
+        console.log("Expression test error:", error.message);
         return test.subtype ? "error" : error.message;
       }
     },
 
-    executeMetricTest(test) {
-      const codeToTest = (() => {
-        switch (this.language) {
-          case "JavaScript":
-            return this.code;
-          case "Python": {
-            const transpilerPython = new Osiris("python");
-            const transpiledCode = transpilerPython.passCode(this.code);
-            if (transpiledCode.success) {
-              return transpiledCode.code;
-            } else {
-              console.error("Transpilation Error:", transpiledCode.error);
-              return "";
-            }
-          }
-          case "Rust": {
-            const transpilerRust = new Osiris("rust");
-            const transpiledCode = transpilerRust.passCode(this.code);
-            if (transpiledCode.success) {
-              return transpiledCode.code;
-            } else {
-              console.error("Transpilation Error:", transpiledCode.error);
-              return "";
-            }
-          }
-          default:
-            return this.code;
-        }
-      })();
-
-      switch(test.subtype) {
-        case 'lines': {
+    executeMetricTest(test, codeToTest) {
+      switch (test.subtype) {
+        case "lines": {
           const lines = codeToTest.split("\n");
-          const count = lines.filter(line => line.startsWith("//") || line === "").length;
+          const count = lines.filter(
+            (line) => line.startsWith("//") || line === ""
+          ).length;
           return eval(`${lines.length - count} ${test.expected}`);
         }
-        
-        case 'occurrences': {
+
+        case "occurrences": {
           const keyword = test.input.split(":")[1];
           return (codeToTest.match(new RegExp(keyword, "g")) || []).length;
         }
-        
-        case 'keyword': {
+
+        case "keyword": {
           return codeToTest.includes(test.input.split(":")[1]);
         }
-        
+
         default:
           return true;
       }
     },
 
-    executeFunctionTest(test) {
-      const codeToTest = (() => {
-        switch (this.language) {
-          case "JavaScript":
-            return this.code;
-          case "Python": {
-            const transpilerPython = new Osiris("python");
-            const transpiledCode = transpilerPython.passCode(this.code);
-            if (transpiledCode.success) {
-              return transpiledCode.code;
-            } else {
-              console.error("Transpilation Error:", transpiledCode.error);
-              return "";
-            }
-          }
-          case "Rust": {
-            const transpilerRust = new Osiris("rust");
-            const transpiledCode = transpilerRust.passCode(this.code);
-            if (transpiledCode.success) {
-              return transpiledCode.code;
-            } else {
-              console.error("Transpilation Error:", transpiledCode.error);
-              return "";
-            }
-          }
-          default:
-            return this.code;
-        }
-      })();
-
-      const fct = eval(`(${codeToTest})`);
-      const args = this.parseFunctionArguments(test.input);
-      
-      return test.input === "" 
-        ? fct.call(null)
-        : fct.call(null, ...args);
+    executeFunctionTest(test, codeToTest) {
+      try {
+        const fct = eval(`(${codeToTest})`);
+        const args = this.parseFunctionArguments(test.input);
+        return test.input === "" ? fct.call(null) : fct.call(null, ...args);
+      } catch (error) {
+        return " ";
+      }
     },
 
     parseFunctionArguments(input) {
@@ -885,7 +821,7 @@ export default {
       const args = [];
       const regex = /"([^"]+)"|(\b\d+\.?\d*|\.\d+\b)|(\b\w+\b)/g;
       let matches;
-      
+
       while ((matches = regex.exec(input)) !== null) {
         if (matches[1]) {
           args.push(matches[1]);
@@ -895,7 +831,7 @@ export default {
           args.push(matches[3]);
         }
       }
-      
+
       return args;
     },
 
@@ -903,15 +839,19 @@ export default {
       if (Array.isArray(result)) {
         try {
           const expectedArray = JSON.parse(test.expected.replace(/'/g, '"'));
-          return expectedArray.length === result.length &&
-                 expectedArray.every((element, index) => element === result[index]);
+          return (
+            expectedArray.length === result.length &&
+            expectedArray.every((element, index) => element === result[index])
+          );
         } catch (err) {
           console.error("Error comparing arrays:", err);
           return false;
         }
       }
 
-      return String(result) === test.expected.replace(/"/g, "") || result === true;
+      return (
+        String(result) === test.expected.replace(/"/g, "") || result === true
+      );
     },
     getColor(item) {
       if (item.output == "") return "white";

@@ -119,12 +119,12 @@
         class="d-flex align-center justify-center"
         height="32px"
       >
-        Solution
+        Solution in JavaScript
       </v-card>
       <AceEditor
         ref="myEditor"
         v-model="code"
-        lang="javascript"
+        :lang="isTeacher ? 'javascript' : language.toLowerCase() "
         theme="ambiance"
         width="100%"
         height="20rem"
@@ -408,6 +408,11 @@ export default {
     },
     language(newValue) {
       this.$emit("language-change", newValue);
+      this.$store.commit("main/setSelectedLanguage", {
+        resourceId: this.resource.id,
+        language: newValue,
+      });
+      this.$emit("onErrors", []);
     },
     tab(newV, oldV) {
       if (newV != undefined && !this.contextDeleted) {
@@ -465,7 +470,7 @@ export default {
         this.language = "JavaScript";
       } else if (this.resource.languages) {
         this.languageOptions = this.resource.languages;
-        this.language = this.languageOptions[0];
+        this.language = this.getSelectedLanguage(this.resource.id) || this.languageOptions[0];
       }
 
       if (
@@ -506,6 +511,7 @@ export default {
       "getLessonByResourceID",
       "getStatusByResourceID",
       "getValidated",
+      "getSelectedLanguage",
     ]),
     ...mapGetters("request", [
       "isStudent",
@@ -638,6 +644,13 @@ export default {
           type: "status",
         };
         this.editableInput(obj);
+        const obj2 = {
+          id: this.resource.id,
+          value: status,
+          field: "grade",
+          type: "status",
+        };
+        this.editableInput(obj2);
       } else if (this.isTeacher) {
         const obj = {
           id: this.resource.id,
@@ -720,7 +733,7 @@ export default {
         console.log("windowAlert", _args);
       };
       window.print = (..._args) => {
-        console.log(_args);
+        console.log("windowAlert", _args);
       };
 
       const codeToTest = (() => {
@@ -751,7 +764,7 @@ export default {
             return this.code;
         }
       })();
-      console.log(codeToTest);
+      //console.log(codeToTest);
 
       // 2. Replace console.log with stub implementation.
       const originalLog = console.log;
@@ -860,9 +873,13 @@ export default {
       require("brace/ext/language_tools"); //language extension prerequsite...
       require("brace/mode/html");
       require("brace/mode/javascript"); //language
+      require("brace/mode/python"); //language
+      require("brace/mode/rust"); //language
       require("brace/mode/less");
       require("brace/theme/ambiance");
       require("brace/snippets/javascript"); //snippet
+      require("brace/snippets/python"); //snippet
+      require("brace/snippets/rust"); //snippet
       require("brace");
 
       //this.loadCode();

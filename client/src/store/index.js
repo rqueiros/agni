@@ -26,6 +26,7 @@ const main = {
     validated: false,
 
     gpt: true,
+    selectedLanguages: {},
   },
   getters: {
     //-------Course
@@ -360,6 +361,9 @@ const main = {
     },
 
     getValidated: (state) => state.validated,
+    getSelectedLanguage: (state) => (resourceId) => {
+      return state.selectedLanguages[resourceId] || "JavaScript";
+    },
   },
   mutations: {
     //-------CollectionTypes
@@ -437,6 +441,9 @@ const main = {
     },
     setValidated(state, validated) {
       state.validated = validated;
+    },
+    setSelectedLanguage(state, { resourceId, language }) {
+      state.selectedLanguages[resourceId] = language;
     },
   },
   actions: {

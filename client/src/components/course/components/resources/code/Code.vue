@@ -39,6 +39,7 @@
 
             <v-expansion-panels v-if="isStudent || isAuthor">
               <v-expansion-panel
+                v-if="selectedLanguage === 'JavaScript'"
                 :style="{
                   backgroundColor: $vuetify.theme.currentTheme.studentboxes
                 }"
@@ -77,7 +78,7 @@
                   </v-data-table>
                 </v-expansion-panel-content>
               </v-expansion-panel>
-              <v-expansion-panel v-if="isStudent">
+              <v-expansion-panel>
                 <v-expansion-panel-header disable-icon-rotate>
                   Logs ({{ logs.length }})
                   <template v-slot:actions>
@@ -201,8 +202,6 @@ export default {
     };
   },
 
-  created() {},
-
   methods: {
     setErrors(errors) {
       this.errors = errors;
@@ -218,13 +217,17 @@ export default {
     },
     handleLanguageChange(language) {
       this.selectedLanguage = language;
+    },
+    handleTestsUpdated(updatedTests) {
+      this.$set(this.resource, 'tests', updatedTests);
+      this.$forceUpdate();
     }
   },
 
   computed: {
     ...mapGetters("request", ["isStudent", "isTeacher", "isViewer", "isAuthor"]),
     ...mapGetters("style", ["isSMsmaller", "getIcon"])
-  }
+  },
 };
 </script>
 

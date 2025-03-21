@@ -193,7 +193,7 @@ export default {
     return {
       valid: true,
       selected: [],
-
+      tableItems: [],
       dialog: false,
       externalDialog: false,
       headers: {
@@ -242,10 +242,10 @@ export default {
   },
 
   created() {
-    this.loadResource;
+    this.updateTableItems();
     if (this.getValidated) {
       const notValid = this.resource.evaluatives.filter((e) => !e.valid);
-      this.selected = this.loadResource.filter((e) =>
+      this.selected = this.tableItems.filter((e) =>
         notValid.map((ev) => ev.id).includes(e.id)
       );
     }
@@ -254,11 +254,22 @@ export default {
     });
   },
 
+  async mounted() {
+    //await this.fetchCourse();
+    this.updateTableItems();
+  },
+
   watch: {
+    'resource.evaluatives': {
+      handler() {
+        this.updateTableItems();
+      },
+      deep: true
+    },
     getValids() {
       if (this.getValidated) {
         const notValid = this.resource.evaluatives.filter((e) => !e.valid);
-        this.selected = this.loadResource.filter((e) =>
+        this.selected = this.tableItems.filter((e) =>
           notValid.map((ev) => ev.id).includes(e.id)
         );
       }
@@ -268,6 +279,7 @@ export default {
   computed: {
     ...mapGetters("main", ["getStatusByResourceID", "getValidated"]),
     ...mapGetters("request", [
+      "fetchCourse",
       "getRole",
       "isStudent",
       "isTeacher",
@@ -287,42 +299,7 @@ export default {
       return this.resource.evaluatives.map((e) => e.valid);
     },
     loadResource() {
-      let ev = [];
-      if (
-        !("evaluatives" in this.resource) ||
-        this.resource.evaluatives.length < 1
-      ) {
-        ev = [];
-      } else if (this.isStudent) {
-        let i = 1;
-        this.resource.evaluatives.forEach((evaluative) => {
-          let grade = Number(
-            this.getStatusByResourceID(evaluative.id).grade.toFixed(1)
-          );
-          ev.push({
-            number: i,
-            id: evaluative.id,
-            name: evaluative.name,
-            type: evaluative.type,
-            grade: grade,
-            action: "",
-          });
-          i++;
-        });
-      } else {
-        let i = 1;
-        this.resource.evaluatives.forEach((evaluative) => {
-          ev.push({
-            number: i,
-            id: evaluative.id,
-            name: evaluative.name,
-            type: evaluative.type,
-            contentType: evaluative.contentType,
-          });
-          i++;
-        });
-      }
-      return ev;
+      return this.tableItems;
     },
     evaluativesNotNull() {
       return this.resource.evaluatives.length > 0;
@@ -367,6 +344,31 @@ export default {
       if (status == 0) return "red";
       else if (status < 100) return "orange";
       else return "green";
+    },
+    updateTableItems() {
+      if (!this.resource.evaluatives || this.resource.evaluatives.length < 1) {
+        this.tableItems = [];
+        return;
+      }
+
+      if (this.isStudent) {
+        this.tableItems = this.resource.evaluatives.map((evaluative, index) => ({
+          number: index + 1,
+          id: evaluative.id,
+          name: evaluative.name,
+          type: evaluative.type,
+          grade: Number(this.getStatusByResourceID(evaluative.id).grade.toFixed(1)),
+          action: "",
+        }));
+      } else {
+        this.tableItems = this.resource.evaluatives.map((evaluative, index) => ({
+          number: index + 1,
+          id: evaluative.id,
+          name: evaluative.name,
+          type: evaluative.type,
+          contentType: evaluative.contentType,
+        }));
+      }
     },
   },
 };
