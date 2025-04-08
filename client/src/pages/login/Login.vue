@@ -186,7 +186,7 @@
 </template>
 
 <script>
-import { bus } from "@/main.js";
+//import { bus } from "@/main.js";
 
 import { mapActions, mapMutations } from "vuex";
 
@@ -265,7 +265,7 @@ export default {
     if ("id" in params && "pw" in params){
       try{
         await this.login([params.id, params.pw]);
-        bus.$emit("changePage", "content,Course");
+        /*bus.$emit("changePage", "content,Course");
 
         const parameters = { collectionType: "courses" };
         let items = await this.fetchCollectionTypes(parameters);
@@ -276,7 +276,7 @@ export default {
           bus.$emit("openCourse", "no");
         } else {
           bus.$emit("openCourse", "gpt");
-        }
+        }*/
         console.log("here")
       } catch(error){
         console.log(error)
