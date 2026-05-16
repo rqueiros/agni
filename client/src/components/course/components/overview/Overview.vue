@@ -7,6 +7,7 @@
       </v-col>
       <v-col cols="5" class="pl-0" :class="getSMsmallerNone">
         <Gamification class="p-gamification" />
+        <Suggestions class="p-gamification" style="margin-top: 15px" />
       </v-col>
     </v-row>
     <!--<v-row :class="getSMsmallerBlock" v-if="isStudent">
@@ -18,6 +19,7 @@
     <v-row v-if="isTeacher">
       <v-col cols="12">
         <Gamification />
+        <ConceptGraph v-if="courseID" :graph="graph" :courseID="courseID" style="margin-top: 15px" />
       </v-col>
     </v-row>
   </v-container>
@@ -29,6 +31,8 @@ import { mapGetters } from "vuex";
 import Gamification from "./components/Gamification.vue";
 import Account from "./components/Account.vue";
 import Progress from "./components/Progress.vue";
+import Suggestions from "./components/Suggestions.vue";
+import ConceptGraph from "./components/ConceptGraph.vue";
 
 export default {
   props: {
@@ -40,11 +44,21 @@ export default {
       type: String,
       default: () => null,
     },
+    graph: {
+      type: Object,
+      default: () => null,
+    },
+    courseID: {
+      type: Number,
+      default: () => null,
+    }
   },
   components: {
     Gamification,
     Account,
     Progress,
+    Suggestions,
+    ConceptGraph,
   },
   computed: {
     ...mapGetters("request", ["isStudent", "isTeacher"]),

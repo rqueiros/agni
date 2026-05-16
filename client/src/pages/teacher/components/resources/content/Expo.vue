@@ -17,6 +17,7 @@
             :resource="expositive"
             @onMilestone="setMilestone"
           />
+          <Concepts :resource="expositive"/>
         </v-col>
       </v-row>
       <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
@@ -26,6 +27,7 @@
             :resource="expositive"
             @onMilestone="setMilestone"
           />
+          <Concepts :resource="expositive"/>
         </v-col>
       </v-row>
     </v-container>
@@ -37,13 +39,15 @@ import { mapGetters } from "vuex";
 
 import Expositives from "../../../../../components/course/components/resources/lesson/Expositives.vue";
 import Timeline from "../../../../../components/course/components/resources/lesson/Timeline.vue";
+import Concepts from "@/components/course/components/overview/components/Concepts.vue";
 
 export default {
   name: "Expo",
 
   components: {
     Expositives,
-    Timeline
+    Timeline,
+    Concepts
   },
 
   props: {

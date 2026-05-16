@@ -21,12 +21,11 @@
         icon="mdi-printer"
       >
       </v-badge>
-      <pdf
+      <vue-pdf-embed
         style="width: 100%;"
         ref="pdfComponent"
-        @num-pages="pageCount = $event"
-        @page-loaded="currentPage = $event"
-        :src="pdfData"
+        @loaded="pageCount = $event.numPages"
+        :source="pdfData"
         :page="page"
       />
     </div>
@@ -53,7 +52,7 @@
 </template>
 
 <script>
-import pdf from "vue-pdf";
+import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed';
 //import Swal from "sweetalert2";
 import "sweetalert2/src/sweetalert2.scss";
 import { mapGetters, mapActions } from "vuex";
@@ -61,7 +60,7 @@ import { mapGetters, mapActions } from "vuex";
 
 export default {
   components: {
-    pdf
+    VuePdfEmbed,
   },
 
   props: {

@@ -59,6 +59,7 @@
             :isEvaluative="isEvaluative"
             :isQuestion="isQuestion"
           />
+          <Concepts v-if="isAuthor" :resource="resource" :type="'evaluatives'" style="margin-top: 15px" />
         </v-col>
       </v-row>
       <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
@@ -68,6 +69,7 @@
             :isEvaluative="isEvaluative"
             :isQuestion="isQuestion"
           />
+          <Concepts v-if="isAuthor" :resource="resource" :type="'evaluatives'" style="margin-top: 15px" />
         </v-col>
       </v-row>
     </v-container>
@@ -81,12 +83,14 @@ import { mapGetters } from "vuex";
 import Quizzer from "./Quizzer.vue";
 import Img from "./Img.vue";
 import CardHeader from "../../CardHeader.vue";
+import Concepts from "../../overview/components/Concepts.vue";
 
 export default {
   components: {
     Quizzer,
     Img,
     CardHeader,
+    Concepts
   },
 
   props: {

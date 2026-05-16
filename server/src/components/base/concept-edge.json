@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_base_concept_edges",
+  "info": {
+    "displayName": "ConceptEdge"
+  },
+  "options": {},
+  "attributes": {
+    "from": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::concept.concept"
+    },
+    "to": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::concept.concept"
+    }
+  }
+}

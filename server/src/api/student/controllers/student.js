@@ -168,10 +168,12 @@ module.exports = createCoreController(uid, () => {
 
       async create(ctx) {
          let result = []
+         console.log(ctx.request.body)
          let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
          if (Array.isArray(data) == false) {
             data = [data]
          }
+         console.log(data)
          for (const index of Array(data.length).keys()) {
             const ctx2 = prepareCtx(ctx, data[index])
             const r = await super.create(ctx2)
@@ -215,6 +217,6 @@ module.exports = createCoreController(uid, () => {
 
 function prepareCtx(ctx, data) {
    data.author = ctx.state.user.id
-   ctx.request.body = {data:JSON.stringify(data)}
+   ctx.request.body = {data:data}
    return ctx
 }

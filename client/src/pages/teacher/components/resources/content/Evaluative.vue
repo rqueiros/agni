@@ -18,6 +18,7 @@
         v-if="getEvaluative && getEvaluative.contentType == 'quiz'"
         class="ma-n3"
       />
+      
     </div>
   </div>
 </template>

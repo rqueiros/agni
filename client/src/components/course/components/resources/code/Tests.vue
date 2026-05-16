@@ -22,7 +22,7 @@
             ? headers.viewer
             : headers.student
         "
-        :items="resource.tests"
+        :items="isTeacher || isViewer ? resource.tests : resource.tests.filter(test => test.show)"
         :sort-by="isStudent ? 'input' : ''"
         mobile-breakpoint="0"
         :group-by="isStudent ? 'type' : []"
@@ -670,6 +670,7 @@ export default {
         : this.resource.solution;
 
       const codeToTest = (() => {
+        console.log("tests", this.resource.tests);
         switch (this.selectedLanguage) {
           case "JavaScript":
             return this.code;
@@ -677,8 +678,9 @@ export default {
             const transpilerPython = new Osiris("python");
             const transpiledCode = transpilerPython.passCode(this.code);
             if (transpiledCode.success) {
-              const separator = "function map(fn, ...iterables) {";
-              const extracted = transpiledCode.code.split(separator)[0].trim();
+              //const separator = "function ord(str) {";
+              const extracted = transpiledCode.code//.split(separator)[0].trim();
+              //console.log(extracted);
               return extracted;
             } else {
               console.error("Transpilation Error:", transpiledCode.error);
@@ -708,15 +710,20 @@ export default {
       this.runTests(codeToTest);
 
       const status = (this.nTestsSuccess / this.resource.tests.length) * 100;
+
+      console.log("Number of tests success", this.nTestsSuccess);
+      console.log("Number of tests", this.resource.tests.length);
       this.$emit("onSaveCode", status);
     },
 
     runTests(codeToTest) {
+      console.log("codeToTest:::::", codeToTest);
       this.nTestsSuccess = 0;
       const updatedTests = [];
       this.resource.tests.forEach((test) => {
         const result = this.executeTest(test, codeToTest);
-        const isCorrect = this.checkTestResult(test, result);
+        console.log("result:::::", result);
+        const isCorrect = this.checkTestResult(test, result, test.type);
         const updatedTest = {
           ...test,
           correct: isCorrect,
@@ -800,6 +807,7 @@ export default {
 
     executeFunctionTest(test, codeToTest) {
       try {
+        console.log("codeToTest:::::", codeToTest);
         const fct = eval(`(${codeToTest})`);
         const args = this.parseFunctionArguments(test.input);
         return test.input === "" ? fct.call(null) : fct.call(null, ...args);
@@ -809,6 +817,8 @@ export default {
     },
 
     parseFunctionArguments(input) {
+
+      /*      
       if (input.startsWith("[") && input.endsWith("]")) {
         try {
           return [JSON.parse(input.replace(/'/g, '"'))];
@@ -817,38 +827,122 @@ export default {
           return null;
         }
       }
+      */
 
       const args = [];
-      const regex = /"([^"]+)"|(\b\d+\.?\d*|\.\d+\b)|(\b\w+\b)/g;
-      let matches;
+      let currentPos = 0;
+      
+      while (currentPos < input.length) {
+        // Skip whitespace
+        while (currentPos < input.length && input[currentPos] === ' ') {
+          currentPos++;
+        }
+        if (currentPos >= input.length) break;
 
-      while ((matches = regex.exec(input)) !== null) {
+        // Check for array
+        if (input[currentPos] === '[') {
+          let bracketCount = 1;
+          let endPos = currentPos + 1;
+          while (endPos < input.length && bracketCount > 0) {
+            if (input[endPos] === '[') bracketCount++;
+            if (input[endPos] === ']') bracketCount--;
+            endPos++;
+          }
+          if (bracketCount === 0) {
+            try {
+              const arrayStr = input.substring(currentPos, endPos);
+              args.push(JSON.parse(arrayStr.replace(/'/g, '"')));
+              currentPos = endPos;
+              continue;
+            } catch (e) {
+              // If array parsing fails, treat it as a regular argument
+            }
+          }
+        }
+
+        // Check for string
+        if (input[currentPos] === '"') {
+          let endPos = currentPos + 1;
+          while (endPos < input.length && input[endPos] !== '"') {
+            if (input[endPos] === '\\') endPos++; // Skip escaped quotes
+            endPos++;
+          }
+          if (endPos < input.length) {
+            args.push(input.substring(currentPos + 1, endPos));
+            currentPos = endPos + 1;
+            continue;
+          }
+        }
+
+        /*
+        const args = [];
+        const regex = /"([^"]+)"|(\b\d+\.?\d*|\.\d+\b)|(\b\w+\b)/g;
+        let matches;
+        */
+
+        // Check for number
+        const numberMatch = input.substring(currentPos).match(/^(\d+\.?\d*|\.\d+)/);
+        if (numberMatch) {
+          args.push(parseFloat(numberMatch[0]));
+          currentPos += numberMatch[0].length;
+          continue;
+        }
+
+        /*
+        while ((matches = regex.exec(input)) !== null) {
         if (matches[1]) {
           args.push(matches[1]);
         } else if (matches[2]) {
           args.push(parseFloat(matches[2]));
         } else if (matches[3]) {
           args.push(matches[3]);
+        */
+        // Check for word
+        const wordMatch = input.substring(currentPos).match(/^(\w+)/);
+        if (wordMatch) {
+          args.push(wordMatch[0]);
+          currentPos += wordMatch[0].length;
+          continue;
         }
+
+        // If we get here, move to next character
+        currentPos++;
       }
 
       return args;
     },
 
-    checkTestResult(test, result) {
+    checkTestResult(test, result, type) {
       if (Array.isArray(result)) {
         try {
           const expectedArray = JSON.parse(test.expected.replace(/'/g, '"'));
-          return (
-            expectedArray.length === result.length &&
-            expectedArray.every((element, index) => element === result[index])
-          );
+          const compareArrays = (arr1, arr2) => {
+            if (arr1.length !== arr2.length) return false;
+            return arr1.every((element, index) => {
+              if (Array.isArray(element) && Array.isArray(arr2[index])) {
+                return compareArrays(element, arr2[index]);
+              }
+              if (Array.isArray(element[0]) && Array.isArray(arr2[index][0])) {
+                return compareArrays(element[0], arr2[index][0]);
+              }
+              return element === arr2[index];
+            });
+          };
+          return compareArrays(expectedArray, result);
         } catch (err) {
           console.error("Error comparing arrays:", err);
           return false;
         }
       }
-
+      if (type == "function") {
+        console.log("result", result);
+        console.log("test.expected", test.expected);
+        const expected = test.expected.replace(/"/g, "");
+        return result === expected || 
+               (typeof result === 'number' && result === Number(expected)) ||
+               (result === false && expected === "false") ||
+               (result === true && expected === "true");
+      }
       return (
         String(result) === test.expected.replace(/"/g, "") || result === true
       );

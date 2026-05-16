@@ -69,6 +69,8 @@
             :resource="resource.expositives[index]"
             @onMilestone="setMilestone"
           />
+
+          <Concepts v-if="isAuthor" :key="resource.expositives[index]?.id" :resource="resource.expositives[index]" style="margin-top: 15px" :isLesson="true" />
         </v-col>
       </v-row>
       <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
@@ -89,6 +91,7 @@ import Evaluatives from "./Evaluatives.vue";
 import Timeline from "./Timeline.vue";
 import CardHeader from "../../CardHeader.vue";
 import Editable from "../../../../gerneral/Editable.vue";
+import Concepts from "../../overview/components/Concepts.vue";
 
 import { bus } from "@/main.js";
 import { mapGetters, mapActions } from "vuex";
@@ -102,6 +105,7 @@ export default {
     Timeline,
     CardHeader,
     Editable,
+    Concepts
   },
 
   props: {

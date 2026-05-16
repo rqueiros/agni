@@ -8,7 +8,7 @@
       />
       <Resource v-if="resource" :resource="resource" class="flex-grow-1" />
       <div v-else class="flex-grow-1">
-        <Overview :resource="isResource" :type="type" />
+        <Overview :resource="isResource" :type="type" :graph="conceptGraph" :courseID="courseID" />
       </div>
     </div>
   </v-sheet>
@@ -86,6 +86,25 @@ export default {
   computed: {
     ...mapState("main", { courses: (state) => state.courses }),
     ...mapGetters("main", ["getResourceByID"]),
+    conceptGraph() {
+      const graph = this.courses?.[0]?.conceptGraph;
+      if (!graph) return null;
+
+      return {
+        nodes: graph.concepts.data.map(c => ({
+          id: c.id,
+          label: c.attributes.label,
+        })),
+        edges: graph.edges.map(e => ({
+          from: e.from.data.id,
+          to: e.to.data.id,
+        })),
+      };
+    },
+    courseID() {
+      const courseID = this.courses?.[0]?.id;
+      return courseID;
+    }
   },
 
   methods: {
@@ -108,6 +127,7 @@ export default {
     toggleDrawer() {
       this.drawer = !this.drawer;
     },
+
   },
 };
 </script>

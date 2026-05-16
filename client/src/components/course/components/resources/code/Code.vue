@@ -25,6 +25,7 @@
               @onErrors="setErrors"
               @onLogs="setLogs"
               @language-change="handleLanguageChange"
+              @update:code="currentCode = $event"
               ref="editor"
             />
 
@@ -143,6 +144,8 @@
             :selectedLanguage="selectedLanguage"
             @onSaveCode="saveCode"
           />
+          <Concepts v-if="isAuthor" :resource="resource" :type="'evaluatives'" style="margin-top: 15px" />
+          <Hint v-if="!isAuthor" :description="resource.content[0].statement" :code="currentCode" style="margin-top: 15px" />
         </v-col>
       </v-row>
       <v-row :class="isSMsmaller ? 'd-block' : 'd-none'">
@@ -155,6 +158,8 @@
             :selectedLanguage="selectedLanguage"
             @onSaveCode="saveCode"
           />
+          <Concepts v-if="isAuthor" :resource="resource" :type="'evaluatives'" style="margin-top: 15px" />
+          <Hint v-if="!isAuthor" :description="resource.content[0].statement" :code="currentCode" style="margin-top: 15px" />
         </v-col>
       </v-row>
     </v-container>
@@ -165,7 +170,9 @@
 import { mapGetters } from "vuex";
 import Editor from "./Editor.vue";
 import Tests from "./Tests.vue";
+import Hint from "../../overview/components/Hint.vue";
 import CardHeader from "../../CardHeader.vue";
+import Concepts from "../../overview/components/Concepts.vue";
 
 export default {
   name: "Code",
@@ -173,7 +180,9 @@ export default {
   components: {
     Editor,
     Tests,
-    CardHeader
+    CardHeader,
+    Concepts,
+    Hint
   },
 
   props: {
@@ -198,7 +207,8 @@ export default {
       logs: [],
       rating: 0,
       line: 0,
-      selectedLanguage: "JavaScript"
+      selectedLanguage: "JavaScript",
+      currentCode: ""
     };
   },
 
@@ -221,7 +231,7 @@ export default {
     handleTestsUpdated(updatedTests) {
       this.$set(this.resource, 'tests', updatedTests);
       this.$forceUpdate();
-    }
+    },
   },
 
   computed: {

@@ -362,7 +362,7 @@ const main = {
 
     getValidated: (state) => state.validated,
     getSelectedLanguage: (state) => (resourceId) => {
-      return state.selectedLanguages[resourceId] || "JavaScript";
+      return state.selectedLanguages[resourceId];
     },
   },
   mutations: {

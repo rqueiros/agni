@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # --- DATABASE ---
+  postgres:
+    image: postgres:15
+    container_name: agni-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: strapi
+      POSTGRES_USER: yannik
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # --- STRAPI BACKEND ---
+  strapi:
+    container_name: agni-strapi
+    build: ./server
+    image: strapi:latest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "1337:1337"
+    volumes:
+      # Sync local backend code to container for hot-reloading
+      - ./server:/opt/app
+      # Prevent local node_modules from overwriting container's node_modules
+      - /opt/app/node_modules
+      - ./server/data:/opt/app/.tmp
+      - ./server/public/uploads:/opt/app/public/uploads
+    environment:
+      NODE_ENV: development
+
+  # --- VUE FRONTEND ---
+  vue:
+    container_name: agni-vue
+    build: ./client
+    restart: unless-stopped
+    depends_on:
+      - strapi
+    ports:
+      - "8080:8080"
+    volumes:
+      # Sync local frontend code to container for hot-reloading
+      - ./client:/app
+      # Prevent local node_modules from overwriting container's node_modules
+      - /app/node_modules
+    environment:
+      # This ensures Vue's hot-reload works properly inside a Docker container
+      - CHOKIDAR_USEPOLLING=true
+
+volumes:
+  postgres-data:

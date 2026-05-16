@@ -17,6 +17,7 @@
               <v-radio label="Expositive" value="expositives"></v-radio>
               <v-radio label="Evaluative" value="evaluatives"></v-radio>
               <v-radio label="Question" value="questions"></v-radio>
+              <v-radio label="Concept" value="concepts"></v-radio>
             </v-radio-group>
           </v-card>
         </v-col>
@@ -172,7 +173,7 @@
                   <CopyCourseMenu :course="item"/>
                 </v-menu>
                 <v-btn
-                  v-else
+                  v-else-if="collectionType !== 'concepts'"
                   @click="copy(item)"
                   onclick="event.stopPropagation()"
                   icon
@@ -182,8 +183,11 @@
                     mdi-content-copy
                   </v-icon>
                 </v-btn>
+                <v-btn v-else @click="rename(item)" onclick="event.stopPropagation()" icon small>
+                  <v-icon size="large">mdi-rename</v-icon>
+                </v-btn>
                 <v-btn
-                  v-if="item.my"
+                  v-if="item.my || collectionType === 'concepts'"
                   @click="remove([item.id])"
                   onclick="event.stopPropagation()"
                   icon
@@ -201,6 +205,8 @@
     </v-container>
 
     <DeleteDialog :dialog="deleteDialog" :collectionType="collectionType" />
+    <RenameDialog :dialog.sync="renameDialog" :currentItem="toRenameItem" @rename="handleRename"
+/>
   </div>
 </template>
 
@@ -212,6 +218,8 @@ import { mapActions, mapGetters } from "vuex";
 import DeleteDialog from "../../../../../components/gerneral/DeleteDialog.vue";
 import ErrorChip from "../../../../../components/gerneral/ErrorChip.vue"
 import CopyCourseMenu from "../../../../../components/gerneral/CopyCourseMenu.vue"
+import RenameDialog from "@/components/gerneral/RenameDialog.vue";
+
 
 export default {
   name: "Content",
@@ -219,7 +227,8 @@ export default {
   components: {
     DeleteDialog,
     ErrorChip,
-    CopyCourseMenu
+    CopyCourseMenu,
+    RenameDialog
   },
 
   data() {
@@ -234,6 +243,9 @@ export default {
 
       deleteDialog: false,
       toDeleteItem: [],
+
+      renameDialog: false,
+      toRenameItem: {},
 
       selected: [],
       allCheck:false,
@@ -278,6 +290,11 @@ export default {
           { text: "Question", value: "question" },
           { text: "Author", value: "my", cellClass:"columnWidth1" },
           { text: "State", value: "state", cellClass:"columnWidth2" },
+          { text: "", value: "actions", sortable: false, width: "90px" }
+        ],
+        concepts: [
+          { text: "Id", value: "id" },
+          { text: "Label", value: "label" },
           { text: "", value: "actions", sortable: false, width: "90px" }
         ]
       },
@@ -365,7 +382,7 @@ export default {
 
   computed: {
     ...mapGetters("style", [
-      "getIcon"
+      "getIcon", "getMesssage"
     ]),
   },
 
@@ -374,7 +391,10 @@ export default {
       "fetchCollectionTypes",
       "fetchPrepareCollectionType",
       "deleteCollectionType",
-      "copyCollectionType"
+      "copyCollectionType",
+      "fetchConcepts",
+      "updateConcept",
+      "deleteConcept"
     ]),
 
     updateParentDivWidth() {
@@ -395,6 +415,17 @@ export default {
         //draft: this.checkboxes.includes("draft")
       };
       this.loading = true;
+      if (parameters.collectionType === "concepts") {
+        try {
+          const concepts = await this.fetchConcepts();
+          this.items = concepts.concepts;
+        } catch (err) {
+          this.error = true;
+        }
+       
+        this.loading = false;
+        return;
+      }
       try {
         this.items = await this.fetchCollectionTypes(parameters);
         this.error = false;
@@ -406,6 +437,9 @@ export default {
     },
 
     async openCollectionType(item) {
+      if (this.collectionType === "concepts") {
+        return;
+      }
       try {
         await this.fetchPrepareCollectionType([item.id, this.collectionType]);
         switch (this.collectionType) {
@@ -459,7 +493,47 @@ export default {
       }
     },
 
-    remove(list) {
+    rename(item) {
+      this.toRenameItem = item;
+      this.renameDialog = true;
+    },
+
+    async handleRename(newItem) {
+      try {
+        await this.updateConcept([newItem.id, newItem.label]);
+        bus.$emit(
+          "successSnackbar",
+          this.getMesssage(["general", "save", "success"])
+        );
+      } catch (err) {
+         bus.$emit(
+           "errorSnackbar",
+            this.getMesssage(["general", "course", "error"])
+          );
+        this.setItems();
+      }
+    },
+    
+    async remove(list) {
+      if (this.collectionType === 'concepts') {
+        try {
+          await this.deleteConcept(list[0]);
+          bus.$emit(
+            "successSnackbar",
+            this.getMesssage(["general", "save", "success"])
+          );
+          
+          const item = this.items.find(item => item.id === list[0]);
+          const index = this.items.indexOf(item);
+          this.items.splice(index, 1);
+        } catch (err) {
+          bus.$emit(
+            "errorSnackbar",
+            this.getMesssage(["general", "course", "error"])
+          );
+        }
+        return;
+      }
       this.toDeleteItem = list;
       this.deleteDialog = true;
     },
@@ -487,7 +561,7 @@ export default {
 }
 
 .collectionSelect{
-  max-width: 475px;
+  max-width: 585px;
 }
 
 @media only screen and (max-width: 768px) {

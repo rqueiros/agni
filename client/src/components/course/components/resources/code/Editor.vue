@@ -304,6 +304,26 @@
         TEACHER'S CODE<v-icon right dark> mdi-account-switch </v-icon>
       </v-btn>-->
     </v-card-actions>
+    <v-expansion-panels>
+      <v-expansion-panel :style="{ backgroundColor: $vuetify.theme.currentTheme.studentboxes }" >
+       <v-expansion-panel-header>
+        Suggestions ({{ suggestions.length }})
+       </v-expansion-panel-header>
+       <v-expansion-panel-content>
+        These lessons will help with failing concepts
+        <template v-for="(item, index) in suggestions">
+          <v-divider :key="index" />
+          <v-list-item v-if="true" :key="index" @click="openLesson(item)">
+            <v-list-item-icon class="d-flex my-3 mr-6">
+              <v-icon>mdi-circle-medium</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content style="white-space: nowrap; text-overflow:ellipsis" 
+                class="overflow-hidden text-subtitle-2 font-weight-regular">{{ item.name }}</v-list-item-content>
+          </v-list-item>
+        </template>
+       </v-expansion-panel-content>
+      </v-expansion-panel>
+    </v-expansion-panels>
   </div>
 </template>
 
@@ -395,10 +415,14 @@ export default {
           readOnly: true,
         },
       ],
+      suggestions: [],
     };
   },
 
   watch: {
+    code(newCode) {
+      this.$emit("update:code", newCode);
+    },
     "resource.skeleton"(value) {
       if (value.length > 0) {
         this.hasSkeleton = true;
@@ -470,7 +494,10 @@ export default {
         this.language = "JavaScript";
       } else if (this.resource.languages) {
         this.languageOptions = this.resource.languages;
-        this.language = this.getSelectedLanguage(this.resource.id) || this.languageOptions[0];
+        console.log(this.languageOptions);
+        this.language = this.getSelectedLanguage(this.resource.id) || this.languageOptions[0] || "JavaScript";
+        console.log(this.getSelectedLanguage(this.resource.id));
+        console.log(this.language);
       }
 
       if (
@@ -512,6 +539,7 @@ export default {
       "getStatusByResourceID",
       "getValidated",
       "getSelectedLanguage",
+      "getCourse"
     ]),
     ...mapGetters("request", [
       "isStudent",
@@ -536,13 +564,16 @@ export default {
   },
 
   methods: {
-    ...mapActions("request", ["setProgress"]),
+    ...mapActions("request", ["setProgress", "fetchFailureRecommendations"]),
     ...mapActions("main", [
       "editableInput",
       "setTeacherProgress",
       "addContextByEvaluativeID",
       "deleteContextByID",
     ]),
+    async openLesson(item) {
+      bus.$emit("changeIt", [item.id, "lesson"]);
+    },
     deleteCont(id) {
       this.contextDeleted = true;
       let index = this.resource.contexts.findIndex((c) => c.id == id);
@@ -630,6 +661,7 @@ export default {
     async submitGrade(status) {
       this.statusSaveButton = true;
       if (this.isStudent) {
+        console.log("submitGrade", status);
         this.setProgress({
           id: this.resource.id,
           data: {
@@ -651,6 +683,13 @@ export default {
           type: "status",
         };
         this.editableInput(obj2);
+        // Since failed give suggestions
+        if (status !== 100) {
+          const code = this.code;
+          const evaluativeID = this.resource.id;
+          const course = this.getCourse;
+          this.suggestions = await this.fetchFailureRecommendations([code, evaluativeID, course.id]);
+        }
       } else if (this.isTeacher) {
         const obj = {
           id: this.resource.id,
@@ -744,7 +783,10 @@ export default {
             const transpilerPython = new Osiris("python");
             const transpiledCode = transpilerPython.passCode(this.code);
             if (transpiledCode.success) {
-              return transpiledCode.code;
+              //const separator = "function ord(str) {";
+              const extracted = transpiledCode.code//.split(separator)[0].trim();
+              //console.log(extracted);
+              return extracted;
             } else {
               console.error("Transpilation Error:", transpiledCode.error);
               return "";

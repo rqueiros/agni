@@ -88,6 +88,54 @@
         </v-col>
       </v-row>
 
+     <v-row dense>
+        <v-col>
+          <v-expansion-panels flat class="shadow">
+            <v-expansion-panel
+              :style="{ backgroundColor: $vuetify.theme.currentTheme.boxes }"
+            >
+              <v-expansion-panel-header>
+                AI Settings
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-select
+                  v-model="selectedProvider"
+                  :items="providerList"
+                  label="AI Provider"
+                  outlined
+                  hide-details
+                ></v-select>
+                <v-select
+                  style="margin-top: 12px"
+                  v-model="selectedModel"
+                  :items="aiProviders[selectedProvider]"
+                  label="AI Model"
+                  outlined
+                  hide-details
+                ></v-select>
+                <v-text-field
+                  style="margin-top: 12px"
+                  v-model="apiKey"
+                  label="API Key"
+                  type="password"
+                  placeholder="(hidden)"
+                  outlined
+                  hide-details
+                ></v-text-field>
+                <v-btn
+                  style="margin-top: 12px"
+                  width="100%"
+                  color="primary"
+                  @click="saveChanges"
+                >
+                  Save Changes
+                </v-btn>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-col>
+      </v-row>
+
       <!--Message-->
       <v-row dense>
         <v-col>
@@ -163,9 +211,20 @@
 
 <script>
 import { mapActions } from "vuex";
+import { bus } from "@/main.js";
 
 export default {
   name: "Settings",
+
+  async created() {
+    this.getAiSettings();
+  },
+
+  computed: {
+    providerList() {
+      return Object.keys(this.aiProviders);
+    }
+  },  
 
   data: () => ({
     message: {
@@ -174,6 +233,12 @@ export default {
       email: ""
     },
     messageSubjects: ["Feedback", "Question", "Other"],
+
+    selectedProvider: null,
+    selectedModel: null,
+    apiKey: "",
+
+    aiProviders: {},
 
     help:[
       {
@@ -196,7 +261,31 @@ export default {
   }),
 
   methods: {
-    ...mapActions("request", ["sendEmail"])
+    ...mapActions("request", ["sendEmail", "fetchAiSettings", "updateAiSettings"]),
+
+    async getAiSettings() {
+      try {
+        const settings = await this.fetchAiSettings();
+        this.aiProviders = settings.aiProviders;
+        this.selectedProvider = settings.provider;
+        this.selectedModel = settings.model;
+      } catch (err) {
+        bus.$emit("errorSnackbar", "Something went wrong fetching the AI settings");
+      }
+    },
+
+    async saveChanges() {
+      if (!this.selectedProvider || !this.selectedModel || !this.apiKey) {
+        bus.$emit("errorSnackbar", "Empty fields are not allowed");
+        return;
+      }
+      try {
+        await this.updateAiSettings([this.selectedProvider, this.apiKey, this.selectedModel]);
+        bus.$emit("successSnackbar", "Changes saved successfully");
+      } catch (err) {
+        bus.$emit("errorSnackbar", "Something went wrong saving the changes");
+      }
+    }
   }
 };
 </script>

@@ -93,8 +93,7 @@ const request = {
     async setProgress(state, payload) {
       const auth = "Bearer " + state.getters.getJWT;
       const evaluative = state.rootGetters["main/getEvaluativeByStatus"](payload);
-      const url =
-        serverData.domain + serverData.statuses + "/" + evaluative.status.id;
+      const url = serverData.domain + serverData.statuses + "/" + evaluative.status.id;
       await axios.put(
         url,
         { data: payload.data },
@@ -105,6 +104,11 @@ const request = {
         }
       );
       if ("grade" in payload.data) {
+        // Set concept mastery for student on concepts from evaluative
+        const masteryUpdateUrl = serverData.domain + "/api/concept-masteries";
+        const body = { grade: payload.data.grade == 100 ? 1 : 0, evaluative: evaluative.id, user: state.getters.getUser.id };
+        await axios.post(masteryUpdateUrl, body, { headers: { Authorization: auth }});
+
         //await this.dispatch("request/fetchCourse");
       }
     },
@@ -698,12 +702,130 @@ const request = {
         throw error;
       }
     },
+    async fetchRecommendations(state) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const userID = state.getters.getUser.id;
+      const url = serverData.domain + "/api/recommendations/" + userID;
+      let resp;
+      await axios.get(url, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async generateConcepts(state, [id, mode, collectionType]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const userID = state.getters.getUser.id;
+      const body = { id: id, collectionType: collectionType, userId: userID, mode: mode };
+      const url = serverData.domain + "/api/concept-manager";
+      let resp;
+      await axios.post(url, body, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async updateGraphRequest(state, [id, edges, nodes]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const body = { id: id, collectionType: "courses", edges: edges, nodes: nodes }
+      const url = serverData.domain + "/api/concept-manager";
+      let resp;
+      await axios.put(url, body, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async updateConcepts(state, [id, concepts, collectionType]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const body = { id: id, collectionType: collectionType, concepts: concepts };
+      const url = serverData.domain + "/api/concept-manager";
+      let resp;
+      await axios.put(url, body, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async updateConcept(state, [id, label]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const body = { id: id, collectionType: "concepts", label: label };
+      const url = serverData.domain + "/api/concept-manager";
+      let resp;
+      await axios.put(url, body, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async deleteConcept(state, id) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const body = { id: id };
+      const url = serverData.domain + "/api/concept-manager/delete-concept";
+      let resp;
+      await axios.post(url, body, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async deleteGraphRequest(state, id) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const body = { id: id };
+      const url = serverData.domain + "/api/concept-manager/delete-graph";
+      let resp;
+      await axios.post(url, body, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async fetchMaterialConcepts(state, [id, collectionType]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const url = serverData.domain + "/api/concept-manager/concepts";
+      let resp;
+      await axios.get(url, { headers: { Authorization: auth }, params: { id, collectionType } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async fetchFailureRecommendations(state, [code, evaluativeID, courseID]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const body = { code, evaluativeID, courseID };
+      const url = serverData.domain + "/api/recommendations/failure"
+      let resp;
+      await axios.post(url, body, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async fetchHint(state, [description, code, courseID]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const url = serverData.domain + "/api/ai-manager/hint";
+      let resp;
+      await axios.get(url, { headers: { Authorization: auth }, params: { description, code, courseID } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async fetchConcepts(state) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const url = serverData.domain + "/api/concept-manager/all";
+      let resp;
+      await axios.get(url, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async fetchCourseMaterialConcepts(state, id) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const url = serverData.domain + "/api/concept-manager/course-concepts";
+      let resp;
+      await axios.get(url, { headers: { Authorization: auth }, params: { id } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async createConcept(state, [label]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const body = { label };
+      const url = serverData.domain + "/api/concept-manager/concept";
+      let resp;
+      await axios.post(url, body, { headers: { Authorization: auth } }).then((response) => resp = response.data);
+      return resp;
+    },
+    async fetchAiSettings(state) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const url = serverData.domain + "/api/ai-manager";
+      const id = state.getters.getUser.id;
+      let resp;
+      await axios.get(url, { headers: { Authorization: auth }, params: { id }}).then((response) => resp = response.data);
+      return resp;
+    },
+    async updateAiSettings(state, [provider, apiKey, model]) {
+      const auth = "Bearer " + state.getters.getJWT;
+      const id = state.getters.getUser.id;
+      const body = { id, provider, apiKey, model };
+      const url = serverData.domain + "/api/ai-manager";
+      let resp;
+      await axios.post(url, body, { headers: { Authorization: auth }}).then((response) => resp = response.data);
+      return resp;
+    }
   }
 }
 
 const serverData = {
-  domain: "https://agni.dcc.fc.up.pt/strapi",
-  //domain: "http://localhost:1337",
+  domain: "https://agni.dcc.fc.up.pt/strapi", // only prod
+  // domain: "http://localhost:1337",  // only dev
   authentication: "/api/auth/local",
   register: "/api/auth/local/register",
   me: "/api/users/me?populate=*",

@@ -36,6 +36,11 @@
       "relation": "oneToMany",
       "target": "api::status.status",
       "mappedBy": "evaluative"
+    },
+    "conceptTags": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::concept.concept"
     }
   }
 }

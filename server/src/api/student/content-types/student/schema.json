@@ -42,6 +42,11 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "mappedBy": "student"
+    },
+    "conceptMasteries": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::concept-mastery.concept-mastery"
     }
   }
 }

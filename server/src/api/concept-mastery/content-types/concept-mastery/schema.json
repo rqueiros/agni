@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "concept_masteries",
+  "info": {
+    "singularName": "concept-mastery",
+    "pluralName": "concept-masteries",
+    "displayName": "ConceptMastery"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "mastery": {
+      "type": "float"
+    },
+    "student": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::student.student"
+    },
+    "concept": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::concept.concept"
+    }
+  }
+}

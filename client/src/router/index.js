@@ -53,7 +53,7 @@ const routes = [
     path: "/evaluation_v2",
     name: "EvaluationV2",
     component: EvaluationV2,
-  },
+  }
 ];
 
 const router = new VueRouter({

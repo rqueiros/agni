@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_base_concept_graphs",
+  "info": {
+    "displayName": "ConceptGraph",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "concepts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::concept.concept"
+    },
+    "edges": {
+      "type": "component",
+      "repeatable": true,
+      "component": "base.concept-edge"
+    }
+  }
+}

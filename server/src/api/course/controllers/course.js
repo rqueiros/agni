@@ -76,6 +76,8 @@ module.exports = createCoreController(uid, () => {
                populate: courseStructure,
             })
             const sanitizedEntity = await this.sanitizeOutput(entity, ctx)
+            sanitizedEntity.conceptGraph = entity.conceptGraph
+            
             return this.transformResponse(sanitizedEntity)
          }
       },
@@ -83,7 +85,7 @@ module.exports = createCoreController(uid, () => {
       async create(ctx) {
          let result = []
 
-         let data = (typeof(ctx.request.body.data)=="string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data
+         let data = (typeof(ctx.request.body.data) == "string") ? JSON.parse(ctx.request.body.data) : ctx.request.body.data;
 
          // create draft
          if (data.publishedAt == null) {
@@ -136,6 +138,7 @@ module.exports = createCoreController(uid, () => {
             data = ctx.request.body.data
          }
 
+
          // check for wrong files
          let images = []
          let files = []
@@ -149,7 +152,8 @@ module.exports = createCoreController(uid, () => {
                return ctx.badRequest(error.fileError.message, error.fileError.details)
             }
          }
-
+         
+         
          // update content
          const ctx2 = await prepareCtx(ctx, images, files, data, "update")
          const result = await super.update(ctx2)

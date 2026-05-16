@@ -219,6 +219,7 @@ export default {
           },
           { text: "Type", value: "type", cellClass: "pointer" },
           { text: "Exercise", value: "name", cellClass: "pointer" },
+          { text: "", value: "action", cellClass: "pointer" },
         ],
         viewer: [
           {
@@ -360,6 +361,7 @@ export default {
           grade: Number(this.getStatusByResourceID(evaluative.id).grade.toFixed(1)),
           action: "",
         }));
+        console.log(this.tableItems);
       } else {
         this.tableItems = this.resource.evaluatives.map((evaluative, index) => ({
           number: index + 1,

@@ -60,6 +60,32 @@
                }
             }
          }
+      },
+      "conceptGraph": {
+         "populate": {
+            "concepts": {
+               "populate": {
+                  "id": true,
+                  "label": true
+               }
+            },
+            "edges": {
+               "populate": {
+                  "from": {
+                     "populate": {
+                        "id": true,
+                        "label": true
+                     }
+                  },
+                  "to": {
+                     "populate": {
+                        "id": true,
+                        "label": true
+                     }
+                  }
+               }
+            }
+         }
       }
    }
 }

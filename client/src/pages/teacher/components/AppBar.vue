@@ -181,6 +181,75 @@
               <span v-if="!isDraft">Unpublish</span>
             </v-tooltip>
 
+
+            <!-- Generate Concept Graph -->
+            <v-menu offset-y v-if="isAuthor && component == 'course'">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  elevation="1"
+                  class="mr-1"
+                  :rounded="$vuetify.breakpoint.mdAndUp"
+                  :fab="!$vuetify.breakpoint.mdAndUp"
+                  :small="!$vuetify.breakpoint.mdAndUp"
+                  color="primary"
+                  :disabled="isNew || changed"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-progress-circular
+                    :size="20"
+                    v-if="loading.graph"
+                    indeterminate
+                  ></v-progress-circular>
+                  <v-icon>mdi-sitemap</v-icon>
+                </v-btn>
+              </template>
+
+              <v-list>
+                <v-list-item @click="genGraph('fast')">
+                  <v-list-item-title>Fast AI generation (less token usage)</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item @click="genGraph('consistent')">
+                  <v-list-item-title>Consistent AI generation (5x more token usage)</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
+            <!-- Generate Concepts -->
+            <v-menu offset-y v-if="isAuthor && (component == 'expositive' || component == 'evaluative')">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  elevation="1"
+                  class="mr-1"
+                  :rounded="$vuetify.breakpoint.mdAndUp"
+                  :fab="!$vuetify.breakpoint.mdAndUp"
+                  :small="!$vuetify.breakpoint.mdAndUp"
+                  color="primary"
+                  :disabled="(isNew || changed) && component != 'evaluative'"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-progress-circular
+                    :size="20"
+                    v-if="loading.graph"
+                    indeterminate
+                  ></v-progress-circular>
+                  <v-icon>mdi-sitemap</v-icon>
+                </v-btn>
+              </template>
+
+              <v-list>
+                <v-list-item @click="genGraph('fast')">
+                  <v-list-item-title>Fast AI generation (less token usage)</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item @click="genGraph('consistent')">
+                  <v-list-item-title>Consistent AI generation (5x more token usage)</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
             <!-- Clone -->
             <v-menu
               offset-y
@@ -334,6 +403,8 @@
       :dialog="deleteDialog.open"
       :collectionType="collectionType"
     />
+
+    <NewConceptDialog :dialog.sync="conceptDialog" />
   </div>
 </template>
 
@@ -345,6 +416,7 @@ import { mapGetters, mapActions, mapMutations, mapState } from "vuex";
 import DeleteDialog from "../../../components/gerneral/DeleteDialog.vue";
 import YesNoDialog from "../../../components/gerneral/YesNoDialog.vue";
 import CopyCourseMenu from "../../../components/gerneral/CopyCourseMenu.vue";
+import NewConceptDialog from "@/components/gerneral/NewConceptDialog.vue";
 
 export default {
   name: "Header",
@@ -359,7 +431,8 @@ export default {
   components: {
     YesNoDialog,
     DeleteDialog,
-    CopyCourseMenu
+    CopyCourseMenu,
+    NewConceptDialog
   },
 
   data() {
@@ -370,11 +443,14 @@ export default {
         entries: []
       },
 
+      conceptDialog: false,
+
       addList: [
         { title: "Course" },
         { title: "Expositive" },
         { title: "Evaluative" },
-        { title: "Question" }
+        { title: "Question" },
+        { title: "Concept" }
       ],
 
       componentText: {
@@ -449,7 +525,8 @@ export default {
         publish: false,
         copy: false,
         delete: false,
-        search: false
+        search: false,
+        graph: false,
       }
     };
   },
@@ -569,7 +646,8 @@ export default {
       "saveCollectionType",
       "publishCollectionType",
       "copyCollectionType",
-      "updateUser"
+      "updateUser",
+      "generateConcepts"
     ]),
     ...mapActions("main", ["createNewCollectionType"]),
     ...mapMutations("main", ["deleteStructure"]),
@@ -648,6 +726,37 @@ export default {
         return false;
       }
     },
+    async genGraph(mode) {
+      let id = 0;
+      if (this.collectionType == "courses") {
+        id = this.getCourse.id;
+      } else if (this.collectionType == "expositives") {
+        id = this.getExpositive.id;
+      } else if (this.collectionType == "evaluatives") {
+        id = this.getEvaluative.id;
+      } else if (this.collectionType == "questions") {
+        id = this.getQuestion.id;
+      }
+      this.loading.graph = true;
+      try {
+        await this.generateConcepts([id, mode, this.collectionType]);
+        await this.fetchPrepareCollectionType([id, this.collectionType]);
+        bus.$emit(
+          "successSnackbar",
+          this.getMesssage(["general", "save", "success"])
+        );
+        this.loading.graph = false;
+        
+        return true;
+      } catch (error) {
+        bus.$emit(
+          "errorSnackbar",
+          this.getMesssage(["general", "course", "error"])
+        );
+        this.loading.graph = false;
+        return false;
+      }
+    },
     async delete() {
       try {
         await this.deleteCollectionType([
@@ -713,6 +822,10 @@ export default {
       this.deleteStructure();
     },
     addCollectionType(item) {
+      if (item === "Concept") {
+        this.conceptDialog = true;
+        return;
+      }
       this.createNewCollectionType(item.toLowerCase());
       if (item == "Occurrence") {
         bus.$emit("changePage", "student,Occurrence");

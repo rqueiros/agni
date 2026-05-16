@@ -127,9 +127,11 @@
             </v-list>
           </v-menu>
         </v-app-bar>
-
         <v-tabs-items v-model="tab">
           <v-tab-item v-for="(item, i) in resource.expositives" :key="i">
+            <div v-if="isAuthor">
+              
+            </div>
             <Pdf v-if="item.type == 'pdf'" :resource="item" :ref="'expo' + i" />
             <Video
               v-else-if="item.type == 'video'"
@@ -201,7 +203,8 @@ export default {
     }
   },
 
-  created() {},
+  created() {
+  },
 
   computed: {
     ...mapGetters("request", ["isStudent", "isTeacher", "isAuthor", "isViewer"]),
