@@ -824,8 +824,7 @@ const request = {
 }
 
 const serverData = {
-  domain: "https://agni.dcc.fc.up.pt/strapi", // only prod
-  // domain: "http://localhost:1337",  // only dev
+  domain: process.env.VUE_APP_API_URL, 
   authentication: "/api/auth/local",
   register: "/api/auth/local/register",
   me: "/api/users/me?populate=*",
